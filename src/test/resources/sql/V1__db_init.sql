@@ -16,7 +16,7 @@ create table analytic.events_sink
     amount        UInt64,
     currency      String,
 
-    providerName      String,
+    providerName  String,
     status        String,
     errorReason   String,
 

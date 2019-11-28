@@ -1,5 +1,6 @@
 package com.rbkmoney.analytics;
 
+import com.rbkmoney.analytics.config.ClickhouseConfig;
 import com.rbkmoney.analytics.utils.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -8,7 +9,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -26,8 +27,8 @@ import java.util.Map;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = AnalyticsApplication.class)
-@ContextConfiguration(initializers = AnalyticsApplicationTest.Initializer.class)
+@ContextConfiguration(initializers = AnalyticsApplicationTest.Initializer.class,
+        classes = {JdbcTemplateAutoConfiguration.class, ClickhouseConfig.class})
 public class AnalyticsApplicationTest {
 
     @ClassRule

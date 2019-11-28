@@ -1,5 +1,7 @@
 package com.rbkmoney.analytics.dao.model;
 
+import com.rbkmoney.analytics.constant.PaymentStatus;
+import com.rbkmoney.analytics.constant.PaymentToolType;
 import lombok.Data;
 
 import java.sql.Date;
@@ -19,7 +21,7 @@ public class MgEventSinkRow {
     private String shopId;
     private String partyId;
 
-    private String resultStatus;
+    private PaymentStatus status;
     private String errorCode;
     private String errorMessage;
 
@@ -28,10 +30,16 @@ public class MgEventSinkRow {
 
     private String bankCountry;
     private String currency;
-    private String invoiceId;
     private String maskedPan;
     private String bankName;
     private String cardToken;
+
+    private String invoiceId;
     private String paymentId;
+    private PaymentToolType paymentTool;
+
+    private Long sequenceId;
+
+    private Long oldSequenceId;
 
 }
