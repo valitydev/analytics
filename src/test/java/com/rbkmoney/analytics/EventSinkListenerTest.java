@@ -84,13 +84,14 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         long sum = jdbcTemplate.queryForObject(
                 "SELECT shopId, sum(amount) as sum " +
-                        "from analytic.events_sink where status = 'captured'" +
-                        "group by partyId, shopId, currency " +
-                        "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and currency = 'RUB'",
+                        "from analytic.events_sink " +
+                        "group by shopId, currency, status " +
+                        "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and currency = 'RUB' AND sum(sign) > 0",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
         Assert.assertEquals(12L, sum);
     }
+
 
     @AfterClass
     public static void clean() {
