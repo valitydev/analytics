@@ -34,7 +34,7 @@ public class MgEventSinkBatchPreparedStatementSetter implements BatchPreparedSta
         ps.setLong(l++, mgEventSinkRow.getAmount());
         ps.setString(l++, mgEventSinkRow.getCurrency());
 
-        ps.setString(l++, mgEventSinkRow.getBankName());
+        ps.setString(l++, mgEventSinkRow.getProvider());
 
         ps.setString(l++, mgEventSinkRow.getStatus().name());
 
@@ -48,7 +48,8 @@ public class MgEventSinkBatchPreparedStatementSetter implements BatchPreparedSta
         ps.setString(l++, mgEventSinkRow.getBin());
         ps.setString(l++, mgEventSinkRow.getMaskedPan());
         ps.setString(l++, mgEventSinkRow.getPaymentTool().name());
-        ps.setInt(l, 1);
+
+        ps.setInt(l, mgEventSinkRow.getSign());
     }
 
     @Override

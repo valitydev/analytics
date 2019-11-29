@@ -17,7 +17,7 @@ create table analytic.events_sink
     currency      String,
 
     providerName  String,
-    status        String,
+    status        Enum8('pending' = 1, 'processed' = 2, 'captured' = 3, 'cancelled' = 4, 'failed' = 5),
     errorReason   String,
 
     invoiceId     String,
@@ -27,7 +27,7 @@ create table analytic.events_sink
     ip            String,
     bin           String,
     maskedPan     String,
-    paymentTool   String,
+    paymentTool   Enum8('bank_card' = 1, 'payment_terminal' = 2, 'digital_wallet' = 3),
 
     sign          Int8
 

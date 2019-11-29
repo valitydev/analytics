@@ -91,14 +91,6 @@ public class AnalyticsApplicationTest {
 
         Assert.assertEquals(55000L, sum);
 
-        List<Map<String, Object>> map = jdbcTemplate.queryForList(
-                "SELECT partyId, sum(amount) as sum " +
-                        "from analytic.events_sink where status = 'refunded' " +
-                        "group by partyId, currency " +
-                        "having partyId = 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772f' and currency = 'RUB'");
-
-        Assert.assertTrue(map.isEmpty());
-
         sum = jdbcTemplate.queryForObject(
                 "SELECT partyId, avg(amount) as sum " +
                         "from analytic.events_sink where status = 'captured' " +

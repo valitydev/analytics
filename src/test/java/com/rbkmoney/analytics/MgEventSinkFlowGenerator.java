@@ -5,12 +5,14 @@ import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.*;
+import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.kafka.common.serialization.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -92,7 +94,7 @@ public class MgEventSinkFlowGenerator {
                         .setId(sourceId)
                         .setOwnerId(PARTY_ID)
                         .setShopId(SHOP_ID)
-                        .setCreatedAt("2016-08-10T16:07:18Z")
+                        .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                         .setStatus(InvoiceStatus.unpaid(new InvoiceUnpaid()))
                         .setDue("2016-08-10T16:07:23Z")
                         .setCost(new Cash(12L, new CurrencyRef("RUB")))
@@ -135,7 +137,7 @@ public class MgEventSinkFlowGenerator {
                                                 .setAmount(123L)
                                                 .setCurrency(new CurrencyRef()
                                                         .setSymbolicCode("RUB")))
-                                .setCreatedAt("2016-08-10T16:07:18Z")
+                                .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                                 .setId(PAYMENT_ID)
                                 .setStatus(invoicePaymentStatus)
                                 .setPayer(createCustomerPayer())
