@@ -40,11 +40,11 @@ kafka:
       prefix: analytics
   ssl:
     enable: false
-    keystore-location: src/main/resources/cert/kenny-k.struzhkin.p12
-    keystore-password: kenny
-    key-password: kenny
-    server-password: kenny12
-    server-keystore-location: src/main/resources/cert/truststore.p12
+    clientStoreCertPath: src/main/resources/cert/kenny-k.struzhkin.p12
+    keyStorePassword: kenny
+    keyPassword: kenny
+    serverStorePassword: kenny12
+    serverStoreCertPath: src/main/resources/cert/truststore.p12
   state:
     dir: tmp/state-store/
   stream.event.sink:

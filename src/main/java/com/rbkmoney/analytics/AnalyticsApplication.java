@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 
 import javax.annotation.PreDestroy;
@@ -12,6 +13,7 @@ import javax.annotation.PreDestroy;
 @Slf4j
 @ServletComponentScan
 @SpringBootApplication
+@EnableConfigurationProperties
 public class AnalyticsApplication extends SpringApplication {
 
     @Autowired

@@ -1,5 +1,6 @@
 package com.rbkmoney.analytics.config;
 
+import com.rbkmoney.analytics.config.properties.KafkaSslProperties;
 import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
 import com.rbkmoney.analytics.serde.MgEventSinkRowDeserializer;
 import com.rbkmoney.analytics.serde.MgEventSinkRowSerde;
@@ -34,7 +35,7 @@ import java.util.Properties;
 public class KafkaStreamConfig {
 
     private static final String EVENT_SINK_CLIENT_ANALYTICS = "event-sink-client-analytics";
-    public static final String RESULT_ANALYTICS = "result-analytics";
+    private static final String RESULT_ANALYTICS = "result-analytics";
     private static final String EARLIEST = "earliest";
 
     @Value("${kafka.state.cache.size:10}")
@@ -49,24 +50,6 @@ public class KafkaStreamConfig {
     @Value("${kafka.bootstrap.servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.ssl.server-password}")
-    private String serverStorePassword;
-
-    @Value("${kafka.ssl.server-keystore-location}")
-    private String serverStoreCertPath;
-
-    @Value("${kafka.ssl.keystore-password}")
-    private String keyStorePassword;
-
-    @Value("${kafka.ssl.key-password}")
-    private String keyPassword;
-
-    @Value("${kafka.ssl.keystore-location}")
-    private String clientStoreCertPath;
-
-    @Value("${kafka.ssl.enable}")
-    private boolean kafkaSslEnable;
-
     @Value("${kafka.topic.event.sink.initial}")
     private String initialEventSink;
 
@@ -74,7 +57,8 @@ public class KafkaStreamConfig {
     private String aggregatedSinkTopic;
 
     private final ConsumerGroupIdService consumerGroupIdService;
-    public final List<EventHandler<MgEventSinkRow>> eventHandlers;
+    private final List<EventHandler<MgEventSinkRow>> eventHandlers;
+    private final KafkaSslProperties kafkaSslProperties;
 
     @Bean
     public Properties eventSinkStreamProperties() {
@@ -86,8 +70,13 @@ public class KafkaStreamConfig {
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, MgEventSinkRowSerde.class);
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, cacheSizeStateStoreMb * 1024 * 1024L);
         props.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
-        props.putAll(SslKafkaUtils.sslConfigure(kafkaSslEnable, serverStoreCertPath, serverStorePassword,
-                clientStoreCertPath, keyStorePassword, keyPassword));
+        props.putAll(SslKafkaUtils.sslConfigure(
+                kafkaSslProperties.isKafkaSslEnable(),
+                kafkaSslProperties.getServerStoreCertPath(),
+                kafkaSslProperties.getServerStorePassword(),
+                kafkaSslProperties.getClientStoreCertPath(),
+                kafkaSslProperties.getKeyStorePassword(),
+                kafkaSslProperties.getKeyPassword()));
         return props;
     }
 
@@ -104,8 +93,7 @@ public class KafkaStreamConfig {
                 MgEventSinkRow::new,
                 mgEventAggregator,
                 mgEventSinkRowMgEventSinkRowMapper,
-                mgEventSinkRow -> mgEventSinkRow.getStatus() != null
-        );
+                mgEventSinkRow -> mgEventSinkRow.getStatus() != null);
     }
 
     @Bean
@@ -118,7 +106,6 @@ public class KafkaStreamConfig {
     public MgEventSinkRowMapper<MgEventSinkRow> mgEventSinkRowMgEventSinkRowMapper(MgEventSinkHandlerExecutor<MgEventSinkRow> mgEventSinkHandler) {
         return new MgEventSinkRowMapper<>(mgEventSinkHandler);
     }
-
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, MgEventSinkRow> kafkaListenerContainerFactory() {
@@ -140,8 +127,13 @@ public class KafkaStreamConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, value);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, EARLIEST);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-        props.putAll(SslKafkaUtils.sslConfigure(kafkaSslEnable, serverStoreCertPath, serverStorePassword,
-                clientStoreCertPath, keyStorePassword, keyPassword));
+        props.putAll(SslKafkaUtils.sslConfigure(
+                kafkaSslProperties.isKafkaSslEnable(),
+                kafkaSslProperties.getServerStoreCertPath(),
+                kafkaSslProperties.getServerStorePassword(),
+                kafkaSslProperties.getClientStoreCertPath(),
+                kafkaSslProperties.getKeyStorePassword(),
+                kafkaSslProperties.getKeyPassword()));
         return props;
     }
 }
