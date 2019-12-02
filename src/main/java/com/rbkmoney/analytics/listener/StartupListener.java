@@ -1,6 +1,7 @@
 package com.rbkmoney.analytics.listener;
 
-import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
+import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
+import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import com.rbkmoney.mg.event.sink.EventSinkAggregationStreamFactoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Slf4j
@@ -23,10 +26,12 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
     @Value("${kafka.stream.event.sink.enable}")
     private boolean enableEventSinkStream;
 
-    private final Properties eventSinkStreamProperties;
-    private final EventSinkAggregationStreamFactoryImpl<String, MgEventSinkRow, MgEventSinkRow> eventSinkAggregationStreamFactory;
+    private final Properties eventSinkPaymentStreamProperties;
+    private final Properties eventSinkRefundStreamProperties;
+    private final EventSinkAggregationStreamFactoryImpl<String, MgPaymentSinkRow, MgPaymentSinkRow> eventSinkAggregationStreamFactory;
+    private final EventSinkAggregationStreamFactoryImpl<String, MgRefundRow, MgRefundRow> eventSinkRefundAggregationStreamFactory;
 
-    private KafkaStreams eventSinkStream;
+    private List<KafkaStreams> eventSinkStreams = new ArrayList<>();
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -36,15 +41,19 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     private void startEventStream(long startPreloadTime) {
         if (enableEventSinkStream) {
-            eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkStreamProperties);
-            log.info("StartupListener start stream preloadTime: {} ms eventSinkStream: {}", System.currentTimeMillis() - startPreloadTime,
-                    eventSinkStream.allMetadata());
+            KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
+            eventSinkStreams.add(eventSinkStream);
+            KafkaStreams eventSinkStreamRefund = eventSinkRefundAggregationStreamFactory.create(eventSinkRefundStreamProperties);
+            eventSinkStreams.add(eventSinkStreamRefund);
+            log.info("StartupListener start stream preloadTime: {} ms eventSinkStream: {} eventSinkStreamRefund: {}", System.currentTimeMillis() - startPreloadTime,
+                    eventSinkStream.allMetadata(), eventSinkStreamRefund.allMetadata());
         }
     }
 
     public void stop() {
-        if (eventSinkStream != null) {
-            eventSinkStream.close(Duration.ofSeconds(CLOSE_STREAM_TIMEOUT_SECONDS));
+        if (eventSinkStreams != null && !eventSinkStreams.isEmpty()) {
+            eventSinkStreams.forEach(kafkaStreams -> kafkaStreams.close(Duration.ofSeconds(CLOSE_STREAM_TIMEOUT_SECONDS)));
+
         }
     }
 

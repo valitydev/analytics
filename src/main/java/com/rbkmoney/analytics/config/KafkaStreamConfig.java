@@ -1,10 +1,13 @@
 package com.rbkmoney.analytics.config;
 
 import com.rbkmoney.analytics.config.properties.KafkaSslProperties;
-import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
-import com.rbkmoney.analytics.serde.MgEventSinkRowDeserializer;
-import com.rbkmoney.analytics.serde.MgEventSinkRowSerde;
-import com.rbkmoney.analytics.stream.aggregate.MgEventAggregator;
+import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
+import com.rbkmoney.analytics.dao.model.MgRefundRow;
+import com.rbkmoney.analytics.serde.MgPaymentRowDeserializer;
+import com.rbkmoney.analytics.serde.MgPaymentRowSerde;
+import com.rbkmoney.analytics.serde.MgRefundRowSerde;
+import com.rbkmoney.analytics.stream.aggregate.MgPaymentAggregator;
+import com.rbkmoney.analytics.stream.aggregate.MgRefundAggregator;
 import com.rbkmoney.mg.event.sink.EventSinkAggregationStreamFactoryImpl;
 import com.rbkmoney.mg.event.sink.MgEventSinkRowMapper;
 import com.rbkmoney.mg.event.sink.converter.SinkEventToEventPayloadConverter;
@@ -34,9 +37,14 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class KafkaStreamConfig {
 
-    private static final String EVENT_SINK_CLIENT_ANALYTICS = "event-sink-client-analytics";
+    public static final String EVENT_SINK_CLIENT_ANALYTICS = "event-sink-client-analytics";
+    public static final String EVENT_SINK_CLIENT_ANALYTICS_REFUND = "event-sink-client-analytics-refund";
+
     private static final String RESULT_ANALYTICS = "result-analytics";
+    private static final String RESULT_ANALYTICS_REFUND = "result-analytics-refund";
     private static final String EARLIEST = "earliest";
+    public static final String MG_EVENT_SINK_PAYMENT = "mg-event-sink-payment";
+    public static final String MG_EVENT_SINK_PAYMENT_REFUND = "mg-event-sink-paymentrefund";
 
     @Value("${kafka.state.cache.size:10}")
     private int cacheSizeStateStoreMb;
@@ -56,18 +64,37 @@ public class KafkaStreamConfig {
     @Value("${kafka.topic.event.sink.aggregated}")
     private String aggregatedSinkTopic;
 
+
+    @Value("${kafka.topic.event.sink.aggregatedRefund}")
+    private String aggregatedSinkTopicRefund;
+
     private final ConsumerGroupIdService consumerGroupIdService;
-    private final List<EventHandler<MgEventSinkRow>> eventHandlers;
+    private final List<EventHandler<MgPaymentSinkRow>> eventHandlers;
+    private final List<EventHandler<MgRefundRow>> eventRefundHandlers;
     private final KafkaSslProperties kafkaSslProperties;
 
     @Bean
-    public Properties eventSinkStreamProperties() {
-        final Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, consumerGroupIdService.generateGroupId("mg-event-sink"));
+    public Properties eventSinkPaymentStreamProperties() {
+        Properties props = createDefaultProperties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, consumerGroupIdService.generateGroupId(MG_EVENT_SINK_PAYMENT));
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, MgPaymentRowSerde.class);
         props.put(StreamsConfig.CLIENT_ID_CONFIG, EVENT_SINK_CLIENT_ANALYTICS);
+        return props;
+    }
+
+    @Bean
+    public Properties eventSinkRefundStreamProperties() {
+        Properties props = createDefaultProperties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, consumerGroupIdService.generateGroupId(MG_EVENT_SINK_PAYMENT_REFUND));
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, MgRefundRowSerde.class);
+        props.put(StreamsConfig.CLIENT_ID_CONFIG, EVENT_SINK_CLIENT_ANALYTICS_REFUND);
+        return props;
+    }
+
+    private Properties createDefaultProperties() {
+        final Properties props = new Properties();
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, MgEventSinkRowSerde.class);
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, cacheSizeStateStoreMb * 1024 * 1024L);
         props.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
         props.putAll(SslKafkaUtils.sslConfigure(
@@ -81,40 +108,80 @@ public class KafkaStreamConfig {
     }
 
     @Bean
-    public EventSinkAggregationStreamFactoryImpl<String, MgEventSinkRow, MgEventSinkRow> eventSinkAggregationStreamFactory(
-            MgEventAggregator mgEventAggregator,
-            MgEventSinkRowMapper<MgEventSinkRow> mgEventSinkRowMgEventSinkRowMapper) {
+    public EventSinkAggregationStreamFactoryImpl<String, MgPaymentSinkRow, MgPaymentSinkRow> eventSinkAggregationStreamFactory(
+            MgPaymentAggregator mgPaymentAggregator,
+            MgEventSinkRowMapper<MgPaymentSinkRow> mgEventSinkRowMgEventSinkRowMapper) {
         return new EventSinkAggregationStreamFactoryImpl<>(
                 initialEventSink,
                 aggregatedSinkTopic,
                 new SinkEventSerde(),
                 Serdes.String(),
-                new MgEventSinkRowSerde(),
-                MgEventSinkRow::new,
-                mgEventAggregator,
+                new MgPaymentRowSerde(),
+                MgPaymentSinkRow::new,
+                mgPaymentAggregator,
                 mgEventSinkRowMgEventSinkRowMapper,
                 mgEventSinkRow -> mgEventSinkRow.getStatus() != null);
     }
 
     @Bean
-    public MgEventSinkHandlerExecutor<MgEventSinkRow> mgEventSinkHandler(
+    public EventSinkAggregationStreamFactoryImpl<String, MgRefundRow, MgRefundRow> eventSinkRefundAggregationStreamFactory(
+            MgRefundAggregator mgRefundAggregator,
+            MgEventSinkRowMapper<MgRefundRow> mgRefundRowRowMgEventSinkRowMapper) {
+        return new EventSinkAggregationStreamFactoryImpl<>(
+                initialEventSink,
+                aggregatedSinkTopicRefund,
+                new SinkEventSerde(),
+                Serdes.String(),
+                new MgRefundRowSerde(),
+                MgRefundRow::new,
+                mgRefundAggregator,
+                mgRefundRowRowMgEventSinkRowMapper,
+                mgRefundRow -> mgRefundRow.getStatus() != null);
+    }
+
+    @Bean
+    public MgEventSinkHandlerExecutor<MgPaymentSinkRow> mgEventSinkHandler(
             SinkEventToEventPayloadConverter sinkEventToEventPayloadConverter) {
         return new MgEventSinkHandlerExecutor<>(sinkEventToEventPayloadConverter, eventHandlers);
     }
 
     @Bean
-    public MgEventSinkRowMapper<MgEventSinkRow> mgEventSinkRowMgEventSinkRowMapper(MgEventSinkHandlerExecutor<MgEventSinkRow> mgEventSinkHandler) {
+    public MgEventSinkRowMapper<MgPaymentSinkRow> mgRefundRowRowMgEventSinkRowMapper(MgEventSinkHandlerExecutor<MgPaymentSinkRow> mgEventSinkHandler) {
         return new MgEventSinkRowMapper<>(mgEventSinkHandler);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, MgEventSinkRow> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, MgEventSinkRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public MgEventSinkRowMapper<MgRefundRow> mgEventSinkRowMgEventSinkRowMapper(MgEventSinkHandlerExecutor<MgRefundRow> mgRefundRowHandler) {
+        return new MgEventSinkRowMapper<>(mgRefundRowHandler);
+    }
+
+    @Bean
+    public MgEventSinkHandlerExecutor<MgRefundRow> mgRefundRowHandler(
+            SinkEventToEventPayloadConverter sinkEventToEventPayloadConverter) {
+        return new MgEventSinkHandlerExecutor<>(sinkEventToEventPayloadConverter, eventRefundHandlers);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS);
         final Map<String, Object> props = createDefaultProperties(consumerGroup);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-        DefaultKafkaConsumerFactory<String, MgEventSinkRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
-                new StringDeserializer(), new MgEventSinkRowDeserializer());
+        DefaultKafkaConsumerFactory<String, MgPaymentSinkRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                new StringDeserializer(), new MgPaymentRowDeserializer());
+        factory.setConsumerFactory(consumerFactory);
+        factory.setBatchListener(true);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> kafkaListenerRefundContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS_REFUND);
+        final Map<String, Object> props = createDefaultProperties(consumerGroup);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
+        DefaultKafkaConsumerFactory<String, MgPaymentSinkRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                new StringDeserializer(), new MgPaymentRowDeserializer());
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         return factory;

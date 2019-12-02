@@ -1,13 +1,11 @@
 package com.rbkmoney.analytics;
 
-import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
-import com.rbkmoney.analytics.serde.MgEventSinkRowDeserializer;
+import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
+import com.rbkmoney.analytics.serde.MgPaymentRowDeserializer;
 import com.rbkmoney.analytics.utils.FileUtil;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,6 @@ import ru.yandex.clickhouse.settings.ClickHouseProperties;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +78,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         Thread.sleep(4_000l);
 
-        Consumer<String, MgEventSinkRow> consumer = createConsumer(MgEventSinkRowDeserializer.class);
+        Consumer<String, MgPaymentSinkRow> consumer = createConsumer(MgPaymentRowDeserializer.class);
         consumer.subscribe(Arrays.asList(AGGREGATED_EVENT_SINK));
 
         Thread.sleep(2_000l);
@@ -118,13 +115,18 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
     }
 
-
     @AfterClass
     public static void clean() {
-        File dir = new File("tmp/state-store/analytics-mg-event-sink/1_0/rocksdb/KSTREAM-AGGREGATE-STATE-STORE-0000000004");
+        cleanPackage("tmp/state-store/analytics-mg-event-sink-payment/1_0/rocksdb/KSTREAM-AGGREGATE-STATE-STORE-0000000004");
+        cleanPackage("tmp/state-store/analytics-mg-event-sink-paymentrefund/1_0/rocksdb/KSTREAM-AGGREGATE-STATE-STORE-0000000004");
+    }
+
+    private static void cleanPackage(String pathname) {
+        File dir = new File(pathname);
         for (File file : dir.listFiles()) {
             file.delete();
         }
         dir.delete();
     }
+
 }

@@ -36,6 +36,7 @@ kafka:
     event.sink:
       initial: event_sink
       aggregated: aggregated_event_sink
+      aggregatedRefund: aggregated_event_sink_refund
   consumer:
       prefix: analytics
   ssl:

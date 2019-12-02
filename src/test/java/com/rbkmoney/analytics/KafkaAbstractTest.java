@@ -1,6 +1,6 @@
 package com.rbkmoney.analytics;
 
-import com.rbkmoney.analytics.serde.MgEventSinkRowDeserializer;
+import com.rbkmoney.analytics.serde.MgPaymentRowDeserializer;
 import com.rbkmoney.kafka.common.serialization.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +66,7 @@ public abstract class KafkaAbstractTest {
 
         @NotNull
         private <T> Consumer<String, T> initTopic(String topicName) {
-            Consumer<String, T> consumer = createConsumer(MgEventSinkRowDeserializer.class);
+            Consumer<String, T> consumer = createConsumer(MgPaymentRowDeserializer.class);
             try {
                 consumer.subscribe(Collections.singletonList(topicName));
                 consumer.poll(Duration.ofMillis(500L));

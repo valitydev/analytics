@@ -2,8 +2,8 @@ package com.rbkmoney.analytics.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @Configuration
 @ConfigurationProperties("kafka.ssl")
 @Validated
+@EnableConfigurationProperties
 public class KafkaSslProperties {
 
     private String serverStorePassword;

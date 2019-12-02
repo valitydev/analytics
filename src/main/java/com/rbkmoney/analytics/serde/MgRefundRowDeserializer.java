@@ -1,14 +1,14 @@
 package com.rbkmoney.analytics.serde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
+import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import java.util.Map;
 
 @Slf4j
-public class MgEventSinkRowDeserializer implements Deserializer<MgEventSinkRow> {
+public class MgRefundRowDeserializer implements Deserializer<MgRefundRow> {
 
     private final ObjectMapper om = new ObjectMapper();
 
@@ -18,10 +18,10 @@ public class MgEventSinkRowDeserializer implements Deserializer<MgEventSinkRow> 
     }
 
     @Override
-    public MgEventSinkRow deserialize(String topic, byte[] data) {
-        MgEventSinkRow mgEventSinkRow = null;
+    public MgRefundRow deserialize(String topic, byte[] data) {
+        MgRefundRow mgEventSinkRow = null;
         try {
-            mgEventSinkRow = om.readValue(data, MgEventSinkRow.class);
+            mgEventSinkRow = om.readValue(data, MgRefundRow.class);
         } catch (Exception e) {
             log.error("Error when deserialize MgEventSinkRow data: {} ", data, e);
         }

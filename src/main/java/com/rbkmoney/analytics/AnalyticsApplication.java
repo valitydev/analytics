@@ -13,7 +13,6 @@ import javax.annotation.PreDestroy;
 @Slf4j
 @ServletComponentScan
 @SpringBootApplication
-@EnableConfigurationProperties
 public class AnalyticsApplication extends SpringApplication {
 
     @Autowired

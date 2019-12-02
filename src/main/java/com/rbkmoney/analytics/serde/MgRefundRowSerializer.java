@@ -1,14 +1,14 @@
 package com.rbkmoney.analytics.serde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.analytics.dao.model.MgEventSinkRow;
+import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
 
 @Slf4j
-public class MgEventSinkRowSerializer implements Serializer<MgEventSinkRow> {
+public class MgRefundRowSerializer implements Serializer<MgRefundRow> {
 
     private final ObjectMapper om = new ObjectMapper();
 
@@ -18,7 +18,7 @@ public class MgEventSinkRowSerializer implements Serializer<MgEventSinkRow> {
     }
 
     @Override
-    public byte[] serialize(String topic, MgEventSinkRow data) {
+    public byte[] serialize(String topic, MgRefundRow data) {
         byte[] retVal = null;
         try {
             retVal = om.writeValueAsString(data).getBytes();
