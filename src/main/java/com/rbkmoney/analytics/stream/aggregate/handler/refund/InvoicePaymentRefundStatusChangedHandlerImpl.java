@@ -29,7 +29,8 @@ public class InvoicePaymentRefundStatusChangedHandlerImpl extends InvoicePayment
         String paymentId = change.getInvoicePaymentChange().getId();
         InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentRefundChange();
-        InvoicePaymentRefundStatus invoicePaymentRefundStatus = invoicePaymentRefundChange.getPayload().getInvoicePaymentRefundStatusChanged().getStatus();
+        InvoicePaymentRefundStatus invoicePaymentRefundStatus = invoicePaymentRefundChange.getPayload()
+                .getInvoicePaymentRefundStatusChanged().getStatus();
         String refundId = invoicePaymentRefundChange.getId();
 
         MgRefundUtils.initTimeFields(mgRefundRow, event.getEvent().getCreatedAt());

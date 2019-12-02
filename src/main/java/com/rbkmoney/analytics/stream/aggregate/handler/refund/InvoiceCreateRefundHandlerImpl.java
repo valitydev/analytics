@@ -7,13 +7,16 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoiceCreated;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.mg.event.sink.handler.flow.InvoiceCreateHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class InvoiceCreateRefundHandlerImpl extends InvoiceCreateHandler<MgRefundRow> {
 
     @Override
     public MgRefundRow handle(InvoiceChange change, SinkEvent event) {
+        log.debug("InvoiceCreateRefundHandlerImpl change: {} event: {}", change, event);
         MgRefundRow mgRefundRow = new MgRefundRow();
         InvoiceCreated invoiceCreated = change.getInvoiceCreated();
         Invoice invoice = invoiceCreated.getInvoice();

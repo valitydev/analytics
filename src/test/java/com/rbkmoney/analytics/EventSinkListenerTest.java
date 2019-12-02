@@ -113,6 +113,21 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                 }
         );
 
+        // test refund flow
+        sinkEvents = MgEventSinkFlowGenerator.generateRefundedFlow("sourceID_refund_1");
+        sinkEvents.forEach(this::produceMessageToEventSink);
+
+        Thread.sleep(2_000l);
+
+        //check sum for captured payment
+        sum = jdbcTemplate.queryForObject(
+                "SELECT shopId, sum(amount) as sum " +
+                        "from analytic.events_sink_refund " +
+                        "group by shopId, currency, status " +
+                        "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'pending' and currency = 'RUB' AND sum(sign) > 0",
+                (resultSet, i) -> resultSet.getLong("sum"));
+
+        Assert.assertEquals(12L, sum);
     }
 
     @AfterClass

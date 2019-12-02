@@ -3,6 +3,7 @@ package com.rbkmoney.analytics;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
+import com.rbkmoney.damsel.domain.InvoicePaymentRefundPending;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.geck.common.util.TypeUtil;
@@ -51,6 +52,14 @@ public class MgEventSinkFlowGenerator {
         return sinkEvents;
     }
 
+    public static List<SinkEvent> generateRefundedFlow(String sourceId) {
+        List<SinkEvent> eventList = generateSuccessFlow(sourceId);
+        Long sequenceId = eventList.get(eventList.size() - 1).getEvent().getEventId();
+        eventList.add(createSinkEvent(createRefundMessageCreateInvoice(sourceId, ++sequenceId)));
+
+        return eventList;
+    }
+
     private static SinkEvent createSinkEvent(MachineEvent machineEvent) {
         SinkEvent sinkEvent = new SinkEvent();
         sinkEvent.setEvent(machineEvent);
@@ -61,6 +70,29 @@ public class MgEventSinkFlowGenerator {
         InvoiceCreated invoiceCreated = createInvoiceCreate(sourceId);
         InvoiceChange invoiceChange = new InvoiceChange();
         invoiceChange.setInvoiceCreated(invoiceCreated);
+        return createMachineEvent(invoiceChange, sourceId, sequenceId);
+    }
+
+    private static MachineEvent createRefundMessageCreateInvoice(String sourceId, Long sequenceId) {
+        InvoicePaymentRefundChange invoicePaymentRefundCreated = new InvoicePaymentRefundChange()
+                .setId(sourceId)
+                .setPayload(InvoicePaymentRefundChangePayload.invoice_payment_refund_created(
+                        new InvoicePaymentRefundCreated()
+                                .setRefund(new InvoicePaymentRefund()
+                                        .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
+                                        .setId("refund" + sequenceId)
+                                        .setReason("refund reason")
+                                        .setCash(createCash())
+                                        .setStatus(InvoicePaymentRefundStatus.pending(new InvoicePaymentRefundPending()))
+                                )
+                                .setCashFlow(new ArrayList<>())
+                        )
+                );
+
+        InvoiceChange invoiceChange = InvoiceChange.invoice_payment_change(new InvoicePaymentChange()
+                .setId(sourceId)
+                .setPayload(InvoicePaymentChangePayload.invoice_payment_refund_change(invoicePaymentRefundCreated))
+        );
         return createMachineEvent(invoiceChange, sourceId, sequenceId);
     }
 
@@ -98,6 +130,7 @@ public class MgEventSinkFlowGenerator {
         return message;
     }
 
+
     private static InvoiceCreated createInvoiceCreate(String sourceId) {
 
         return new InvoiceCreated()
@@ -108,13 +141,18 @@ public class MgEventSinkFlowGenerator {
                         .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                         .setStatus(InvoiceStatus.unpaid(new InvoiceUnpaid()))
                         .setDue("2016-08-10T16:07:23Z")
-                        .setCost(new Cash(12L, new CurrencyRef("RUB")))
+                        .setCost(createCash())
                         .setDetails(new InvoiceDetails("product"))
                         .setContext(new Content()
                                 .setType("contentType")
                                 .setData("test".getBytes())
                         )
                 );
+    }
+
+    @NotNull
+    private static Cash createCash() {
+        return new Cash(12L, new CurrencyRef("RUB"));
     }
 
     private static InvoiceChange createInvoiceCaptured() {

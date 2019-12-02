@@ -5,6 +5,7 @@ import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import com.rbkmoney.analytics.serde.MgPaymentRowDeserializer;
 import com.rbkmoney.analytics.serde.MgPaymentRowSerde;
+import com.rbkmoney.analytics.serde.MgRefundRowDeserializer;
 import com.rbkmoney.analytics.serde.MgRefundRowSerde;
 import com.rbkmoney.analytics.stream.aggregate.MgPaymentAggregator;
 import com.rbkmoney.analytics.stream.aggregate.MgRefundAggregator;
@@ -97,14 +98,18 @@ public class KafkaStreamConfig {
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, cacheSizeStateStoreMb * 1024 * 1024L);
         props.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
-        props.putAll(SslKafkaUtils.sslConfigure(
+        props.putAll(createSslConfig());
+        return props;
+    }
+
+    private Map<String, Object> createSslConfig() {
+        return SslKafkaUtils.sslConfigure(
                 kafkaSslProperties.isKafkaSslEnable(),
                 kafkaSslProperties.getServerStoreCertPath(),
                 kafkaSslProperties.getServerStorePassword(),
                 kafkaSslProperties.getClientStoreCertPath(),
                 kafkaSslProperties.getKeyStorePassword(),
-                kafkaSslProperties.getKeyPassword()));
-        return props;
+                kafkaSslProperties.getKeyPassword());
     }
 
     @Bean
@@ -175,13 +180,13 @@ public class KafkaStreamConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> kafkaListenerRefundContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, MgRefundRow> kafkaListenerRefundContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MgRefundRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS_REFUND);
         final Map<String, Object> props = createDefaultProperties(consumerGroup);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-        DefaultKafkaConsumerFactory<String, MgPaymentSinkRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
-                new StringDeserializer(), new MgPaymentRowDeserializer());
+        DefaultKafkaConsumerFactory<String, MgRefundRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                new StringDeserializer(), new MgRefundRowDeserializer());
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         return factory;
@@ -194,13 +199,7 @@ public class KafkaStreamConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, value);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, EARLIEST);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-        props.putAll(SslKafkaUtils.sslConfigure(
-                kafkaSslProperties.isKafkaSslEnable(),
-                kafkaSslProperties.getServerStoreCertPath(),
-                kafkaSslProperties.getServerStorePassword(),
-                kafkaSslProperties.getClientStoreCertPath(),
-                kafkaSslProperties.getKeyStorePassword(),
-                kafkaSslProperties.getKeyPassword()));
+        props.putAll(createSslConfig());
         return props;
     }
 }

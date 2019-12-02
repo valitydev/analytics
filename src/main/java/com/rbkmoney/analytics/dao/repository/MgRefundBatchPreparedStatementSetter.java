@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MgRefundBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
-    public static final String INSERT = "INSERT INTO analytic.events_sink " +
+    public static final String INSERT = "INSERT INTO analytic.events_sink_refund " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
             "amount, currency, providerName, status, errorReason,  invoiceId, " +
             "paymentId, refundId, sequenceId, ip, sign)" +

@@ -18,7 +18,7 @@ public class MgRefundAggregatorListener {
 
     private final MgRefundRepository mgRefundRepository;
 
-    @KafkaListener(topics = "${kafka.topic.event.sink.aggregatedRefund}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.topic.event.sink.aggregatedRefund}", containerFactory = "kafkaListenerRefundContainerFactory")
     public void listen(List<MgRefundRow> batch) {
         log.info("MgEventSinkAggregatorListener listen batch.size: {}", batch.size());
         List<MgRefundRow> resultRaws = batch.stream()

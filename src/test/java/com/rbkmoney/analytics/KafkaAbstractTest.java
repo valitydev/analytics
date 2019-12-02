@@ -35,6 +35,7 @@ public abstract class KafkaAbstractTest {
 
     public static final String EVENT_SINK = "event_sink";
     public static final String AGGREGATED_EVENT_SINK = "aggregated_event_sink";
+    public static final String AGGREGATED_EVENT_SINK_REFUND = "aggregated_event_sink_refund";
 
     @ClassRule
     public static KafkaContainer kafka = new KafkaContainer(CONFLUENT_PLATFORM_VERSION).withEmbeddedZookeeper();
@@ -62,6 +63,7 @@ public abstract class KafkaAbstractTest {
                     .applyTo(configurableApplicationContext.getEnvironment());
             initTopic(EVENT_SINK);
             initTopic(AGGREGATED_EVENT_SINK);
+            initTopic(AGGREGATED_EVENT_SINK_REFUND);
         }
 
         @NotNull

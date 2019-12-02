@@ -17,7 +17,7 @@ public class MgRefundRepository {
 
     public void insertBatch(List<MgRefundRow> mgRefundRows) {
         if (mgRefundRows != null && !mgRefundRows.isEmpty()) {
-            jdbcTemplate.batchUpdate(MgPaymentBatchPreparedStatementSetter.INSERT, new MgRefundBatchPreparedStatementSetter(mgRefundRows));
+            jdbcTemplate.batchUpdate(MgRefundBatchPreparedStatementSetter.INSERT, new MgRefundBatchPreparedStatementSetter(mgRefundRows));
         }
     }
 

@@ -23,6 +23,8 @@ public class InvoicePaymentRefundCreatedHandlerImpl extends InvoicePaymentRefund
 
     @Override
     public MgRefundRow handle(InvoiceChange change, SinkEvent event) {
+        log.debug("InvoicePaymentRefundCreatedHandlerImpl change: {} event: {}", change, event);
+
         MgRefundRow mgRefundRow = new MgRefundRow();
 
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
