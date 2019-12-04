@@ -41,12 +41,12 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     private void startEventStream(long startPreloadTime) {
         if (enableEventSinkStream) {
-//            KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
-//            eventSinkStreams.add(eventSinkStream);
+            KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
+            eventSinkStreams.add(eventSinkStream);
             KafkaStreams eventSinkStreamRefund = eventSinkRefundAggregationStreamFactory.create(eventSinkRefundStreamProperties);
             eventSinkStreams.add(eventSinkStreamRefund);
-//            log.info("StartupListener start stream preloadTime: {} ms eventSinkStream: {} eventSinkStreamRefund: {}", System.currentTimeMillis() - startPreloadTime,
-//                    eventSinkStream.allMetadata(), eventSinkStreamRefund.allMetadata());
+            log.info("StartupListener start stream preloadTime: {} ms eventSinkStream: {} eventSinkStreamRefund: {}", System.currentTimeMillis() - startPreloadTime,
+                    eventSinkStream.allMetadata(), eventSinkStreamRefund.allMetadata());
         }
     }
 
