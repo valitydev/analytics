@@ -22,6 +22,8 @@ public class InvoicePaymentStatusChangedHandlerImpl extends InvoicePaymentStatus
         MgPaymentSinkRow mgPaymentSinkRow = new MgPaymentSinkRow();
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         mgPaymentSinkRow.setPaymentId(invoicePaymentChange.getId());
+        mgPaymentSinkRow.setInvoiceId(event.getEvent().getSourceId());
+
         InvoicePaymentChangePayload payload = invoicePaymentChange.getPayload();
         InvoicePaymentStatusChanged invoicePaymentStatusChanged = payload.getInvoicePaymentStatusChanged();
         mgPaymentSinkRow.setStatus(TBaseUtil.unionFieldToEnum(invoicePaymentStatusChanged.getStatus(), PaymentStatus.class));

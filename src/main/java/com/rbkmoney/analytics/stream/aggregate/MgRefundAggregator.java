@@ -6,6 +6,9 @@ import org.apache.kafka.streams.kstream.Aggregator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 public class MgRefundAggregator implements Aggregator<String, MgRefundRow, MgRefundRow> {
@@ -14,7 +17,15 @@ public class MgRefundAggregator implements Aggregator<String, MgRefundRow, MgRef
     public MgRefundRow apply(String key, MgRefundRow value, MgRefundRow aggregate) {
         log.debug("Merge aggValue={} and value={}", aggregate, value);
         MgRefundRow oldEvent = new MgRefundRow(aggregate);
-        aggregate.setOldMgRefundRow(oldEvent);
+
+        if (oldEvent.getRefundId() != null) {
+            Map<String, MgRefundRow> refunds = aggregate.getRefunds();
+            if (refunds == null) {
+                refunds = new HashMap<>();
+                aggregate.setRefunds(refunds);
+            }
+            refunds.put(oldEvent.getRefundId(), oldEvent);
+        }
 
         aggregate.setInvoiceId(changeIfNotNull(aggregate.getInvoiceId(), value.getInvoiceId()));
         aggregate.setStatus(value.getStatus());
@@ -47,6 +58,5 @@ public class MgRefundAggregator implements Aggregator<String, MgRefundRow, MgRef
     private <T> T changeIfNotNull(T value, T newValue) {
         return value == null ? newValue : value;
     }
-
 
 }

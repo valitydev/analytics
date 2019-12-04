@@ -31,10 +31,11 @@ public class MgRefundAggregatorListener {
     }
 
     private List<MgRefundRow> flatMapToList(MgRefundRow mgPaymentSinkRow) {
-        if (mgPaymentSinkRow.getOldMgRefundRow() == null || mgPaymentSinkRow.getOldMgRefundRow().getStatus() == null) {
-            return List.of(mgPaymentSinkRow);
+        String refundId = mgPaymentSinkRow.getRefundId();
+        if (refundId != null && mgPaymentSinkRow.getRefunds() != null && mgPaymentSinkRow.getRefunds().get(refundId) != null) {
+            return List.of(mgPaymentSinkRow.getRefunds().get(refundId), mgPaymentSinkRow);
         }
-        return List.of(mgPaymentSinkRow.getOldMgRefundRow(), mgPaymentSinkRow);
+        return List.of(mgPaymentSinkRow);
     }
 
 }

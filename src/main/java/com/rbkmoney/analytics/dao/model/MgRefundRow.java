@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Date;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -35,9 +36,11 @@ public class MgRefundRow {
     private String paymentId;
     private Long sequenceId;
 
+    private String lastRefundId;
+
     private short sign = 1;
 
-    private MgRefundRow oldMgRefundRow;
+    private Map<String, MgRefundRow> refunds;
 
     public MgRefundRow(MgRefundRow mgRefundRow) {
         this.timestamp = mgRefundRow.getTimestamp();

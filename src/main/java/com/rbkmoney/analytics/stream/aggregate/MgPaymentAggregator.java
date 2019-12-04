@@ -6,6 +6,8 @@ import org.apache.kafka.streams.kstream.Aggregator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+
 @Slf4j
 @Service
 public class MgPaymentAggregator implements Aggregator<String, MgPaymentSinkRow, MgPaymentSinkRow> {

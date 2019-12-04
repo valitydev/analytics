@@ -22,9 +22,10 @@ public class InvoicePaymentRefundStatusChangedHandlerImpl extends InvoicePayment
 
     @Override
     public MgRefundRow handle(InvoiceChange change, SinkEvent event) {
+        log.debug("InvoicePaymentRefundStatusChangedHandlerImpl change: {} event: {}", change, event);
+
         MgRefundRow mgRefundRow = new MgRefundRow();
 
-        String invoiceId = event.getEvent().getSourceId();
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
         String paymentId = change.getInvoicePaymentChange().getId();
         InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange.getPayload()
@@ -35,6 +36,8 @@ public class InvoicePaymentRefundStatusChangedHandlerImpl extends InvoicePayment
 
         MgRefundUtils.initTimeFields(mgRefundRow, event.getEvent().getCreatedAt());
 
+        String invoiceId = event.getEvent().getSourceId();
+        mgRefundRow.setSequenceId((event.getEvent().getEventId()));
         mgRefundRow.setInvoiceId(invoiceId);
         mgRefundRow.setPaymentId(paymentId);
         mgRefundRow.setRefundId(refundId);

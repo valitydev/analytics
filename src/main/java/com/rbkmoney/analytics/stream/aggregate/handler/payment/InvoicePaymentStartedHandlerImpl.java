@@ -47,10 +47,16 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
         mgPaymentSinkRow.setEventTimeHour(eventTimeHour);
 
         Cash cost = payment.getCost();
+
+        mgPaymentSinkRow.setPartyId(payment.getOwnerId());
+        mgPaymentSinkRow.setShopId(payment.getShopId());
+
+        mgPaymentSinkRow.setInvoiceId(event.getEvent().getSourceId());
         mgPaymentSinkRow.setSequenceId((event.getEvent().getEventId()));
         mgPaymentSinkRow.setAmount(cost.getAmount());
         mgPaymentSinkRow.setCurrency(cost.getCurrency().getSymbolicCode());
         mgPaymentSinkRow.setStatus(TBaseUtil.unionFieldToEnum(payment.getStatus(), PaymentStatus.class));
+
         if (payer.isSetPaymentResource()) {
             mgPaymentSinkRow.setPaymentTool(TBaseUtil.unionFieldToEnum(payer.getPaymentResource().getResource().getPaymentTool(), PaymentToolType.class));
             if (payer.getPaymentResource().isSetResource()) {

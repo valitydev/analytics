@@ -27,6 +27,7 @@ public class MgEventSinkFlowGenerator {
     private static final String TEST_MAIL_RU = "test@mail.ru";
     private static final String BIN = "666";
     public static final String PARTY_ID = "owner_id";
+    public static final String REFUND_ID = "1";
 
     public static List<SinkEvent> generateSuccessFlow(String sourceId) {
         List<SinkEvent> sinkEvents = new ArrayList<>();
@@ -53,11 +54,19 @@ public class MgEventSinkFlowGenerator {
     }
 
     public static List<SinkEvent> generateRefundedFlow(String sourceId) {
-        List<SinkEvent> eventList = generateSuccessFlow(sourceId);
-        Long sequenceId = eventList.get(eventList.size() - 1).getEvent().getEventId();
-        eventList.add(createSinkEvent(createRefundMessageCreateInvoice(sourceId, ++sequenceId)));
+        List<SinkEvent> sinkEvents = new ArrayList<>();
+        Long sequenceId = 0L;
+        sinkEvents.add(createSinkEvent(createMessageCreateInvoice(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessagePaymentPending(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessagePaymentPendingChangeStatus(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessagePaymentPendingChangeStatus(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessagePaymentProcessed(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessagePaymentProcessed(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createMessageInvoiceCaptured(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(createRefundMessageCreateInvoice(sourceId, sequenceId++)));
+        sinkEvents.add(createSinkEvent(statusChangeRefundMessageCreateInvoice(sourceId, sequenceId)));
 
-        return eventList;
+        return sinkEvents;
     }
 
     private static SinkEvent createSinkEvent(MachineEvent machineEvent) {
@@ -75,12 +84,12 @@ public class MgEventSinkFlowGenerator {
 
     private static MachineEvent createRefundMessageCreateInvoice(String sourceId, Long sequenceId) {
         InvoicePaymentRefundChange invoicePaymentRefundCreated = new InvoicePaymentRefundChange()
-                .setId(sourceId)
+                .setId(REFUND_ID)
                 .setPayload(InvoicePaymentRefundChangePayload.invoice_payment_refund_created(
                         new InvoicePaymentRefundCreated()
                                 .setRefund(new InvoicePaymentRefund()
                                         .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
-                                        .setId("refund" + sequenceId)
+                                        .setId(REFUND_ID)
                                         .setReason("refund reason")
                                         .setCash(createCash())
                                         .setStatus(InvoicePaymentRefundStatus.pending(new InvoicePaymentRefundPending()))
@@ -90,7 +99,23 @@ public class MgEventSinkFlowGenerator {
                 );
 
         InvoiceChange invoiceChange = InvoiceChange.invoice_payment_change(new InvoicePaymentChange()
-                .setId(sourceId)
+                .setId(PAYMENT_ID)
+                .setPayload(InvoicePaymentChangePayload.invoice_payment_refund_change(invoicePaymentRefundCreated))
+        );
+        return createMachineEvent(invoiceChange, sourceId, sequenceId);
+    }
+
+
+    private static MachineEvent statusChangeRefundMessageCreateInvoice(String sourceId, Long sequenceId) {
+        InvoicePaymentRefundChange invoicePaymentRefundCreated = new InvoicePaymentRefundChange()
+                .setId(REFUND_ID)
+                .setPayload(InvoicePaymentRefundChangePayload.invoice_payment_refund_status_changed(
+                       new InvoicePaymentRefundStatusChanged( InvoicePaymentRefundStatus.succeeded(new InvoicePaymentRefundSucceeded())
+                        ))
+                );
+
+        InvoiceChange invoiceChange = InvoiceChange.invoice_payment_change(new InvoicePaymentChange()
+                .setId(PAYMENT_ID)
                 .setPayload(InvoicePaymentChangePayload.invoice_payment_refund_change(invoicePaymentRefundCreated))
         );
         return createMachineEvent(invoiceChange, sourceId, sequenceId);
@@ -102,12 +127,17 @@ public class MgEventSinkFlowGenerator {
     }
 
     private static MachineEvent createMessagePaymentProcessed(String sourceId, Long sequenceId) {
-        InvoiceChange invoiceCaptured = createPaymentProcessed();
+        InvoiceChange invoiceCaptured = createPaymentProcessedChange();
         return createMachineEvent(invoiceCaptured, sourceId, sequenceId);
     }
 
     private static MachineEvent createMessagePaymentPending(String sourceId, Long sequenceId) {
         InvoiceChange paymentPending = createPaymentPending();
+        return createMachineEvent(paymentPending, sourceId, sequenceId);
+    }
+
+    private static MachineEvent createMessagePaymentPendingChangeStatus(String sourceId, Long sequenceId) {
+        InvoiceChange paymentPending = createPaymentPendingStatus();
         return createMachineEvent(paymentPending, sourceId, sequenceId);
     }
 
@@ -118,7 +148,7 @@ public class MgEventSinkFlowGenerator {
         invoiceChanges.add(invoiceChange);
         payload.setInvoiceChanges(invoiceChanges);
 
-        message.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        message.setCreatedAt(TypeUtil.temporalToString(Instant.now()));
         message.setEventId(sequenceId);
         message.setSourceNs(SOURCE_NS);
         message.setSourceId(sourceId);
@@ -129,7 +159,6 @@ public class MgEventSinkFlowGenerator {
         message.setData(data);
         return message;
     }
-
 
     private static InvoiceCreated createInvoiceCreate(String sourceId) {
 
@@ -167,17 +196,24 @@ public class MgEventSinkFlowGenerator {
         return invoiceChange;
     }
 
-    private static InvoiceChange createPaymentProcessed() {
-        return createInvoiceChange(InvoicePaymentStatus.processed(new InvoicePaymentProcessed()));
+    private static InvoiceChange createPaymentProcessedChange() {
+        return createInvoiceChangeChangeStatus(InvoicePaymentStatus.processed(new InvoicePaymentProcessed()));
     }
 
     private static InvoiceChange createPaymentPending() {
         return createInvoiceChange(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
     }
 
+    private static InvoiceChange createPaymentPendingStatus() {
+        return createInvoiceChangeChangeStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
+    }
+
     @NotNull
     private static InvoiceChange createInvoiceChange(InvoicePaymentStatus invoicePaymentStatus) {
         InvoicePaymentChangePayload invoicePaymentChangePayload = new InvoicePaymentChangePayload();
+        invoicePaymentChangePayload.setInvoicePaymentStatusChanged(
+                new InvoicePaymentStatusChanged(invoicePaymentStatus)
+        );
         invoicePaymentChangePayload.setInvoicePaymentStarted(
                 new InvoicePaymentStarted()
                         .setPayment(new com.rbkmoney.damsel.domain.InvoicePayment()
@@ -190,7 +226,22 @@ public class MgEventSinkFlowGenerator {
                                 .setId(PAYMENT_ID)
                                 .setStatus(invoicePaymentStatus)
                                 .setPayer(createCustomerPayer())
+                                .setOwnerId(PARTY_ID)
+                                .setShopId(SHOP_ID)
                                 .setFlow(createFlow())));
+        InvoiceChange invoiceChange = new InvoiceChange();
+        invoiceChange.setInvoicePaymentChange(new InvoicePaymentChange()
+                .setId(PAYMENT_ID)
+                .setPayload(invoicePaymentChangePayload));
+        return invoiceChange;
+    }
+
+    @NotNull
+    private static InvoiceChange createInvoiceChangeChangeStatus(InvoicePaymentStatus invoicePaymentStatus) {
+        InvoicePaymentChangePayload invoicePaymentChangePayload = new InvoicePaymentChangePayload();
+        invoicePaymentChangePayload.setInvoicePaymentStatusChanged(
+                new InvoicePaymentStatusChanged(invoicePaymentStatus)
+        );
         InvoiceChange invoiceChange = new InvoiceChange();
         invoiceChange.setInvoicePaymentChange(new InvoicePaymentChange()
                 .setId(PAYMENT_ID)

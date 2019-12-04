@@ -28,7 +28,6 @@ public class InvoicePaymentRefundCreatedHandlerImpl extends InvoicePaymentRefund
         MgRefundRow mgRefundRow = new MgRefundRow();
 
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        String paymentId = invoicePaymentChange.getId();
 
         InvoicePaymentRefundChange invoicePaymentRefundChange = invoicePaymentChange.getPayload()
                 .getInvoicePaymentRefundChange();
@@ -37,13 +36,15 @@ public class InvoicePaymentRefundCreatedHandlerImpl extends InvoicePaymentRefund
 
         InvoicePaymentRefund invoicePaymentRefund = invoicePaymentRefundCreated.getRefund();
 
-        String refundId = invoicePaymentRefund.getId();
+        String refundId = invoicePaymentRefundChange.getId();
 
         MgRefundUtils.initTimeFields(mgRefundRow, invoicePaymentRefund.getCreatedAt());
 
         mgRefundRow.setSequenceId((event.getEvent().getEventId()));
-
+        mgRefundRow.setInvoiceId(event.getEvent().getSourceId());
         mgRefundRow.setRefundId(refundId);
+
+        String paymentId = invoicePaymentChange.getId();
         mgRefundRow.setPaymentId(paymentId);
 
         mgRefundRow.setStatus(TBaseUtil.unionFieldToEnum(invoicePaymentRefund.getStatus(), RefundStatus.class));

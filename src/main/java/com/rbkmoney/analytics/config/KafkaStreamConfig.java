@@ -9,7 +9,9 @@ import com.rbkmoney.analytics.serde.MgRefundRowDeserializer;
 import com.rbkmoney.analytics.serde.MgRefundRowSerde;
 import com.rbkmoney.analytics.stream.aggregate.MgPaymentAggregator;
 import com.rbkmoney.analytics.stream.aggregate.MgRefundAggregator;
+import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.mg.event.sink.EventSinkAggregationStreamFactoryImpl;
+import com.rbkmoney.mg.event.sink.EventStreamFactory;
 import com.rbkmoney.mg.event.sink.MgEventSinkRowMapper;
 import com.rbkmoney.mg.event.sink.converter.SinkEventToEventPayloadConverter;
 import com.rbkmoney.mg.event.sink.handler.MgEventSinkHandlerExecutor;
@@ -21,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.KeyValueMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -125,8 +129,20 @@ public class KafkaStreamConfig {
                 MgPaymentSinkRow::new,
                 mgPaymentAggregator,
                 mgEventSinkRowMgEventSinkRowMapper,
-                mgEventSinkRow -> mgEventSinkRow.getStatus() != null);
+                mgEventSinkRow -> mgEventSinkRow.getStatus() != null,
+                (key, value) -> value.getInvoiceId() + "_" + value.getPaymentId());
     }
+
+//
+//    @Bean
+//    public EventStreamFactory eventSinkAggregationStreamFactory(
+//            MgPaymentAggregator mgPaymentAggregator,
+//            KeyValueMapper<String, SinkEvent, KeyValue<String, List<MgPaymentSinkRow>>> mgEventSinkRowMgEventSinkRowMapper,
+//            MgRefundAggregator mgRefundAggregator,
+//            KeyValueMapper<String, SinkEvent, KeyValue<String, List<MgRefundRow>>> mgRefundRowRowMgEventSinkRowMapper) {
+//        return new JoinedEventSinkAggregationStreamFactoryImpl(initialEventSink, aggregatedSinkTopic, aggregatedSinkTopicRefund,
+//                mgPaymentAggregator, mgRefundAggregator, mgEventSinkRowMgEventSinkRowMapper, mgRefundRowRowMgEventSinkRowMapper);
+//    }
 
     @Bean
     public EventSinkAggregationStreamFactoryImpl<String, MgRefundRow, MgRefundRow> eventSinkRefundAggregationStreamFactory(
@@ -141,7 +157,8 @@ public class KafkaStreamConfig {
                 MgRefundRow::new,
                 mgRefundAggregator,
                 mgRefundRowRowMgEventSinkRowMapper,
-                mgRefundRow -> mgRefundRow.getStatus() != null);
+                mgRefundRow -> mgRefundRow.getStatus() != null,
+                (key, value) -> value.getInvoiceId() + "_" + value.getPaymentId());
     }
 
     @Bean
