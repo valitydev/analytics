@@ -53,7 +53,6 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
     public void stop() {
         if (eventSinkStreams != null && !eventSinkStreams.isEmpty()) {
             eventSinkStreams.forEach(kafkaStreams -> kafkaStreams.close(Duration.ofSeconds(CLOSE_STREAM_TIMEOUT_SECONDS)));
-
         }
     }
 

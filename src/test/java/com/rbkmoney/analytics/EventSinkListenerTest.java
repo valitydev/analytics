@@ -113,15 +113,13 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                 }
         );
 
-        sinkEvents = MgEventSinkFlowGenerator.generateSuccessFlow("sourceID");
-
         // test refund flow
         sinkEvents = MgEventSinkFlowGenerator.generateRefundedFlow("sourceID_refund_1");
         sinkEvents.forEach(this::produceMessageToEventSink);
 
         Thread.sleep(2_000l);
 
-        //check sum for captured payment
+        //check sum for succeeded refund
         sum = jdbcTemplate.queryForObject(
                 "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink_refund " +
@@ -129,7 +127,16 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'succeeded' and currency = 'RUB' AND sum(sign) > 0",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(12L, sum);
+        Assert.assertEquals(24L, sum);
+
+        //check collapsing sum for pending refund
+        List<Map<String, Object>> resultList = jdbcTemplate.queryForList(
+                "SELECT shopId, sum(amount) as sum " +
+                        "from analytic.events_sink_refund " +
+                        "group by shopId, currency, status " +
+                        "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'pending' and currency = 'RUB' AND sum(sign) > 0");
+
+        Assert.assertTrue(resultList.isEmpty());
     }
 
     @AfterClass
