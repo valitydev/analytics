@@ -1,12 +1,10 @@
 package com.rbkmoney.analytics.dao.repository;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
-import com.rbkmoney.analytics.dao.model.Cost;
-import com.rbkmoney.analytics.dao.model.CountModel;
-import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
-import com.rbkmoney.analytics.dao.model.NamingDistribution;
+import com.rbkmoney.analytics.dao.model.*;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
+import com.rbkmoney.damsel.analytics.SplitUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,6 +30,7 @@ public class MgPaymentRepository {
     private final CommonRowsMapper<Cost> costCommonRowsMapper;
     private final CommonRowsMapper<CountModel> countModelCommonRowsMapper;
     private final CommonRowsMapper<NamingDistribution> namingDistributionCommonRowsMapper;
+    private final CommonRowsMapper<SplitCost> splitCostCommonRowsMapper;
 
     public void insertBatch(List<MgPaymentSinkRow> mgPaymentSinkRows) {
         if (mgPaymentSinkRows != null && !mgPaymentSinkRows.isEmpty()) {
@@ -133,6 +132,68 @@ public class MgPaymentRepository {
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
         return countModelCommonRowsMapper.map(rows);
+    }
+
+    public List<SplitCost> getPaymentsSplitAmount(String partyId,
+                                                  List<String> shopIds,
+                                                  Long from,
+                                                  Long to,
+                                                  SplitUnit splitUnit) {
+        String groupBy = initGroupByFunction(splitUnit);
+
+        String selectSql = "SELECT " + groupBy + " as unit , currency, sum(amount * sign) as amount " +
+                "from analytic.events_sink ";
+        String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
+        String groupedSql = " group by partyId, currency, " + groupBy +
+                " having partyId = ? " +
+                " AND sum(sign) > 0";
+
+        String sql = selectSql;
+        List<Object> params = null;
+
+        Date dateFrom = DateFilterUtils.parseDate(from);
+        Date dateTo = DateFilterUtils.parseDate(to);
+        if (!CollectionUtils.isEmpty(shopIds)) {
+            StringBuilder inList = QueryUtils.generateInList(shopIds);
+            sql = sql + whereSql + " AND shopId " + inList + groupedSql;
+            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
+            params.addAll(shopIds);
+            params.add(partyId);
+        } else {
+            sql = sql + whereSql + groupedSql;
+            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        return splitCostCommonRowsMapper.map(rows);
+    }
+
+    private String initGroupByFunction(SplitUnit splitUnit) {
+        String groupBy;
+
+        switch (splitUnit) {
+            case MINUTE:
+                groupBy = "toMinute(toDateTime(eventTime))";
+                break;
+            case DAY:
+                groupBy = "toDay(toDate(eventTime))";
+                break;
+            case HOUR:
+                groupBy = "toHour(toDateTime(eventTime))";
+                break;
+            case WEEK:
+                groupBy = "toWeek(toDate(eventTime))";
+                break;
+            case YEAR:
+                groupBy = "toYear(toDate(eventTime))";
+                break;
+            case MONTH:
+                groupBy = "toMonth(toDate(eventTime))";
+                break;
+            default:
+                throw new RuntimeException();
+        }
+        return groupBy;
     }
 
     public List<NamingDistribution> getPaymentsToolDistribution(String partyId,

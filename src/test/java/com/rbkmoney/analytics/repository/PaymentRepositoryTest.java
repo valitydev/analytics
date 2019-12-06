@@ -4,10 +4,13 @@ import com.rbkmoney.analytics.config.RawMapperConfig;
 import com.rbkmoney.analytics.converter.RawToCostConverter;
 import com.rbkmoney.analytics.converter.RawToCountModelConverter;
 import com.rbkmoney.analytics.converter.RawToNamingDistributionConverter;
+import com.rbkmoney.analytics.converter.RawToSplitCostConverter;
 import com.rbkmoney.analytics.dao.model.Cost;
 import com.rbkmoney.analytics.dao.model.CountModel;
 import com.rbkmoney.analytics.dao.model.NamingDistribution;
+import com.rbkmoney.analytics.dao.model.SplitCost;
 import com.rbkmoney.analytics.dao.repository.MgPaymentRepository;
+import com.rbkmoney.damsel.analytics.SplitUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +25,7 @@ import java.util.Optional;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = PaymentRepositoryTest.Initializer.class,
-        classes = {RawToCostConverter.class, RawToCountModelConverter.class,
+        classes = {RawToCostConverter.class, RawToCountModelConverter.class, RawToSplitCostConverter.class,
                 RawToNamingDistributionConverter.class, RawMapperConfig.class, MgPaymentRepository.class})
 public class PaymentRepositoryTest extends ClickhouseAbstractTest {
 
@@ -45,6 +48,18 @@ public class PaymentRepositoryTest extends ClickhouseAbstractTest {
                 .findFirst()
                 .get();
         Assert.assertEquals(5000L, cost.getAmount().longValue());
+    }
+
+    @Test
+    public void testSplitAmountListPayment() {
+        List<SplitCost> costs = mgPaymentRepository.getPaymentsSplitAmount("ca2e9162-eda2-4d17-bbfa-dc5e39b1772k", null, 1575554400000L, 1575599997697L, SplitUnit.MINUTE);
+
+        Cost cost = costs.stream()
+                .filter(costEntity -> "RUB".equals(costEntity.getCurrency()))
+                .findFirst()
+                .get();
+
+        Assert.assertEquals(3000L, cost.getAmount().longValue());
     }
 
     @Test
@@ -105,7 +120,7 @@ public class PaymentRepositoryTest extends ClickhouseAbstractTest {
 
     @Test
     public void testPaymentErrorDistr() {
-        List<NamingDistribution> errorDistribution = mgPaymentRepository.getPaymentsErrorDistribution("ca2e9162-eda2-4d17-bbfa-dc5e39b1772k", null, 1575554400000L, 1575556887697L);
+        List<NamingDistribution> errorDistribution = mgPaymentRepository.getPaymentsErrorDistribution("ca2e9162-eda2-4d17-bbfa-dc5e39b1772k", null, 1575554400000L, 1575599987697L);
 
         Optional<NamingDistribution> errorResult = errorDistribution.stream()
                 .filter(error -> "card is failed".equals(error.getName()))

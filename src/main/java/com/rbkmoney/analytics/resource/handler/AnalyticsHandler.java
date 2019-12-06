@@ -6,6 +6,7 @@ import com.rbkmoney.analytics.converter.DaoNamingDistributionsToResponse;
 import com.rbkmoney.analytics.dao.model.Cost;
 import com.rbkmoney.analytics.dao.model.CountModel;
 import com.rbkmoney.analytics.dao.model.NamingDistribution;
+import com.rbkmoney.analytics.dao.model.SplitCost;
 import com.rbkmoney.analytics.dao.repository.MgPaymentRepository;
 import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
 import com.rbkmoney.damsel.analytics.*;
@@ -111,6 +112,19 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
 
     @Override
     public SplitAmountResponse getPaymentsSplitAmount(SplitFilterRequest splitFilterRequest) {
+        FilterRequest filterRequest = splitFilterRequest.getFilterRequest();
+        SplitUnit splitUnit = splitFilterRequest.getSplitUnit();
+        MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
+        TimeFilter timeFilter = filterRequest.getTimeFilter();
+
+        List<SplitCost> splitAmount = mgPaymentRepository.getPaymentsSplitAmount(
+                merchantFilter.getPartyId(),
+                merchantFilter.getShopIds(),
+                convertToMillis(timeFilter.getFromTime()),
+                convertToMillis(timeFilter.getToTime()),
+                splitUnit
+        );
+
         return null;
     }
 

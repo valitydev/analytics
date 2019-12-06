@@ -4,6 +4,7 @@ import com.rbkmoney.analytics.config.RawMapperConfig;
 import com.rbkmoney.analytics.converter.RawToCostConverter;
 import com.rbkmoney.analytics.converter.RawToCountModelConverter;
 import com.rbkmoney.analytics.converter.RawToNamingDistributionConverter;
+import com.rbkmoney.analytics.converter.RawToSplitCostConverter;
 import com.rbkmoney.analytics.dao.model.Cost;
 import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,8 @@ import java.util.List;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = RefundRepositoryTest.Initializer.class,
-        classes = {RawToCostConverter.class, RawToCountModelConverter.class, RawToNamingDistributionConverter.class,
-                RawMapperConfig.class, MgRefundRepository.class})
+        classes = {RawToCostConverter.class, RawToCountModelConverter.class, RawToSplitCostConverter.class,
+                RawToNamingDistributionConverter.class, RawMapperConfig.class, MgRefundRepository.class})
 public class RefundRepositoryTest extends ClickhouseAbstractTest {
 
     @Autowired
