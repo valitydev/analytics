@@ -33,10 +33,16 @@
         <machinegun-proto.version>1.12-ebae56f</machinegun-proto.version>
         <geck.version>0.6.7</geck.version>
         <woody.thrift.version>1.1.15</woody.thrift.version>
+        <analytics-proto.version>1.12-3b71837</analytics-proto.version>
     </properties>
 
     <dependencies>
         <!--rbkmoney-->
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>analytics-proto</artifactId>
+            <version>${analytics-proto.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>spring-boot-starter-metrics-statsd</artifactId>

@@ -20,7 +20,7 @@ public class MgRefundAggregatorListener {
 
     @KafkaListener(topics = "${kafka.topic.event.sink.aggregatedRefund}", containerFactory = "kafkaListenerRefundContainerFactory")
     public void listen(List<MgRefundRow> batch) {
-        log.info("MgEventSinkAggregatorListener listen batch.size: {}", batch.size());
+        log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
         List<MgRefundRow> resultRaws = batch.stream()
                 .flatMap(mgEventSinkRow ->
                         flatMapToList(mgEventSinkRow)
