@@ -1,9 +1,12 @@
 package com.rbkmoney.analytics.dao.repository;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
+import com.rbkmoney.analytics.dao.mapper.SplitRowsMapper;
+import com.rbkmoney.analytics.dao.mapper.SplitStatusRowsMapper;
 import com.rbkmoney.analytics.dao.model.*;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
+import com.rbkmoney.analytics.dao.utils.SplitUtils;
 import com.rbkmoney.damsel.analytics.SplitUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +30,11 @@ public class MgPaymentRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final CommonRowsMapper<Cost> costCommonRowsMapper;
-    private final CommonRowsMapper<CountModel> countModelCommonRowsMapper;
+    private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
+    private final CommonRowsMapper<NumberModel> countModelCommonRowsMapper;
     private final CommonRowsMapper<NamingDistribution> namingDistributionCommonRowsMapper;
-    private final CommonRowsMapper<SplitCost> splitCostCommonRowsMapper;
+    private final SplitRowsMapper splitCostCommonRowsMapper;
+    private final SplitStatusRowsMapper splitStatusRowsMapper;
 
     public void insertBatch(List<MgPaymentSinkRow> mgPaymentSinkRows) {
         if (mgPaymentSinkRows != null && !mgPaymentSinkRows.isEmpty()) {
@@ -38,14 +42,14 @@ public class MgPaymentRepository {
         }
     }
 
-    public List<Cost> getAveragePayment(String partyId,
-                                        List<String> shopIds,
-                                        Long from,
-                                        Long to) {
+    public List<NumberModel> getAveragePayment(String partyId,
+                                               List<String> shopIds,
+                                               Long from,
+                                               Long to) {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, sum(amount * sign) / sum(sign) as amount " +
+        String selectSql = "SELECT currency, sum(amount * sign) / sum(sign) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -70,14 +74,14 @@ public class MgPaymentRepository {
         return costCommonRowsMapper.map(rows);
     }
 
-    public List<Cost> getPaymentsAmount(String partyId,
-                                        List<String> shopIds,
-                                        Long from,
-                                        Long to) {
+    public List<NumberModel> getPaymentsAmount(String partyId,
+                                               List<String> shopIds,
+                                               Long from,
+                                               Long to) {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, sum(amount * sign) as amount " +
+        String selectSql = "SELECT currency, sum(amount * sign) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -102,14 +106,14 @@ public class MgPaymentRepository {
         return costCommonRowsMapper.map(rows);
     }
 
-    public List<CountModel> getPaymentsCount(String partyId,
-                                             List<String> shopIds,
-                                             Long from,
-                                             Long to) {
+    public List<NumberModel> getPaymentsCount(String partyId,
+                                              List<String> shopIds,
+                                              Long from,
+                                              Long to) {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, sum(sign) as count " +
+        String selectSql = "SELECT currency, sum(sign) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -134,14 +138,14 @@ public class MgPaymentRepository {
         return countModelCommonRowsMapper.map(rows);
     }
 
-    public List<SplitCost> getPaymentsSplitAmount(String partyId,
-                                                  List<String> shopIds,
-                                                  Long from,
-                                                  Long to,
-                                                  SplitUnit splitUnit) {
-        String groupBy = initGroupByFunction(splitUnit);
+    public List<SplitNumberModel> getPaymentsSplitAmount(String partyId,
+                                                         List<String> shopIds,
+                                                         Long from,
+                                                         Long to,
+                                                         SplitUnit splitUnit) {
+        String groupBy = SplitUtils.initGroupByFunction(splitUnit);
 
-        String selectSql = "SELECT " + groupBy + " as unit , currency, sum(amount * sign) as amount " +
+        String selectSql = "SELECT " + groupBy + " , currency, sum(amount * sign) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency, " + groupBy +
@@ -165,35 +169,41 @@ public class MgPaymentRepository {
         }
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
-        return splitCostCommonRowsMapper.map(rows);
+        return splitCostCommonRowsMapper.map(rows, splitUnit);
     }
 
-    private String initGroupByFunction(SplitUnit splitUnit) {
-        String groupBy;
+    public List<SplitStatusNumberModel> getPaymentsSplitCount(String partyId,
+                                                  List<String> shopIds,
+                                                  Long from,
+                                                  Long to,
+                                                  SplitUnit splitUnit) {
+        String groupBy = SplitUtils.initGroupByFunction(splitUnit);
 
-        switch (splitUnit) {
-            case MINUTE:
-                groupBy = "toMinute(toDateTime(eventTime))";
-                break;
-            case DAY:
-                groupBy = "toDay(toDate(eventTime))";
-                break;
-            case HOUR:
-                groupBy = "toHour(toDateTime(eventTime))";
-                break;
-            case WEEK:
-                groupBy = "toWeek(toDate(eventTime))";
-                break;
-            case YEAR:
-                groupBy = "toYear(toDate(eventTime))";
-                break;
-            case MONTH:
-                groupBy = "toMonth(toDate(eventTime))";
-                break;
-            default:
-                throw new RuntimeException();
+        String selectSql = "SELECT " + groupBy + " , status, currency, count(sign) as num " +
+                "from analytic.events_sink ";
+        String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
+        String groupedSql = " group by partyId, currency, status, " + groupBy +
+                " having partyId = ? " +
+                " AND sum(sign) > 0";
+
+        String sql = selectSql;
+        List<Object> params = null;
+
+        Date dateFrom = DateFilterUtils.parseDate(from);
+        Date dateTo = DateFilterUtils.parseDate(to);
+        if (!CollectionUtils.isEmpty(shopIds)) {
+            StringBuilder inList = QueryUtils.generateInList(shopIds);
+            sql = sql + whereSql + " AND shopId " + inList + groupedSql;
+            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
+            params.addAll(shopIds);
+            params.add(partyId);
+        } else {
+            sql = sql + whereSql + groupedSql;
+            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
-        return groupBy;
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        return splitStatusRowsMapper.map(rows, splitUnit);
     }
 
     public List<NamingDistribution> getPaymentsToolDistribution(String partyId,
@@ -226,14 +236,12 @@ public class MgPaymentRepository {
                 "having sum(sign) > 0";
 
         if (!CollectionUtils.isEmpty(shopIds)) {
-
             StringBuilder inList = QueryUtils.generateInList(shopIds);
             sql = String.format(sql, SHOP_ID, inList.toString(), name);
 
             List<Object> list = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
             list.addAll(shopIds);
             list.addAll(list);
-
             params = list.toArray();
         } else {
             sql = String.format(sql, PARTY_ID, " = ? ", name);
@@ -241,7 +249,6 @@ public class MgPaymentRepository {
         }
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
-
         return namingDistributionCommonRowsMapper.map(rows);
     }
 

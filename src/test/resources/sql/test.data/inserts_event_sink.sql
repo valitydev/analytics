@@ -41,4 +41,8 @@ INSERT INTO analytic.events_sink VALUES('2019-12-05', 1575556887697,157555440000
 
 ('2019-12-05', 1575556887697,1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772k','ad8b7bfd-0760-4781-a400-51903ee8e504', 'test@example.com', 1000, 'RUB', 'RSB','pending', '','1DkratTHbpc', '1',25,'204.26.61.110', '546960', '3125', 'payment_terminal', 1),
 ('2019-12-05', 1575556887697,1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772k','ad8b7bfd-0760-4781-a400-51903ee8e504', 'test@example.com', 1000, 'RUB', 'RSB','pending', '','1DkratTHbpc', '1',25,'204.26.61.110', '546960', '3125', 'payment_terminal', -1),
-('2019-12-05', 1575556887697,1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772k','ad8b7bfd-0760-4781-a400-51903ee8e504', 'test@example.com', 1000, 'RUB', 'RSB','failed', 'bad req','1DkratTHbpc', '1',26,'204.26.61.110', '546960', '3125', 'payment_terminal', 1);
+('2019-12-05', 1575556887697,1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772k','ad8b7bfd-0760-4781-a400-51903ee8e504', 'test@example.com', 1000, 'RUB', 'RSB','failed', 'bad req','1DkratTHbpc', '1',26,'204.26.61.110', '546960', '3125', 'payment_terminal', 1),
+
+('2019-12-05', 1575556887697,1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772d','ad8b7bfd-0760-4781-a400-51903ee8e509', 'test@example.com', 1000, 'RUB', 'RSB','captured', '','1DkratTHbpc', '1',27,'204.26.61.110', '546960', '3125', 'payment_terminal', 1),
+('2019-12-06', 1575579600697,1575579600000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772d','ad8b7bfd-0760-4781-a400-51903ee8e509', 'test@example.com', 1000, 'RUB', 'RSB','captured', '','1DkratTHbpc', '1',28,'204.26.61.110', '546960', '3125', 'payment_terminal', 1),
+('2019-12-07', 1575666000697,1575666000000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772d','ad8b7bfd-0760-4781-a400-51903ee8e509', 'test@example.com', 1000, 'RUB', 'RSB','captured', '','1DkratTHbpc', '1',29,'204.26.61.110', '546960', '3125', 'payment_terminal', 1);

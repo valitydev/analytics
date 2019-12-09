@@ -4,6 +4,7 @@ import com.rbkmoney.analytics.constant.ClickhouseUtilsValue;
 import com.rbkmoney.analytics.constant.PaymentStatus;
 import com.rbkmoney.analytics.constant.PaymentToolType;
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
+import com.rbkmoney.analytics.utils.TimeUtils;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
@@ -43,7 +44,7 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
                         .toLocalDate())
         );
         mgPaymentSinkRow.setEventTime(timestamp);
-        long eventTimeHour = Instant.ofEpochMilli(timestamp).truncatedTo(ChronoUnit.HOURS).toEpochMilli();
+        long eventTimeHour = TimeUtils.parseEventTimeHour(timestamp);
         mgPaymentSinkRow.setEventTimeHour(eventTimeHour);
 
         Cash cost = payment.getCost();

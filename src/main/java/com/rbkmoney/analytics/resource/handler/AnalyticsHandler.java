@@ -1,12 +1,10 @@
 package com.rbkmoney.analytics.resource.handler;
 
-import com.rbkmoney.analytics.converter.CostToAmountResponse;
-import com.rbkmoney.analytics.converter.CountModelCountResponseConverter;
-import com.rbkmoney.analytics.converter.DaoNamingDistributionsToResponse;
-import com.rbkmoney.analytics.dao.model.Cost;
-import com.rbkmoney.analytics.dao.model.CountModel;
+import com.rbkmoney.analytics.converter.*;
 import com.rbkmoney.analytics.dao.model.NamingDistribution;
-import com.rbkmoney.analytics.dao.model.SplitCost;
+import com.rbkmoney.analytics.dao.model.NumberModel;
+import com.rbkmoney.analytics.dao.model.SplitNumberModel;
+import com.rbkmoney.analytics.dao.model.SplitStatusNumberModel;
 import com.rbkmoney.analytics.dao.repository.MgPaymentRepository;
 import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
 import com.rbkmoney.damsel.analytics.*;
@@ -17,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,8 +26,10 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
     private final MgRefundRepository mgRefundRepository;
 
     private final DaoNamingDistributionsToResponse convertPaymentToolsToResponse;
+    private final DaoErrorDistributionsToResponse daoErrorDistributionsToResponse;
     private final CostToAmountResponse costToAmountResponseConverter;
     private final CountModelCountResponseConverter countModelCountResponseConverter;
+    private final GroupedCurAmountToResponseConverter groupedCurAmountToResponseConverter;
 
     @Override
     public PaymentToolDistributionResponse getPaymentsToolDistribution(FilterRequest filterRequest) {
@@ -54,7 +56,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
         MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
         TimeFilter timeFilter = filterRequest.getTimeFilter();
 
-        List<Cost> paymentsToolDistribution = mgPaymentRepository.getPaymentsAmount(
+        List<NumberModel> paymentsToolDistribution = mgPaymentRepository.getPaymentsAmount(
                 merchantFilter.getPartyId(),
                 merchantFilter.getShopIds(),
                 convertToMillis(timeFilter.getFromTime()),
@@ -69,7 +71,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
         MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
         TimeFilter timeFilter = filterRequest.getTimeFilter();
 
-        List<Cost> paymentsToolDistribution = mgPaymentRepository.getAveragePayment(
+        List<NumberModel> paymentsToolDistribution = mgPaymentRepository.getAveragePayment(
                 merchantFilter.getPartyId(),
                 merchantFilter.getShopIds(),
                 convertToMillis(timeFilter.getFromTime()),
@@ -84,7 +86,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
         MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
         TimeFilter timeFilter = filterRequest.getTimeFilter();
 
-        List<CountModel> paymentsToolDistribution = mgPaymentRepository.getPaymentsCount(
+        List<NumberModel> paymentsToolDistribution = mgPaymentRepository.getPaymentsCount(
                 merchantFilter.getPartyId(),
                 merchantFilter.getShopIds(),
                 convertToMillis(timeFilter.getFromTime()),
@@ -106,8 +108,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
                 convertToMillis(timeFilter.getToTime())
         );
 
-        return null;
-//        return convertPaymentToolsToResponse.convert(paymentsToolDistribution);
+        return daoErrorDistributionsToResponse.convert(namingDistributions);
     }
 
     @Override
@@ -117,7 +118,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
         MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
         TimeFilter timeFilter = filterRequest.getTimeFilter();
 
-        List<SplitCost> splitAmount = mgPaymentRepository.getPaymentsSplitAmount(
+        List<SplitNumberModel> splitAmount = mgPaymentRepository.getPaymentsSplitAmount(
                 merchantFilter.getPartyId(),
                 merchantFilter.getShopIds(),
                 convertToMillis(timeFilter.getFromTime()),
@@ -125,11 +126,27 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
                 splitUnit
         );
 
-        return null;
+        return groupedCurAmountToResponseConverter.convert(splitAmount);
     }
+
 
     @Override
     public SplitCountResponse getPaymentsSplitCount(SplitFilterRequest splitFilterRequest) {
+        FilterRequest filterRequest = splitFilterRequest.getFilterRequest();
+        SplitUnit splitUnit = splitFilterRequest.getSplitUnit();
+        MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
+        TimeFilter timeFilter = filterRequest.getTimeFilter();
+
+        List<SplitStatusNumberModel> splitAmount = mgPaymentRepository.getPaymentsSplitCount(
+                merchantFilter.getPartyId(),
+                merchantFilter.getShopIds(),
+                convertToMillis(timeFilter.getFromTime()),
+                convertToMillis(timeFilter.getToTime()),
+                splitUnit
+        );
+
+//        return groupedCurAmountToResponseConverter.convert(splitAmount);
+
         return null;
     }
 
@@ -138,7 +155,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
         MerchantFilter merchantFilter = filterRequest.getMerchantFilter();
         TimeFilter timeFilter = filterRequest.getTimeFilter();
 
-        List<Cost> paymentsToolDistribution = mgRefundRepository.getPaymentsAmount(
+        List<NumberModel> paymentsToolDistribution = mgRefundRepository.getPaymentsAmount(
                 merchantFilter.getPartyId(),
                 merchantFilter.getShopIds(),
                 convertToMillis(timeFilter.getFromTime()),

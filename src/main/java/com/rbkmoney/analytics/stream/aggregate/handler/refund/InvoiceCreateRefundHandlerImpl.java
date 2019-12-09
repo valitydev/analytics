@@ -35,6 +35,11 @@ public class InvoiceCreateRefundHandlerImpl extends InvoicePaymentStartedHandler
 
         mgRefundRow.setSequenceId((event.getEvent().getEventId()));
 
+        if (payment.isSetCost()) {
+            mgRefundRow.setAmount(payment.getCost().getAmount());
+            mgRefundRow.setCurrency(payment.getCost().getCurrency().getSymbolicCode());
+        }
+
         return mgRefundRow;
     }
 

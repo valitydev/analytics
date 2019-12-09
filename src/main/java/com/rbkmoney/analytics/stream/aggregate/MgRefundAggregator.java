@@ -39,8 +39,10 @@ public class MgRefundAggregator implements Aggregator<String, MgRefundRow, MgRef
         aggregate.setPartyId(changeIfNotNull(aggregate.getPartyId(), value.getPartyId()));
         aggregate.setShopId(changeIfNotNull(aggregate.getShopId(), value.getShopId()));
         aggregate.setErrorCode(changeIfNotNull(aggregate.getErrorCode(), value.getErrorCode()));
-        aggregate.setCurrency(changeIfNotNull(aggregate.getCurrency(), value.getCurrency()));
-        aggregate.setAmount(changeIfNotNull(aggregate.getAmount(), value.getAmount()));
+
+        aggregate.setCurrency(changeValueNotNull(aggregate.getCurrency(), value.getCurrency()));
+        aggregate.setAmount(changeValueNotNull(aggregate.getAmount(), value.getAmount()));
+
         aggregate.setTimestamp(changeIfNotNull(aggregate.getTimestamp(), value.getTimestamp()));
         aggregate.setEventTime(changeIfNotNull(aggregate.getEventTime(), value.getEventTime()));
         aggregate.setEventTimeHour(changeIfNotNull(aggregate.getEventTimeHour(), value.getEventTimeHour()));
@@ -57,6 +59,10 @@ public class MgRefundAggregator implements Aggregator<String, MgRefundRow, MgRef
 
     private <T> T changeIfNotNull(T value, T newValue) {
         return value == null ? newValue : value;
+    }
+
+    private <T> T changeValueNotNull(T value, T newValue) {
+        return newValue != null ? newValue : value;
     }
 
 }

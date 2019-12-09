@@ -1,7 +1,7 @@
 package com.rbkmoney.analytics.dao.repository;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
-import com.rbkmoney.analytics.dao.model.Cost;
+import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class MgRefundRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final CommonRowsMapper<Cost> costCommonRowsMapper;
+    private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
 
     public void insertBatch(List<MgRefundRow> mgRefundRows) {
         if (mgRefundRows != null && !mgRefundRows.isEmpty()) {
@@ -31,10 +31,10 @@ public class MgRefundRepository {
         }
     }
 
-    public List<Cost> getPaymentsAmount(String partyId,
-                                        List<String> shopIds,
-                                        Long from,
-                                        Long to) {
+    public List<NumberModel> getPaymentsAmount(String partyId,
+                                               List<String> shopIds,
+                                               Long from,
+                                               Long to) {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 

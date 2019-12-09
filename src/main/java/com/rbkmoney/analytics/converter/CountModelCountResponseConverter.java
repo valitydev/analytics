@@ -1,6 +1,6 @@
 package com.rbkmoney.analytics.converter;
 
-import com.rbkmoney.analytics.dao.model.CountModel;
+import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.damsel.analytics.CountResponse;
 import com.rbkmoney.damsel.analytics.CurrecyGroupCount;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,10 @@ import static java.util.stream.Collectors.toList;
 @Service
 public class CountModelCountResponseConverter {
 
-    public CountResponse convert(List<CountModel> countModels) {
+    public CountResponse convert(List<NumberModel> countModels) {
         List<CurrecyGroupCount> collect = countModels.stream()
                 .map(cost -> new CurrecyGroupCount()
-                        .setCount(cost.getCount())
+                        .setCount(cost.getNumber())
                         .setCurrency(cost.getCurrency())
                 ).collect(toList());
 
