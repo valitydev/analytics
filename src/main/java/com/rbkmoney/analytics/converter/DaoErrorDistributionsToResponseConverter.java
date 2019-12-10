@@ -10,7 +10,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class DaoErrorDistributionsToResponse {
+public class DaoErrorDistributionsToResponseConverter {
 
     public ErrorDistributionsResponse convert(List<com.rbkmoney.analytics.dao.model.NamingDistribution> namingDistributions) {
         List<NamingDistribution> collect = namingDistributions.stream()

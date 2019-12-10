@@ -9,7 +9,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class DaoNamingDistributionsToResponse {
+public class DaoNamingDistributionsToResponseConverter {
 
     public PaymentToolDistributionResponse convert(List<com.rbkmoney.analytics.dao.model.NamingDistribution> namingDistributions) {
         List<NamingDistribution> collect = namingDistributions.stream()

@@ -10,7 +10,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class CostToAmountResponse {
+public class CostToAmountResponseConverter {
 
     public AmountResponse convert(List<NumberModel> numberModels) {
         List<CurrencyGroupedAmount> collect = numberModels.stream()

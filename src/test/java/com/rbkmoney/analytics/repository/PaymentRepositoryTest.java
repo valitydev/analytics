@@ -156,10 +156,10 @@ public class PaymentRepositoryTest extends ClickhouseAbstractTest {
         );
 
         toolDistribution = mgPaymentRepository.getPaymentsToolDistribution("ca2e9162-eda2-4d17-bbfa-dc5e39b1772a",
-                List.of("ad8b7bfd-0760-4781-a400-51903ee8e502", "ad8b7bfd-0760-4781-a400-51903ee8e503"), 1575554400000L, 1575556887697L);
+                List.of("ad8b7bfd-0760-4781-a400-51903ee8e502"), 1575554400000L, 1575556887697L);
 
         toolDistribution.forEach(paymentToolDistribution ->
-                Assert.assertEquals(50, paymentToolDistribution.getPercent().intValue())
+                Assert.assertEquals(100, paymentToolDistribution.getPercent().intValue())
         );
     }
 

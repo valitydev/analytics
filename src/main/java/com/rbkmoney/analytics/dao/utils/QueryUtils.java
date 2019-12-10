@@ -14,7 +14,9 @@ public class QueryUtils {
                 inList.append(",?");
             }
         }
-        inList.append(") ");
+        if (inList != null) {
+            inList.append(") ");
+        }
         return inList;
     }
 

@@ -27,6 +27,8 @@ public class MgPaymentRepository {
 
     public static final String SHOP_ID = "shopId";
     public static final String PARTY_ID = "partyId";
+    public static final String PAYMENT_TOOL = "paymentTool";
+    public static final String ERROR_REASON = "errorReason";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -206,43 +208,43 @@ public class MgPaymentRepository {
         return splitStatusRowsMapper.map(rows, splitUnit);
     }
 
-    public List<NamingDistribution> getPaymentsToolDistribution(String partyId,
-                                                                List<String> shopIds,
-                                                                Long from,
-                                                                Long to) {
-        return queryNamingDistributions(partyId, shopIds, from, to, "paymentTool");
+    public List<NamingDistribution> getPaymentsToolDistribution(String partyId, List<String> shopIds, Long from, Long to) {
+        String sql = "SELECT %1$s, %3$s as naming_result," +
+                "(SELECT sum(sign) from analytic.events_sink " +
+                "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
+                "group by partyId " +
+                "having sum(sign) > 0) as total_count, sum(sign) * 100 / total_count as percent " +
+                "from analytic.events_sink " +
+                "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
+                "group by %1$s, %3$s " +
+                "having sum(sign) > 0";
+        return queryNamingDistributions(sql, partyId, shopIds, from, to, PAYMENT_TOOL);
     }
 
-    public List<NamingDistribution> getPaymentsErrorDistribution(String partyId,
-                                                                 List<String> shopIds,
-                                                                 Long from,
-                                                                 Long to) {
-        return queryNamingDistributions(partyId, shopIds, from, to, "errorReason");
+    public List<NamingDistribution> getPaymentsErrorDistribution(String partyId, List<String> shopIds, Long from, Long to) {
+        String sql = "SELECT %1$s, %3$s as naming_result," +
+                "(SELECT sum(sign) from analytic.events_sink " +
+                "where status='failed' and timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
+                "group by partyId " +
+                "having sum(sign) > 0) as total_count, sum(sign) * 100 / total_count as percent " +
+                "from analytic.events_sink " +
+                "where status='failed' and timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
+                "group by %1$s, %3$s " +
+                "having sum(sign) > 0";
+        return queryNamingDistributions(sql, partyId, shopIds, from, to, ERROR_REASON);
     }
 
-    private List<NamingDistribution> queryNamingDistributions(String partyId, List<String> shopIds, Long from, Long to, String name) {
+    private List<NamingDistribution> queryNamingDistributions(String sql, String partyId, List<String> shopIds, Long from, Long to, String name) {
         Object[] params = null;
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String sql = "SELECT %1$s, %3$s as naming_result," +
-                "(SELECT sum(sign) from analytic.events_sink " +
-                "where status='failed' AND timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
-                "group by partyId " +
-                "having sum(sign) > 0) as total_count, sum(sign) * 100 / total_count as percent " +
-                "from analytic.events_sink " +
-                "where status='failed' AND timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ? AND %1$s %2$s " +
-                "group by %1$s, %3$s " +
-                "having sum(sign) > 0";
-
         if (!CollectionUtils.isEmpty(shopIds)) {
             StringBuilder inList = QueryUtils.generateInList(shopIds);
             sql = String.format(sql, SHOP_ID, inList.toString(), name);
-
-            List<Object> list = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
-            list.addAll(shopIds);
-            list.addAll(list);
-            params = list.toArray();
+            List<Object> listParams = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
+            listParams.addAll(shopIds);
+            params = doubleList(listParams).toArray();
         } else {
             sql = String.format(sql, PARTY_ID, " = ? ", name);
             params = new Object[]{dateFrom, dateTo, from, to, from, to, partyId, dateFrom, dateTo, from, to, from, to, partyId};
@@ -250,6 +252,13 @@ public class MgPaymentRepository {
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
         return namingDistributionCommonRowsMapper.map(rows);
+    }
+
+    private ArrayList<Object> doubleList(List<Object> listParams) {
+        ArrayList<Object> resultList = new ArrayList<>();
+        resultList.addAll(listParams);
+        resultList.addAll(listParams);
+        return resultList;
     }
 
 }

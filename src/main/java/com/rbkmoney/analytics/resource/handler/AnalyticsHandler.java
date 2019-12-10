@@ -23,9 +23,9 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
     private final MgPaymentRepository mgPaymentRepository;
     private final MgRefundRepository mgRefundRepository;
 
-    private final DaoNamingDistributionsToResponse convertPaymentToolsToResponse;
-    private final DaoErrorDistributionsToResponse daoErrorDistributionsToResponse;
-    private final CostToAmountResponse costToAmountResponseConverter;
+    private final DaoNamingDistributionsToResponseConverter convertPaymentToolsToResponse;
+    private final DaoErrorDistributionsToResponseConverter daoErrorDistributionsToResponse;
+    private final CostToAmountResponseConverter costToAmountResponseConverter;
     private final CountModelCountResponseConverter countModelCountResponseConverter;
     private final GroupedCurAmountToResponseConverter groupedCurAmountToResponseConverter;
     private final GroupedCurCountToResponseConverter groupedCurCountToResponseConverter;
