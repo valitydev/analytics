@@ -29,7 +29,8 @@ public class GroupedCurAmountToResponseConverter {
                 )
                 .collect(Collectors.toList());
 
-        return new SplitAmountResponse().setGroupedCurrencyAmounts(groupedCurrencyOffsetAmounts);
+        return new SplitAmountResponse()
+                .setGroupedCurrencyAmounts(groupedCurrencyOffsetAmounts);
     }
 
 }

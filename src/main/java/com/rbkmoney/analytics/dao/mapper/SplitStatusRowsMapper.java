@@ -19,7 +19,7 @@ public class SplitStatusRowsMapper {
     private final RawToSplitStatusConverter converter;
 
     public List<SplitStatusNumberModel> map(List<Map<String, Object>> rows, SplitUnit splitUnit) {
-        ArrayList<SplitStatusNumberModel> resultList = new ArrayList<>();
+        List<SplitStatusNumberModel> resultList = new ArrayList<>();
         for (Map row : rows) {
             SplitStatusNumberModel convert = converter.convert(row, splitUnit);
             resultList.add(convert);

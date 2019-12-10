@@ -15,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +28,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
     private final CostToAmountResponse costToAmountResponseConverter;
     private final CountModelCountResponseConverter countModelCountResponseConverter;
     private final GroupedCurAmountToResponseConverter groupedCurAmountToResponseConverter;
+    private final GroupedCurCountToResponseConverter groupedCurCountToResponseConverter;
 
     @Override
     public PaymentToolDistributionResponse getPaymentsToolDistribution(FilterRequest filterRequest) {
@@ -145,9 +144,7 @@ public class AnalyticsHandler implements AnalyticsServiceSrv.Iface {
                 splitUnit
         );
 
-//        return groupedCurAmountToResponseConverter.convert(splitAmount);
-
-        return null;
+        return groupedCurCountToResponseConverter.convert(splitAmount);
     }
 
     @Override
