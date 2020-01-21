@@ -129,17 +129,6 @@ public class KafkaStreamConfig {
                 (key, value) -> value.getInvoiceId() + "_" + value.getPaymentId());
     }
 
-//
-//    @Bean
-//    public EventStreamFactory eventSinkAggregationStreamFactory(
-//            MgPaymentAggregator mgPaymentAggregator,
-//            KeyValueMapper<String, SinkEvent, KeyValue<String, List<MgPaymentSinkRow>>> mgEventSinkRowMgEventSinkRowMapper,
-//            MgRefundAggregator mgRefundAggregator,
-//            KeyValueMapper<String, SinkEvent, KeyValue<String, List<MgRefundRow>>> mgRefundRowRowMgEventSinkRowMapper) {
-//        return new JoinedEventSinkAggregationStreamFactoryImpl(initialEventSink, aggregatedSinkTopic, aggregatedSinkTopicRefund,
-//                mgPaymentAggregator, mgRefundAggregator, mgEventSinkRowMgEventSinkRowMapper, mgRefundRowRowMgEventSinkRowMapper);
-//    }
-
     @Bean
     public EventSinkAggregationStreamFactoryImpl<String, MgRefundRow, MgRefundRow> eventSinkRefundAggregationStreamFactory(
             MgRefundAggregator mgRefundAggregator,
