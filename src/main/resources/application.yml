@@ -20,3 +20,33 @@ spring:
 info:
   version: @project.version@
   stage: dev
+
+clickhouse.db:
+  url: "jdbc:clickhouse://localhost:8123/default"
+  user: "user"
+  password: "password"
+  connection.timeout: 50000
+  compress: false
+
+kafka:
+  max:
+    retry.attempts: 3
+    poll.records: 100
+  topic:
+    event.sink:
+      initial: event_sink
+      aggregated: aggregated_event_sink
+      aggregatedRefund: aggregated_event_sink_refund
+  consumer:
+      prefix: analytics
+  ssl:
+    enable: false
+    clientStoreCertPath: src/main/resources/cert/kenny-k.struzhkin.p12
+    keyStorePassword: kenny
+    keyPassword: kenny
+    serverStorePassword: kenny12
+    serverStoreCertPath: src/main/resources/cert/truststore.p12
+  state:
+    dir: tmp/state-store/
+  stream.event.sink:
+    enable: true
