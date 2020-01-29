@@ -23,7 +23,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     public static final long CLOSE_STREAM_TIMEOUT_SECONDS = 10L;
 
-    @Value("${kafka.stream.event.sink.enable}")
+    @Value("${kafka.streams.event.sink.enable}")
     private boolean enableEventSinkStream;
 
     private final Properties eventSinkPaymentStreamProperties;

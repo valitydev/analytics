@@ -29,6 +29,10 @@ clickhouse.db:
   compress: false
 
 kafka:
+  streams:
+    event.sink.enable: true
+    replication-factor: 1
+    concurrency: 7
   max:
     retry.attempts: 3
     poll.records: 100
@@ -39,6 +43,7 @@ kafka:
       aggregatedRefund: aggregated_event_sink_refund
   consumer:
       prefix: analytics
+      concurrency: 7
   ssl:
     enable: false
     clientStoreCertPath: src/main/resources/cert/kenny-k.struzhkin.p12
@@ -48,5 +53,4 @@ kafka:
     serverStoreCertPath: src/main/resources/cert/truststore.p12
   state:
     dir: tmp/state-store/
-  stream.event.sink:
-    enable: true
+  block.cache.size: 10
