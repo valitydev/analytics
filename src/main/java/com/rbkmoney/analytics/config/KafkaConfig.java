@@ -19,6 +19,7 @@ import com.rbkmoney.mg.event.sink.service.ConsumerGroupIdService;
 import com.rbkmoney.mg.event.sink.utils.SslKafkaUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.streams.StreamsConfig;
@@ -36,7 +37,7 @@ import java.util.Properties;
 
 @Configuration
 @RequiredArgsConstructor
-public class KafkaStreamConfig {
+public class KafkaConfig {
 
     public static final String EVENT_SINK_CLIENT_ANALYTICS = "event-sink-client-analytics";
     public static final String EVENT_SINK_CLIENT_ANALYTICS_REFUND = "event-sink-client-analytics-refund";
@@ -45,29 +46,31 @@ public class KafkaStreamConfig {
     private static final String RESULT_ANALYTICS_REFUND = "result-analytics-refund";
     private static final String EARLIEST = "earliest";
     public static final String MG_EVENT_SINK_PAYMENT = "mg-event-sink-payment";
-    public static final String MG_EVENT_SINK_PAYMENT_REFUND = "mg-event-sink-paymentrefund";
+    public static final String MG_EVENT_SINK_PAYMENT_REFUND = "mg-event-sink-payment-refund";
 
     @Value("${kafka.state.cache.size:10}")
     private int cacheSizeStateStoreMb;
-
     @Value("${kafka.max.poll.records}")
     private String maxPollRecords;
-
     @Value("${kafka.state.dir}")
     private String stateDir;
-
     @Value("${kafka.bootstrap.servers}")
     private String bootstrapServers;
 
     @Value("${kafka.topic.event.sink.initial}")
     private String initialEventSink;
-
     @Value("${kafka.topic.event.sink.aggregated}")
     private String aggregatedSinkTopic;
-
-
     @Value("${kafka.topic.event.sink.aggregatedRefund}")
     private String aggregatedSinkTopicRefund;
+
+    @Value("${kafka.streams.replication-factor}")
+    private int replicationFactor;
+    @Value("${kafka.streams.concurrency}")
+    private int concurrencyStream;
+
+    @Value("${kafka.consumer.concurrency}")
+    private int concurrencyListeners;
 
     private final ConsumerGroupIdService consumerGroupIdService;
     private final List<EventHandler<MgPaymentSinkRow>> eventHandlers;
@@ -98,6 +101,10 @@ public class KafkaStreamConfig {
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, cacheSizeStateStoreMb * 1024 * 1024L);
         props.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
+        props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, replicationFactor);
+        props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, replicationFactor - 1);
+        props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, concurrencyStream);
+        props.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, RocksDBConfig.class);
         props.putAll(createSslConfig());
         return props;
     }
@@ -172,25 +179,26 @@ public class KafkaStreamConfig {
     public ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, MgPaymentSinkRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS);
+        initDefaultListenerProperties(factory, consumerGroup, new MgPaymentRowDeserializer());
+        return factory;
+    }
+
+    private <T> void initDefaultListenerProperties(ConcurrentKafkaListenerContainerFactory<String, T> factory,
+                                                   String consumerGroup, Deserializer<T> deserializer) {
         final Map<String, Object> props = createDefaultProperties(consumerGroup);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-        DefaultKafkaConsumerFactory<String, MgPaymentSinkRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
-                new StringDeserializer(), new MgPaymentRowDeserializer());
+        DefaultKafkaConsumerFactory<String, T> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                new StringDeserializer(), deserializer);
         factory.setConsumerFactory(consumerFactory);
+        factory.setConcurrency(concurrencyListeners);
         factory.setBatchListener(true);
-        return factory;
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, MgRefundRow> kafkaListenerRefundContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, MgRefundRow> factory = new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS_REFUND);
-        final Map<String, Object> props = createDefaultProperties(consumerGroup);
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-        DefaultKafkaConsumerFactory<String, MgRefundRow> consumerFactory = new DefaultKafkaConsumerFactory<>(props,
-                new StringDeserializer(), new MgRefundRowDeserializer());
-        factory.setConsumerFactory(consumerFactory);
-        factory.setBatchListener(true);
+        initDefaultListenerProperties(factory, consumerGroup, new MgRefundRowDeserializer());
         return factory;
     }
 
