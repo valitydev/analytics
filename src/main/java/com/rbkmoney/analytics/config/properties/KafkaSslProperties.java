@@ -3,23 +3,22 @@ package com.rbkmoney.analytics.config.properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@Configuration
-@ConfigurationProperties("kafka.ssl")
-@Validated
-@EnableConfigurationProperties
+@Component
+@ConfigurationProperties(prefix = "kafka.ssl")
 public class KafkaSslProperties {
 
-    private String serverStorePassword;
-    private String serverStoreCertPath;
+    private boolean enabled;
+
+    private String keyStoreType;
+    private String keyStoreLocation;
     private String keyStorePassword;
     private String keyPassword;
-    private String clientStoreCertPath;
-    private boolean kafkaSslEnable;
 
+    private String trustStoreType;
+    private String trustStoreLocation;
+    private String trustStorePassword;
 }

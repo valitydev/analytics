@@ -111,10 +111,10 @@ public class KafkaConfig {
 
     private Map<String, Object> createSslConfig() {
         return SslKafkaUtils.sslConfigure(
-                kafkaSslProperties.isKafkaSslEnable(),
-                kafkaSslProperties.getServerStoreCertPath(),
-                kafkaSslProperties.getServerStorePassword(),
-                kafkaSslProperties.getClientStoreCertPath(),
+                kafkaSslProperties.isEnabled(),
+                kafkaSslProperties.getTrustStoreLocation(),
+                kafkaSslProperties.getTrustStorePassword(),
+                kafkaSslProperties.getKeyStoreLocation(),
                 kafkaSslProperties.getKeyStorePassword(),
                 kafkaSslProperties.getKeyPassword());
     }

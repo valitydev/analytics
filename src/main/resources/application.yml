@@ -47,11 +47,6 @@ kafka:
       concurrency: 7
   ssl:
     enable: false
-    clientStoreCertPath: src/main/resources/cert/kenny-k.struzhkin.p12
-    keyStorePassword: kenny
-    keyPassword: kenny
-    serverStorePassword: kenny12
-    serverStoreCertPath: src/main/resources/cert/truststore.p12
   state:
     dir: tmp/state-store/
   block.cache.size: 10
