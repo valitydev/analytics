@@ -24,7 +24,7 @@ public class AnalyticsApplication extends SpringApplication {
 
     @PreDestroy
     public void preDestroy() {
-        log.info("FraudBustersApplication preDestroy!");
+        log.info("AnalyticsApplication preDestroy!");
         startupListener.stop();
     }
 }
