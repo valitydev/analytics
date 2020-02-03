@@ -14,13 +14,13 @@ public class AnalyticsServlet extends GenericServlet {
 
     private Servlet thriftServlet;
 
-    private final AnalyticsServiceSrv.Iface iface;
+    private final AnalyticsServiceSrv.Iface analyticsHandler;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         thriftServlet = new THServiceBuilder()
-                .build(AnalyticsServiceSrv.Iface.class, iface);
+                .build(AnalyticsServiceSrv.Iface.class, analyticsHandler);
     }
 
     @Override
