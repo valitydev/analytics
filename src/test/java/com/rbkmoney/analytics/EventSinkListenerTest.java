@@ -34,7 +34,7 @@ import java.util.Map;
 @ContextConfiguration(initializers = EventSinkListenerTest.Initializer.class)
 public class EventSinkListenerTest extends KafkaAbstractTest {
 
-    public static final long TIMEOUT_MESSAGE = 4_000l;
+    public static final long MESSAGE_TIMEOUT = 4_000L;
     @ClassRule
     public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
 
@@ -77,12 +77,12 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         sinkEvents = MgEventSinkFlowGenerator.generateSuccessNotFullFlow("sourceID_2");
         sinkEvents.forEach(this::produceMessageToEventSink);
 
-        Thread.sleep(TIMEOUT_MESSAGE);
+        Thread.sleep(MESSAGE_TIMEOUT);
 
         Consumer<String, MgPaymentSinkRow> consumer = createConsumer(MgPaymentRowDeserializer.class);
         consumer.subscribe(Arrays.asList(AGGREGATED_EVENT_SINK));
 
-        Thread.sleep(TIMEOUT_MESSAGE);
+        Thread.sleep(MESSAGE_TIMEOUT);
 
         //check sum for captured payment
         long sum = jdbcTemplate.queryForObject(
@@ -118,7 +118,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         sinkEvents = MgEventSinkFlowGenerator.generateRefundedFlow("sourceID_refund_1");
         sinkEvents.forEach(this::produceMessageToEventSink);
 
-        Thread.sleep(TIMEOUT_MESSAGE);
+        Thread.sleep(MESSAGE_TIMEOUT);
 
         //check sum for succeeded refund
         sum = jdbcTemplate.queryForObject(
