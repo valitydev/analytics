@@ -18,12 +18,14 @@ import com.rbkmoney.mg.event.sink.serde.SinkEventSerde;
 import com.rbkmoney.mg.event.sink.service.ConsumerGroupIdService;
 import com.rbkmoney.mg.event.sink.utils.SslKafkaUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.streams.StreamsConfig;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -35,8 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(KafkaSslProperties.class)
 public class KafkaConfig {
 
     public static final String EVENT_SINK_CLIENT_ANALYTICS = "event-sink-client-analytics";
@@ -110,6 +114,7 @@ public class KafkaConfig {
     }
 
     private Map<String, Object> createSslConfig() {
+        log.info("Kafka ssl isEnabled: {}", kafkaSslProperties.isEnabled());
         return SslKafkaUtils.sslConfigure(
                 kafkaSslProperties.isEnabled(),
                 kafkaSslProperties.getTrustStoreLocation(),

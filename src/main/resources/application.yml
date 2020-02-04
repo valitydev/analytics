@@ -46,7 +46,7 @@ kafka:
       prefix: analytics
       concurrency: 7
   ssl:
-    enable: false
+    enabled: false
   state:
     dir: tmp/state-store/
   block.cache.size: 10
