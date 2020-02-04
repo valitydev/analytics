@@ -26,6 +26,7 @@ public class MgRefundAggregatorListener {
             if (!CollectionUtils.isEmpty(batch)) {
                 log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
                 List<MgRefundRow> resultRaws = batch.stream()
+                        .filter(Objects::nonNull)
                         .flatMap(mgEventSinkRow ->
                                 flatMapToList(mgEventSinkRow)
                                         .stream())

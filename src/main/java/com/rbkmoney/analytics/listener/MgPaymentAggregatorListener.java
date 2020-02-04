@@ -26,6 +26,7 @@ public class MgPaymentAggregatorListener {
             if (!CollectionUtils.isEmpty(batch)) {
                 log.info("MgPaymentAggregatorListener listen batch.size: {}", batch.size());
                 List<MgPaymentSinkRow> resultRaws = batch.stream()
+                        .filter(Objects::nonNull)
                         .flatMap(mgEventSinkRow -> flatMapToList(mgEventSinkRow).stream())
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
