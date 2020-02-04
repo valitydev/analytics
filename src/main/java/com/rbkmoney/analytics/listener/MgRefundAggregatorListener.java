@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,14 +21,16 @@ public class MgRefundAggregatorListener {
 
     @KafkaListener(topics = "${kafka.topic.event.sink.aggregatedRefund}", containerFactory = "kafkaListenerRefundContainerFactory")
     public void listen(List<MgRefundRow> batch) {
-        log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
-        List<MgRefundRow> resultRaws = batch.stream()
-                .flatMap(mgEventSinkRow ->
-                        flatMapToList(mgEventSinkRow)
-                                .stream())
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        mgRefundRepository.insertBatch(resultRaws);
+        if (!CollectionUtils.isEmpty(batch)) {
+            log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
+            List<MgRefundRow> resultRaws = batch.stream()
+                    .flatMap(mgEventSinkRow ->
+                            flatMapToList(mgEventSinkRow)
+                                    .stream())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            mgRefundRepository.insertBatch(resultRaws);
+        }
     }
 
     private List<MgRefundRow> flatMapToList(MgRefundRow mgPaymentSinkRow) {
