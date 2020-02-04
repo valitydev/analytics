@@ -28,6 +28,8 @@ public class MgRefundRepository {
     public void insertBatch(List<MgRefundRow> mgRefundRows) {
         if (mgRefundRows != null && !mgRefundRows.isEmpty()) {
             jdbcTemplate.batchUpdate(MgRefundBatchPreparedStatementSetter.INSERT, new MgRefundBatchPreparedStatementSetter(mgRefundRows));
+            log.info("Batch inserted mgRefundRows: {} firstElement: {}", mgRefundRows.size(),
+                    mgRefundRows.get(0).getInvoiceId());
         }
     }
 
