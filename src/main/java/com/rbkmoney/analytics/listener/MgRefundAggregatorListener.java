@@ -5,6 +5,7 @@ import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -20,17 +21,23 @@ public class MgRefundAggregatorListener {
     private final MgRefundRepository mgRefundRepository;
 
     @KafkaListener(topics = "${kafka.topic.event.sink.aggregatedRefund}", containerFactory = "kafkaListenerRefundContainerFactory")
-    public void listen(List<MgRefundRow> batch) {
-        if (!CollectionUtils.isEmpty(batch)) {
-            log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
-            List<MgRefundRow> resultRaws = batch.stream()
-                    .flatMap(mgEventSinkRow ->
-                            flatMapToList(mgEventSinkRow)
-                                    .stream())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            mgRefundRepository.insertBatch(resultRaws);
+    public void listen(List<MgRefundRow> batch, Acknowledgment ack) {
+        try {
+            if (!CollectionUtils.isEmpty(batch)) {
+                log.info("MgRefundAggregatorListener listen batch.size: {}", batch.size());
+                List<MgRefundRow> resultRaws = batch.stream()
+                        .flatMap(mgEventSinkRow ->
+                                flatMapToList(mgEventSinkRow)
+                                        .stream())
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                mgRefundRepository.insertBatch(resultRaws);
+            }
+        } catch (Exception e) {
+            log.error("Exception when MgPaymentAggregatorListener e: ", e);
+            throw e;
         }
+        ack.acknowledge();
     }
 
     private List<MgRefundRow> flatMapToList(MgRefundRow mgPaymentSinkRow) {

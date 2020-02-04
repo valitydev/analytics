@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
 
 import javax.validation.constraints.NotNull;
@@ -199,6 +200,8 @@ public class KafkaConfig {
         factory.setConcurrency(concurrencyListeners);
         factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
         factory.setBatchListener(true);
+        factory.getContainerProperties().setAckOnError(false);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
     }
 
     @Bean
@@ -215,7 +218,7 @@ public class KafkaConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, value);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, EARLIEST);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.putAll(createSslConfig());
         return props;
     }
