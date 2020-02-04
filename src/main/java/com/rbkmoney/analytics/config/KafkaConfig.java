@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
@@ -196,6 +197,7 @@ public class KafkaConfig {
                 new StringDeserializer(), deserializer);
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(concurrencyListeners);
+        factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
         factory.setBatchListener(true);
     }
 
