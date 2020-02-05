@@ -40,6 +40,8 @@ public class MgPaymentRepository {
 
     public void insertBatch(List<MgPaymentSinkRow> mgPaymentSinkRows) {
         if (mgPaymentSinkRows != null && !mgPaymentSinkRows.isEmpty()) {
+            log.info("Batch start insert mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),
+                    mgPaymentSinkRows.get(0).getInvoiceId());
             jdbcTemplate.batchUpdate(MgPaymentBatchPreparedStatementSetter.INSERT,
                     new MgPaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
             log.info("Batch inserted mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),

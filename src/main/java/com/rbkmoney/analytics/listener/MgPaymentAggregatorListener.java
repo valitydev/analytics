@@ -22,21 +22,20 @@ public class MgPaymentAggregatorListener {
 
     @KafkaListener(topics = "${kafka.topic.event.sink.aggregated}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(List<MgPaymentSinkRow> batch, Acknowledgment ack) {
-        try {
-            if (!CollectionUtils.isEmpty(batch)) {
-                log.info("MgPaymentAggregatorListener listen batch.size: {}", batch.size());
-                List<MgPaymentSinkRow> resultRaws = batch.stream()
-                        .filter(Objects::nonNull)
-                        .flatMap(mgEventSinkRow -> flatMapToList(mgEventSinkRow).stream())
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(batch)) {
+            log.info("MgPaymentAggregatorListener listen batch.size: {}", batch.size());
+            List<MgPaymentSinkRow> resultRaws = batch.stream()
+                    .filter(Objects::nonNull)
+                    .flatMap(mgEventSinkRow -> flatMapToList(mgEventSinkRow).stream())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(resultRaws)) {
+                log.info("MgPaymentAggregatorListener listen batch.size: {} resultRawsFirst: {}", resultRaws.size(),
+                        resultRaws.get(0).getInvoiceId());
                 mgPaymentRepository.insertBatch(resultRaws);
             }
-        } catch (Exception e) {
-            log.error("Exception when MgPaymentAggregatorListener e: ", e);
-            throw e;
+            ack.acknowledge();
         }
-        ack.acknowledge();
     }
 
     private List<MgPaymentSinkRow> flatMapToList(MgPaymentSinkRow mgPaymentSinkRow) {
