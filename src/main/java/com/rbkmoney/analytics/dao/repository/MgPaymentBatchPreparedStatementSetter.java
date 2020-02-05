@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.rbkmoney.analytics.constant.ClickhouseUtilsValue.UNKNOWN;
+
 @RequiredArgsConstructor
 public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
@@ -48,7 +50,7 @@ public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedState
         ps.setString(l++, mgPaymentSinkRow.getIp());
         ps.setString(l++, mgPaymentSinkRow.getBin());
         ps.setString(l++, mgPaymentSinkRow.getMaskedPan());
-        ps.setString(l++, mgPaymentSinkRow.getPaymentTool().name());
+        ps.setString(l++, mgPaymentSinkRow.getPaymentTool() != null ? mgPaymentSinkRow.getPaymentTool().name() : UNKNOWN);
 
         ps.setInt(l, mgPaymentSinkRow.getSign());
     }
