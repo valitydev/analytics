@@ -29,7 +29,7 @@ public class MgPaymentAggregatorListener {
                     .flatMap(mgEventSinkRow -> flatMapToList(mgEventSinkRow).stream())
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(resultRaws)) {
+            if (!CollectionUtils.isEmpty(resultRaws)) {
                 log.info("MgPaymentAggregatorListener listen batch.size: {} resultRawsFirst: {}", resultRaws.size(),
                         resultRaws.get(0).getInvoiceId());
                 mgPaymentRepository.insertBatch(resultRaws);
