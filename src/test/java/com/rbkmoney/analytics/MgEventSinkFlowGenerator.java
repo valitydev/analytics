@@ -36,7 +36,9 @@ public class MgEventSinkFlowGenerator {
         sinkEvents.add(createSinkEvent(createMessagePaymentPending(sourceId, sequenceId++)));
         sinkEvents.add(createSinkEvent(createMessagePaymentProcessed(sourceId, sequenceId++)));
         sinkEvents.add(createSinkEvent(createMessagePaymentProcessed(sourceId, sequenceId++)));
-        sinkEvents.add(createSinkEvent(createMessageInvoiceCaptured(sourceId, sequenceId)));
+        sinkEvents.add(createSinkEvent(createMessageInvoiceCaptured(sourceId, sequenceId++)));
+
+        sinkEvents.add(createSinkEvent(createMessagePaymentRefunded(sourceId, sequenceId)));
         return sinkEvents;
     }
 
@@ -144,6 +146,11 @@ public class MgEventSinkFlowGenerator {
         return createMachineEvent(paymentPending, sourceId, sequenceId);
     }
 
+    private static MachineEvent createMessagePaymentRefunded(String sourceId, Long sequenceId) {
+        InvoiceChange paymentRefunded = createPaymentRefunded();
+        return createMachineEvent(paymentRefunded, sourceId, sequenceId);
+    }
+
     private static MachineEvent createMessagePaymentPendingChangeStatus(String sourceId, Long sequenceId) {
         InvoiceChange paymentPending = createPaymentPendingStatus();
         return createMachineEvent(paymentPending, sourceId, sequenceId);
@@ -210,6 +217,10 @@ public class MgEventSinkFlowGenerator {
 
     private static InvoiceChange createPaymentPending() {
         return createInvoiceChange(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
+    }
+
+    private static InvoiceChange createPaymentRefunded() {
+        return createInvoiceChange(InvoicePaymentStatus.refunded(new InvoicePaymentRefunded()));
     }
 
     private static InvoiceChange createPaymentPendingStatus() {
