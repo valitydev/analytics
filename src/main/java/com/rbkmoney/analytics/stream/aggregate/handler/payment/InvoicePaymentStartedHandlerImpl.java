@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 
 import static java.time.ZoneOffset.UTC;
 
@@ -59,29 +58,52 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
         mgPaymentSinkRow.setStatus(TBaseUtil.unionFieldToEnum(payment.getStatus(), PaymentStatus.class));
 
         if (payer.isSetPaymentResource()) {
-            mgPaymentSinkRow.setPaymentTool(TBaseUtil.unionFieldToEnum(payer.getPaymentResource().getResource().getPaymentTool(), PaymentToolType.class));
+            DisposablePaymentResource resource = payer.getPaymentResource().getResource();
+            PaymentTool paymentTool = resource.getPaymentTool();
+            initPaymentTool(mgPaymentSinkRow, paymentTool);
             if (payer.getPaymentResource().isSetResource()) {
-                if (payer.getPaymentResource().getResource().isSetClientInfo()) {
-                    ClientInfo clientInfo = payer.getPaymentResource().getResource().getClientInfo();
+                if (resource.isSetClientInfo()) {
+                    ClientInfo clientInfo = resource.getClientInfo();
                     mgPaymentSinkRow.setIp(clientInfo.getIpAddress());
                     mgPaymentSinkRow.setFingerprint(clientInfo.getFingerprint());
                 }
-                if (isBankCard(payer)) {
-                    BankCard bankCard = payer.getPaymentResource().getResource().getPaymentTool().getBankCard();
-                    mgPaymentSinkRow.setBankCountry(bankCard.getIssuerCountry() != null ? bankCard.getIssuerCountry().name() : ClickhouseUtilsValue.UNKNOWN);
-                    mgPaymentSinkRow.setBin(bankCard.getBin());
-                    mgPaymentSinkRow.setMaskedPan(bankCard.getMaskedPan());
-                    mgPaymentSinkRow.setProvider(bankCard.getBankName());
-                }
+                initCardData(mgPaymentSinkRow, paymentTool);
             }
-            mgPaymentSinkRow.setEmail(payer.getPaymentResource().getContactInfo().getEmail());
+            initContactInfo(mgPaymentSinkRow, payer.getPaymentResource().getContactInfo());
+        } else if (payer.isSetCustomer()) {
+            CustomerPayer customer = payer.getCustomer();
+            PaymentTool paymentTool = customer.getPaymentTool();
+            initPaymentTool(mgPaymentSinkRow, paymentTool);
+            initContactInfo(mgPaymentSinkRow, customer.getContactInfo());
+            initCardData(mgPaymentSinkRow, paymentTool);
+        } else if (payer.isSetRecurrent()) {
+            RecurrentPayer recurrent = payer.getRecurrent();
+            PaymentTool paymentTool = recurrent.getPaymentTool();
+            initPaymentTool(mgPaymentSinkRow, paymentTool);
+            initCardData(mgPaymentSinkRow, paymentTool);
+            initContactInfo(mgPaymentSinkRow, recurrent.getContactInfo());
         }
         return mgPaymentSinkRow;
     }
 
-    private boolean isBankCard(Payer payer) {
-        return payer.getPaymentResource().isSetResource()
-                && payer.getPaymentResource().getResource().isSetPaymentTool()
-                && payer.getPaymentResource().getResource().getPaymentTool().isSetBankCard();
+    private void initContactInfo(MgPaymentSinkRow mgPaymentSinkRow, ContactInfo contactInfo) {
+        if (contactInfo != null) {
+            mgPaymentSinkRow.setEmail(contactInfo.getEmail());
+        }
     }
+
+    private void initPaymentTool(MgPaymentSinkRow mgPaymentSinkRow, PaymentTool paymentTool) {
+        mgPaymentSinkRow.setPaymentTool(TBaseUtil.unionFieldToEnum(paymentTool, PaymentToolType.class));
+    }
+
+    private void initCardData(MgPaymentSinkRow mgPaymentSinkRow, PaymentTool paymentTool) {
+        if (paymentTool.isSetBankCard()) {
+            BankCard bankCard = paymentTool.getBankCard();
+            mgPaymentSinkRow.setBankCountry(bankCard.getIssuerCountry() != null ? bankCard.getIssuerCountry().name() : ClickhouseUtilsValue.UNKNOWN);
+            mgPaymentSinkRow.setBin(bankCard.getBin());
+            mgPaymentSinkRow.setMaskedPan(bankCard.getMaskedPan());
+            mgPaymentSinkRow.setProvider(bankCard.getBankName());
+        }
+    }
+
 }
