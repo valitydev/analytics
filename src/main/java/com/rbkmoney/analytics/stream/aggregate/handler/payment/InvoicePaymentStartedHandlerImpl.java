@@ -14,6 +14,7 @@ import com.rbkmoney.geck.common.util.TBaseUtil;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.mg.event.sink.handler.flow.InvoicePaymentStartedHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,6 +23,7 @@ import java.time.ZoneOffset;
 
 import static java.time.ZoneOffset.UTC;
 
+@Slf4j
 @Component
 public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandler<MgPaymentSinkRow> {
 
@@ -82,6 +84,8 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
             initPaymentTool(mgPaymentSinkRow, paymentTool);
             initCardData(mgPaymentSinkRow, paymentTool);
             initContactInfo(mgPaymentSinkRow, recurrent.getContactInfo());
+        } else {
+            log.warn("Unkonwn payment tool in payer: {}", payer);
         }
         return mgPaymentSinkRow;
     }
