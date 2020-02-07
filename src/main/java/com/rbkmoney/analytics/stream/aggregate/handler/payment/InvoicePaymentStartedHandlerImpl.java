@@ -36,6 +36,10 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
         InvoicePaymentStarted invoicePaymentStarted = payload.getInvoicePaymentStarted();
         Payer payer = invoicePaymentStarted.getPayment().getPayer();
         InvoicePayment payment = invoicePaymentStarted.getPayment();
+        if (payment.getStatus().isSetRefunded()) {
+            return null;
+        }
+
         LocalDateTime localDateTime = TypeUtil.stringToLocalDateTime(payment.getCreatedAt());
         long timestamp = localDateTime.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
 

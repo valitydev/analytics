@@ -19,14 +19,20 @@ public class InvoicePaymentStatusChangedHandlerImpl extends InvoicePaymentStatus
 
     @Override
     public MgPaymentSinkRow handle(InvoiceChange change, SinkEvent event) {
+
         MgPaymentSinkRow mgPaymentSinkRow = new MgPaymentSinkRow();
         InvoicePaymentChange invoicePaymentChange = change.getInvoicePaymentChange();
-        mgPaymentSinkRow.setPaymentId(invoicePaymentChange.getId());
         mgPaymentSinkRow.setInvoiceId(event.getEvent().getSourceId());
 
         InvoicePaymentChangePayload payload = invoicePaymentChange.getPayload();
         InvoicePaymentStatusChanged invoicePaymentStatusChanged = payload.getInvoicePaymentStatusChanged();
+
+        if (invoicePaymentStatusChanged.getStatus().isSetRefunded()) {
+            return null;
+        }
+
         mgPaymentSinkRow.setStatus(TBaseUtil.unionFieldToEnum(invoicePaymentStatusChanged.getStatus(), PaymentStatus.class));
+        mgPaymentSinkRow.setPaymentId(invoicePaymentChange.getId());
         mgPaymentSinkRow.setSequenceId((event.getEvent().getEventId()));
 
         if (invoicePaymentStatusChanged.getStatus().isSetFailed()) {

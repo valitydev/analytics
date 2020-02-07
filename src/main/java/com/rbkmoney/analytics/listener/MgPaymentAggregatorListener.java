@@ -1,5 +1,6 @@
 package com.rbkmoney.analytics.listener;
 
+import com.rbkmoney.analytics.constant.PaymentStatus;
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import com.rbkmoney.analytics.dao.repository.MgPaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class MgPaymentAggregatorListener {
                     .filter(Objects::nonNull)
                     .flatMap(mgEventSinkRow -> flatMapToList(mgEventSinkRow).stream())
                     .filter(Objects::nonNull)
+                    .filter(mgPaymentSinkRow -> mgPaymentSinkRow.getStatus() != PaymentStatus.refunded)
                     .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(resultRaws)) {
                 log.info("MgPaymentAggregatorListener listen batch.size: {} resultRawsFirst: {}", resultRaws.size(),
