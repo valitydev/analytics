@@ -3,6 +3,7 @@ package com.rbkmoney.analytics;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
+import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefundPending;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.*;
@@ -304,7 +305,7 @@ public class MgEventSinkFlowGenerator {
                         .setToken("477bba133c182267fe5f086924abdc5db71f77bfc27f01f2843f2cdc69d89f05")
                         .setPaymentSystem(BankCardPaymentSystem.mastercard)
                         .setBin(BIN)
-                        .setMaskedPan("4242")
+                        .setLastDigits("4242")
                         .setIssuerCountry(Residence.RUS)
         );
         return paymentTool;

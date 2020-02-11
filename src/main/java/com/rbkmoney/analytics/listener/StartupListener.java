@@ -25,6 +25,8 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     @Value("${kafka.streams.event.sink.enable}")
     private boolean enableEventSinkStream;
+    @Value("${kafka.streams.clean-install}")
+    private boolean cleanInstall;
 
     private final Properties eventSinkPaymentStreamProperties;
     private final Properties eventSinkRefundStreamProperties;
@@ -41,6 +43,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     private void startEventStream(long startPreloadTime) {
         if (enableEventSinkStream) {
+
             KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
             eventSinkStreams.add(eventSinkStream);
             KafkaStreams eventSinkStreamRefund = eventSinkRefundAggregationStreamFactory.create(eventSinkRefundStreamProperties);

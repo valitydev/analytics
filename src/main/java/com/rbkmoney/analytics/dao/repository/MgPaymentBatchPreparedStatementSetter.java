@@ -1,5 +1,6 @@
 package com.rbkmoney.analytics.dao.repository;
 
+import com.rbkmoney.analytics.constant.ClickhouseUtilsValue;
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -48,7 +49,7 @@ public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedState
         ps.setString(l++, mgPaymentSinkRow.getIp());
         ps.setString(l++, mgPaymentSinkRow.getBin());
         ps.setString(l++, mgPaymentSinkRow.getMaskedPan());
-        ps.setString(l++, mgPaymentSinkRow.getPaymentTool() != null ? mgPaymentSinkRow.getPaymentTool().name() : null);
+        ps.setString(l++, mgPaymentSinkRow.getPaymentTool() != null ? mgPaymentSinkRow.getPaymentTool().name() : ClickhouseUtilsValue.UNKNOWN);
 
         ps.setInt(l, mgPaymentSinkRow.getSign());
     }
