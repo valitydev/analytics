@@ -74,6 +74,8 @@ public class KafkaConfig {
     private int replicationFactor;
     @Value("${kafka.streams.concurrency}")
     private int concurrencyStream;
+    @Value("${kafka.streams.clean-install}")
+    private boolean cleanInstall;
 
     @Value("${kafka.consumer.concurrency}")
     private int concurrencyListeners;
@@ -133,6 +135,7 @@ public class KafkaConfig {
         return new EventSinkAggregationStreamFactoryImpl<>(
                 initialEventSink,
                 aggregatedSinkTopic,
+                cleanInstall,
                 new SinkEventSerde(),
                 Serdes.String(),
                 new MgPaymentRowSerde(),
@@ -150,6 +153,7 @@ public class KafkaConfig {
         return new EventSinkAggregationStreamFactoryImpl<>(
                 initialEventSink,
                 aggregatedSinkTopicRefund,
+                cleanInstall,
                 new SinkEventSerde(),
                 Serdes.String(),
                 new MgRefundRowSerde(),

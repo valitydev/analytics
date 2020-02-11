@@ -109,7 +109,7 @@ public class InvoicePaymentStartedHandlerImpl extends InvoicePaymentStartedHandl
             BankCard bankCard = paymentTool.getBankCard();
             mgPaymentSinkRow.setBankCountry(bankCard.getIssuerCountry() != null ? bankCard.getIssuerCountry().name() : ClickhouseUtilsValue.UNKNOWN);
             mgPaymentSinkRow.setBin(bankCard.getBin());
-            mgPaymentSinkRow.setMaskedPan(bankCard.getMaskedPan());
+            mgPaymentSinkRow.setMaskedPan(bankCard.getLastDigits());
             mgPaymentSinkRow.setProvider(bankCard.getBankName());
         }
     }

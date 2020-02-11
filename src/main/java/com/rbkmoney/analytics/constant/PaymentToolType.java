@@ -4,6 +4,9 @@ public enum PaymentToolType {
 
     bank_card,
     payment_terminal,
-    digital_wallet
+    digital_wallet,
+    crypto_currency,
+    mobile_commerce
 
 }
+

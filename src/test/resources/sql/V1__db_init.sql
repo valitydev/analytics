@@ -27,7 +27,7 @@ create table analytic.events_sink
     ip            String,
     bin           String,
     maskedPan     String,
-    paymentTool   Enum8('bank_card' = 1, 'payment_terminal' = 2, 'digital_wallet' = 3),
+    paymentTool   String,
 
     sign          Int8
 
