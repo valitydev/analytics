@@ -20,6 +20,7 @@ import com.rbkmoney.mg.event.sink.utils.SslKafkaUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -80,6 +81,15 @@ public class KafkaConfig {
     @Value("${kafka.consumer.concurrency}")
     private int concurrencyListeners;
 
+    @Value("${kafka.streams.linger-ms:100}")
+    private int lingerMs;
+    @Value("${kafka.streams.request-timeout-min:2}")
+    private int requestTimeoutMin;
+    @Value("${kafka.streams.delivery-timeout-min:600}")
+    private int deliveryTimeoutMin;
+    @Value("${kafka.streams.retry-backoff-ms:1000}")
+    private int retryBackoffMs;
+
     private final ConsumerGroupIdService consumerGroupIdService;
     private final List<EventHandler<MgPaymentSinkRow>> eventHandlers;
     private final List<EventHandler<MgRefundRow>> eventRefundHandlers;
@@ -113,6 +123,11 @@ public class KafkaConfig {
         props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, replicationFactor - 1);
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, concurrencyStream);
         props.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, RocksDBConfig.class);
+        props.put(StreamsConfig.producerPrefix(ProducerConfig.LINGER_MS_CONFIG), lingerMs);
+        props.put(StreamsConfig.producerPrefix(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG), requestTimeoutMin * 60 * 1000);
+        props.put(StreamsConfig.producerPrefix(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG), deliveryTimeoutMin * 60 * 1000 + lingerMs);
+        props.put(StreamsConfig.producerPrefix(ProducerConfig.RETRIES_CONFIG), Integer.MAX_VALUE);
+        props.put(StreamsConfig.producerPrefix(ProducerConfig.RETRY_BACKOFF_MS_CONFIG), retryBackoffMs);
         props.putAll(createSslConfig());
         return props;
     }
