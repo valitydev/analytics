@@ -34,7 +34,7 @@ kafka:
     event.sink.enable: true
     replication-factor: 1
     concurrency: 7
-    clean-install: true
+    clean-install: false
   max:
     retry.attempts: 3
     poll.records: 100

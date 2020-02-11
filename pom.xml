@@ -36,6 +36,8 @@
         <geck.version>0.6.7</geck.version>
         <woody.thrift.version>1.1.15</woody.thrift.version>
         <analytics-proto.version>1.12-3b71837</analytics-proto.version>
+        <mg-event-sink-listener-spring-boot-starter.version>0.0.3-SNAPSHOT
+        </mg-event-sink-listener-spring-boot-starter.version>
     </properties>
 
     <dependencies>
@@ -93,7 +95,7 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>mg-event-sink-listener-spring-boot-starter</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>${mg-event-sink-listener-spring-boot-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney.geck</groupId>
