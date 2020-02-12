@@ -90,6 +90,13 @@ public class KafkaConfig {
     @Value("${kafka.streams.retry-backoff-ms:1000}")
     private int retryBackoffMs;
 
+    @Value("${kafka.streams.consumer.session-timout:60000}")
+    private int consumerSessionTimout;
+    @Value("${kafka.streams.consumer.max-poll-interval:120000}")
+    private int consumerMaxPollInterval;
+    @Value("${kafka.streams.consumer.max-poll-records:300}")
+    private int consumerMaxPollRecords;
+
     private final ConsumerGroupIdService consumerGroupIdService;
     private final List<EventHandler<MgPaymentSinkRow>> eventHandlers;
     private final List<EventHandler<MgRefundRow>> eventRefundHandlers;
@@ -123,12 +130,18 @@ public class KafkaConfig {
         props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, replicationFactor - 1);
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, concurrencyStream);
         props.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, RocksDBConfig.class);
+
+        props.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), consumerSessionTimout);
+        props.put(StreamsConfig.consumerPrefix(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG), consumerMaxPollInterval);
+        props.put(StreamsConfig.consumerPrefix(ConsumerConfig.MAX_POLL_RECORDS_CONFIG), consumerMaxPollRecords);
+
         props.put(StreamsConfig.producerPrefix(ProducerConfig.LINGER_MS_CONFIG), lingerMs);
         props.put(StreamsConfig.producerPrefix(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG), requestTimeoutMin * 60 * 1000);
         props.put(StreamsConfig.producerPrefix(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG), deliveryTimeoutMin * 60 * 1000 + lingerMs);
         props.put(StreamsConfig.producerPrefix(ProducerConfig.RETRIES_CONFIG), Integer.MAX_VALUE);
         props.put(StreamsConfig.producerPrefix(ProducerConfig.RETRY_BACKOFF_MS_CONFIG), retryBackoffMs);
         props.putAll(createSslConfig());
+
         return props;
     }
 

@@ -28,6 +28,11 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
     @Value("${kafka.streams.clean-install}")
     private boolean cleanInstall;
 
+    @Value("${kafka.streams.refund-stream-enabled:true}")
+    private boolean refundStreamEnabled;
+    @Value("${kafka.streams.payment-stream-enabled:true}")
+    private boolean paymentStreamEnabled;
+
     private final Properties eventSinkPaymentStreamProperties;
     private final Properties eventSinkRefundStreamProperties;
     private final EventSinkAggregationStreamFactoryImpl<String, MgPaymentSinkRow, MgPaymentSinkRow> eventSinkAggregationStreamFactory;
@@ -43,13 +48,18 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 
     private void startEventStream(long startPreloadTime) {
         if (enableEventSinkStream) {
+            if (refundStreamEnabled) {
+                KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
+                eventSinkStreams.add(eventSinkStream);
+                log.info("StartupListener start stream eventSinkStream: {}", eventSinkStream.allMetadata());
+            }
+            if (refundStreamEnabled) {
+                KafkaStreams eventSinkStreamRefund = eventSinkRefundAggregationStreamFactory.create(eventSinkRefundStreamProperties);
+                eventSinkStreams.add(eventSinkStreamRefund);
+                log.info("StartupListener start stream eventSinkStreamRefund: {}", eventSinkStreamRefund.allMetadata());
+            }
 
-            KafkaStreams eventSinkStream = eventSinkAggregationStreamFactory.create(eventSinkPaymentStreamProperties);
-            eventSinkStreams.add(eventSinkStream);
-            KafkaStreams eventSinkStreamRefund = eventSinkRefundAggregationStreamFactory.create(eventSinkRefundStreamProperties);
-            eventSinkStreams.add(eventSinkStreamRefund);
-            log.info("StartupListener start stream preloadTime: {} ms eventSinkStream: {} eventSinkStreamRefund: {}", System.currentTimeMillis() - startPreloadTime,
-                    eventSinkStream.allMetadata(), eventSinkStreamRefund.allMetadata());
+            log.info("StartupListener start stream preloadTime: {} ms", System.currentTimeMillis() - startPreloadTime);
         }
     }
 
