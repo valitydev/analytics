@@ -2,6 +2,7 @@ package com.rbkmoney.analytics.dao.repository;
 
 import com.rbkmoney.analytics.constant.ClickhouseUtilsValue;
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
+import com.rbkmoney.analytics.domain.CashFlowResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 
@@ -13,45 +14,61 @@ import java.util.List;
 public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
     public static final String INSERT = "INSERT INTO analytic.events_sink " +
-            "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
-            "amount, currency, providerName, status, errorReason,  invoiceId, " +
-            "paymentId, sequenceId, ip, bin, maskedPan, paymentTool, sign)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "(timestamp, eventTime, eventTimeHour, partyId, shopId, email," +
+            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
+            "status, errorReason,  invoiceId, paymentId, sequenceId, ip, bin, maskedPan, paymentTool, " +
+            "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgPaymentSinkRow> batch;
 
     @Override
     public void setValues(PreparedStatement ps, int i) throws SQLException {
-        MgPaymentSinkRow mgPaymentSinkRow = batch.get(i);
+        MgPaymentSinkRow row = batch.get(i);
         int l = 1;
-        ps.setDate(l++, mgPaymentSinkRow.getTimestamp());
-        ps.setLong(l++, mgPaymentSinkRow.getEventTime());
-        ps.setLong(l++, mgPaymentSinkRow.getEventTimeHour());
+        ps.setDate(l++, row.getTimestamp());
+        ps.setLong(l++, row.getEventTime());
+        ps.setLong(l++, row.getEventTimeHour());
 
-        ps.setString(l++, mgPaymentSinkRow.getPartyId());
-        ps.setString(l++, mgPaymentSinkRow.getShopId());
+        ps.setString(l++, row.getPartyId());
+        ps.setString(l++, row.getShopId());
 
-        ps.setString(l++, mgPaymentSinkRow.getEmail());
+        ps.setString(l++, row.getEmail());
 
-        ps.setLong(l++, mgPaymentSinkRow.getAmount());
-        ps.setString(l++, mgPaymentSinkRow.getCurrency());
+        CashFlowResult cashFlowResult = row.getCashFlowResult();
+        if (cashFlowResult != null) {
+            ps.setLong(l++, cashFlowResult.getTotalAmount());
+            ps.setLong(l++, cashFlowResult.getMerchantAmount());
+            ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
+            ps.setLong(l++, cashFlowResult.getSystemFee());
+            ps.setLong(l++, cashFlowResult.getExternalFee());
+            ps.setLong(l++, cashFlowResult.getProviderFee());
+        }
+        ps.setString(l++, row.getCurrency());
 
-        ps.setString(l++, mgPaymentSinkRow.getProvider());
+        ps.setString(l++, row.getProvider());
 
-        ps.setString(l++, mgPaymentSinkRow.getStatus().name());
+        ps.setString(l++, row.getStatus().name());
 
-        ps.setString(l++, mgPaymentSinkRow.getErrorCode());
+        ps.setString(l++, row.getErrorCode());
 
-        ps.setString(l++, mgPaymentSinkRow.getInvoiceId());
-        ps.setString(l++, mgPaymentSinkRow.getPaymentId());
-        ps.setLong(l++, mgPaymentSinkRow.getSequenceId());
+        ps.setString(l++, row.getInvoiceId());
+        ps.setString(l++, row.getPaymentId());
+        ps.setLong(l++, row.getSequenceId());
 
-        ps.setString(l++, mgPaymentSinkRow.getIp());
-        ps.setString(l++, mgPaymentSinkRow.getBin());
-        ps.setString(l++, mgPaymentSinkRow.getMaskedPan());
-        ps.setString(l++, mgPaymentSinkRow.getPaymentTool() != null ? mgPaymentSinkRow.getPaymentTool().name() : ClickhouseUtilsValue.UNKNOWN);
+        ps.setString(l++, row.getIp());
+        ps.setString(l++, row.getBin());
+        ps.setString(l++, row.getMaskedPan());
+        ps.setString(l++, row.getPaymentTool() != null ? row.getPaymentTool().name() : ClickhouseUtilsValue.UNKNOWN);
 
-        ps.setInt(l, mgPaymentSinkRow.getSign());
+        ps.setString(l++, row.getFingerprint());
+        ps.setString(l++, row.getCardToken());
+        ps.setString(l++, row.getPaymentSystem());
+        ps.setString(l++, row.getDigitalWalletProvider());
+        ps.setString(l++, row.getDigitalWalletToken());
+        ps.setString(l++, row.getCryptoCurrency());
+        ps.setString(l, row.getMobileOperator());
+
     }
 
     @Override

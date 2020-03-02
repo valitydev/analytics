@@ -1,7 +1,7 @@
 package com.rbkmoney.analytics.dao.repository;
 
-import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
+import com.rbkmoney.analytics.domain.CashFlowResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 
@@ -14,42 +14,58 @@ public class MgRefundBatchPreparedStatementSetter implements BatchPreparedStatem
 
     public static final String INSERT = "INSERT INTO analytic.events_sink_refund " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
-            "amount, currency, providerName, status, errorReason,  invoiceId, " +
-            "paymentId, refundId, sequenceId, ip, sign)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
+            "status, errorReason,  invoiceId, paymentId, refundId, sequenceId, ip, " +
+            "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgRefundRow> batch;
 
     @Override
     public void setValues(PreparedStatement ps, int i) throws SQLException {
-        MgRefundRow mgPaymentSinkRow = batch.get(i);
+        MgRefundRow row = batch.get(i);
         int l = 1;
-        ps.setDate(l++, mgPaymentSinkRow.getTimestamp());
-        ps.setLong(l++, mgPaymentSinkRow.getEventTime());
-        ps.setLong(l++, mgPaymentSinkRow.getEventTimeHour());
+        ps.setDate(l++, row.getTimestamp());
+        ps.setLong(l++, row.getEventTime());
+        ps.setLong(l++, row.getEventTimeHour());
 
-        ps.setString(l++, mgPaymentSinkRow.getPartyId());
-        ps.setString(l++, mgPaymentSinkRow.getShopId());
+        ps.setString(l++, row.getPartyId());
+        ps.setString(l++, row.getShopId());
 
-        ps.setString(l++, mgPaymentSinkRow.getEmail());
+        ps.setString(l++, row.getEmail());
 
-        ps.setLong(l++, mgPaymentSinkRow.getAmount());
-        ps.setString(l++, mgPaymentSinkRow.getCurrency());
+        CashFlowResult cashFlowResult = row.getCashFlowResult();
+        if (cashFlowResult != null) {
+            ps.setLong(l++, cashFlowResult.getTotalAmount());
+            ps.setLong(l++, cashFlowResult.getMerchantAmount());
+            ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
+            ps.setLong(l++, cashFlowResult.getSystemFee());
+            ps.setLong(l++, cashFlowResult.getExternalFee());
+            ps.setLong(l++, cashFlowResult.getProviderFee());
+        }
+        ps.setString(l++, row.getCurrency());
 
-        ps.setString(l++, mgPaymentSinkRow.getProvider());
+        ps.setString(l++, row.getProvider());
 
-        ps.setString(l++, mgPaymentSinkRow.getStatus().name());
+        ps.setString(l++, row.getStatus().name());
 
-        ps.setString(l++, mgPaymentSinkRow.getErrorCode());
+        ps.setString(l++, row.getErrorCode());
 
-        ps.setString(l++, mgPaymentSinkRow.getInvoiceId());
-        ps.setString(l++, mgPaymentSinkRow.getPaymentId());
-        ps.setString(l++, mgPaymentSinkRow.getRefundId());
-        ps.setLong(l++, mgPaymentSinkRow.getSequenceId());
+        ps.setString(l++, row.getInvoiceId());
+        ps.setString(l++, row.getPaymentId());
+        ps.setString(l++, row.getRefundId());
+        ps.setLong(l++, row.getSequenceId());
 
-        ps.setString(l++, mgPaymentSinkRow.getIp());
+        ps.setString(l++, row.getIp());
 
-        ps.setInt(l, mgPaymentSinkRow.getSign());
+        ps.setString(l++, row.getFingerprint());
+        ps.setString(l++, row.getCardToken());
+        ps.setString(l++, row.getPaymentSystem());
+        ps.setString(l++, row.getDigitalWalletProvider());
+        ps.setString(l++, row.getDigitalWalletToken());
+        ps.setString(l++, row.getCryptoCurrency());
+        ps.setString(l, row.getMobileOperator());
+
     }
 
     @Override
