@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class MgAdjustmentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
+public class ClickHouseAdjustmentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
     public static final String INSERT = "INSERT INTO analytic.events_sink_adjustment " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +

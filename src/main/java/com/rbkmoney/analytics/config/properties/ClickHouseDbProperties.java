@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("clickhouse.db")
 @Validated
 @EnableConfigurationProperties
-public class ClickhouseDbProperties {
+public class ClickHouseDbProperties {
 
     private String url;
     private String user;

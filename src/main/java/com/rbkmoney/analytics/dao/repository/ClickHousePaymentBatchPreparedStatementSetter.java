@@ -1,6 +1,6 @@
 package com.rbkmoney.analytics.dao.repository;
 
-import com.rbkmoney.analytics.constant.ClickhouseUtilsValue;
+import com.rbkmoney.analytics.constant.ClickHouseUtilsValue;
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import com.rbkmoney.analytics.domain.CashFlowResult;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
+public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
     public static final String INSERT = "INSERT INTO analytic.events_sink " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email," +
@@ -59,7 +59,7 @@ public class MgPaymentBatchPreparedStatementSetter implements BatchPreparedState
         ps.setString(l++, row.getIp());
         ps.setString(l++, row.getBin());
         ps.setString(l++, row.getMaskedPan());
-        ps.setString(l++, row.getPaymentTool() != null ? row.getPaymentTool().name() : ClickhouseUtilsValue.UNKNOWN);
+        ps.setString(l++, row.getPaymentTool() != null ? row.getPaymentTool().name() : ClickHouseUtilsValue.UNKNOWN);
 
         ps.setString(l++, row.getFingerprint());
         ps.setString(l++, row.getCardToken());

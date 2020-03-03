@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
+public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

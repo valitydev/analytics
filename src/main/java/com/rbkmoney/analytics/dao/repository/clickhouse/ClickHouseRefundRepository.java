@@ -1,8 +1,9 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
 import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
+import com.rbkmoney.analytics.dao.repository.ClickHouseRefundBatchPreparedStatementSetter;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +21,14 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MgRefundRepository {
+public class ClickHouseRefundRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate clickHouseJdbcTemplate;
     private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
 
     public void insertBatch(List<MgRefundRow> mgRefundRows) {
         if (mgRefundRows != null && !mgRefundRows.isEmpty()) {
-            jdbcTemplate.batchUpdate(MgRefundBatchPreparedStatementSetter.INSERT, new MgRefundBatchPreparedStatementSetter(mgRefundRows));
+            clickHouseJdbcTemplate.batchUpdate(ClickHouseRefundBatchPreparedStatementSetter.INSERT, new ClickHouseRefundBatchPreparedStatementSetter(mgRefundRows));
             log.info("Batch inserted mgRefundRows: {} firstElement: {}", mgRefundRows.size(),
                     mgRefundRows.get(0).getInvoiceId());
         }
@@ -61,7 +62,7 @@ public class MgRefundRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return costCommonRowsMapper.map(rows);
     }
 

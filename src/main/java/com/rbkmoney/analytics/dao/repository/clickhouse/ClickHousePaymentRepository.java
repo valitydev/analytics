@@ -1,9 +1,10 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
 import com.rbkmoney.analytics.dao.mapper.SplitRowsMapper;
 import com.rbkmoney.analytics.dao.mapper.SplitStatusRowsMapper;
 import com.rbkmoney.analytics.dao.model.*;
+import com.rbkmoney.analytics.dao.repository.ClickHousePaymentBatchPreparedStatementSetter;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
 import com.rbkmoney.analytics.dao.utils.SplitUtils;
@@ -23,14 +24,14 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MgPaymentRepository {
+public class ClickHousePaymentRepository {
 
     public static final String SHOP_ID = "shopId";
     public static final String PARTY_ID = "partyId";
     public static final String PAYMENT_TOOL = "paymentTool";
     public static final String ERROR_REASON = "errorReason";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate clickHouseJdbcTemplate;
 
     private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
     private final CommonRowsMapper<NumberModel> countModelCommonRowsMapper;
@@ -42,8 +43,8 @@ public class MgPaymentRepository {
         if (mgPaymentSinkRows != null && !mgPaymentSinkRows.isEmpty()) {
             log.info("Batch start insert mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),
                     mgPaymentSinkRows.get(0).getInvoiceId());
-            jdbcTemplate.batchUpdate(MgPaymentBatchPreparedStatementSetter.INSERT,
-                    new MgPaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
+            clickHouseJdbcTemplate.batchUpdate(ClickHousePaymentBatchPreparedStatementSetter.INSERT,
+                    new ClickHousePaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
             log.info("Batch inserted mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),
                     mgPaymentSinkRows.get(0).getInvoiceId());
         }
@@ -76,7 +77,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return costCommonRowsMapper.map(rows);
     }
 
@@ -107,7 +108,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return costCommonRowsMapper.map(rows);
     }
 
@@ -138,7 +139,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return countModelCommonRowsMapper.map(rows);
     }
 
@@ -171,7 +172,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return splitCostCommonRowsMapper.map(rows, splitUnit);
     }
 
@@ -204,7 +205,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return splitStatusRowsMapper.map(rows, splitUnit);
     }
 
@@ -246,7 +247,7 @@ public class MgPaymentRepository {
             params = new Object[]{dateFrom, dateTo, from, to, from, to, partyId, dateFrom, dateTo, from, to, from, to, partyId};
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params);
         return namingDistributionCommonRowsMapper.map(rows);
     }
 
