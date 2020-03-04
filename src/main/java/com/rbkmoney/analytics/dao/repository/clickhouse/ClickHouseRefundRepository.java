@@ -3,7 +3,6 @@ package com.rbkmoney.analytics.dao.repository.clickhouse;
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
 import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
-import com.rbkmoney.analytics.dao.repository.ClickHouseRefundBatchPreparedStatementSetter;
 import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
 import lombok.RequiredArgsConstructor;

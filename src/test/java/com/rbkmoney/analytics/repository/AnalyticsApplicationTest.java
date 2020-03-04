@@ -17,11 +17,11 @@ import java.util.Map;
 public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate clickHouseJdbcTemplate;
 
     @Test
     public void testAmount() {
-        long sum = jdbcTemplate.queryForObject(
+        long sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT shopId, sum(totalAmount) as sum " +
                         "from analytic.events_sink where status = 'captured'" +
                         "group by partyId, shopId, currency " +
@@ -29,7 +29,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
                 (resultSet, i) -> resultSet.getLong("sum"));
         Assert.assertEquals(5000L, sum);
 
-        sum = jdbcTemplate.queryForObject(
+        sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT partyId, sum(totalAmount) as sum " +
                         "from analytic.events_sink where status = 'captured' " +
                         "group by partyId, currency " +
@@ -37,7 +37,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
                 (resultSet, i) -> resultSet.getLong("sum"));
         Assert.assertEquals(55000L, sum);
 
-        sum = jdbcTemplate.queryForObject(
+        sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT partyId, avg(totalAmount) as sum " +
                         "from analytic.events_sink where status = 'captured' " +
                         "group by partyId, currency " +
@@ -48,7 +48,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testCount() {
-        long sum = jdbcTemplate.queryForObject(
+        long sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT partyId, uniq(invoiceId, paymentId) as sum " +
                         "from analytic.events_sink where status = 'captured'" +
                         "group by partyId, currency " +
@@ -59,7 +59,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testCountCurrent() {
-        long sum = jdbcTemplate.queryForObject(
+        long sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT partyId, sum(totalAmount) as sum " +
                         "from analytic.events_sink " +
                         "group by partyId, currency " +
@@ -70,7 +70,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testStatusListPayment() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, status, count() as cnt " +
                         "from analytic.events_sink " +
                         "group by partyId, currency, status " +
@@ -85,7 +85,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testAmountListPayment() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, status, sum(totalAmount) as sum " +
                         "from analytic.events_sink " +
                         "group by partyId, currency, status " +
@@ -100,7 +100,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testPaymentTool() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, paymentTool," +
                         "( SELECT count() from analytic.events_sink " +
                         "group by partyId, currency " +
@@ -120,7 +120,7 @@ public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Test
     public void testErrorReason() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, errorReason," +
                         "( SELECT count() from analytic.events_sink " +
                         "group by partyId,status, currency " +

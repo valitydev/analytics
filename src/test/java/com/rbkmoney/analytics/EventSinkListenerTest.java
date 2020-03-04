@@ -1,5 +1,8 @@
 package com.rbkmoney.analytics;
 
+import com.rbkmoney.analytics.dao.repository.postgres.PostgresAdjustmentRepository;
+import com.rbkmoney.analytics.dao.repository.postgres.PostgresPaymentRepository;
+import com.rbkmoney.analytics.dao.repository.postgres.PostgresRefundRepository;
 import com.rbkmoney.analytics.service.HgClientService;
 import com.rbkmoney.analytics.utils.BuildUtils;
 import com.rbkmoney.analytics.utils.EventRangeFactory;
@@ -52,7 +55,8 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             log.info("clickhouse.db.url={}", clickHouseContainer.getJdbcUrl());
-            TestPropertyValues.of("clickhouse.db.url=" + clickHouseContainer.getJdbcUrl(),
+            TestPropertyValues.of(
+                    "clickhouse.db.url=" + clickHouseContainer.getJdbcUrl(),
                     "clickhouse.db.user=" + clickHouseContainer.getUsername(),
                     "clickhouse.db.password=" + clickHouseContainer.getPassword())
                     .applyTo(configurableApplicationContext.getEnvironment());
@@ -62,8 +66,17 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
     @MockBean
     InvoicingSrv.Iface invoicingClient;
 
+    @MockBean
+    PostgresPaymentRepository postgresPaymentRepository;
+
+    @MockBean
+    PostgresRefundRepository postgresRefundRepository;
+
+    @MockBean
+    PostgresAdjustmentRepository postgresAdjustmentRepository;
+
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate clickHouseJdbcTemplate;
 
     @Autowired
     private EventRangeFactory eventRangeFactory;
@@ -99,7 +112,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         Thread.sleep(MESSAGE_TIMEOUT);
 
         //check sum for captured payment
-        long sum = jdbcTemplate.queryForObject(
+        long sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT shopId, sum(totalAmount) as sum " +
                         "from analytic.events_sink " +
                         "group by shopId, currency, status " +
@@ -109,7 +122,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         Assert.assertEquals(1100L, sum);
 
         //statistic for paymentTool
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT shopId, paymentTool," +
                         "( SELECT count() from analytic.events_sink " +
                         "group by shopId, currency " +
@@ -138,7 +151,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         Thread.sleep(MESSAGE_TIMEOUT);
 
         //check sum for succeeded refund
-        sum = jdbcTemplate.queryForObject(
+        sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT shopId, sum(totalAmount) as sum " +
                         "from analytic.events_sink_refund " +
                         "group by shopId, currency, status " +
@@ -148,7 +161,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         Assert.assertEquals(446L, sum);
 
         //check collapsing sum for pending refund
-        List<Map<String, Object>> resultList = jdbcTemplate.queryForList(
+        List<Map<String, Object>> resultList = clickHouseJdbcTemplate.queryForList(
                 "SELECT shopId, sum(totalAmount) as sum " +
                         "from analytic.events_sink_refund " +
                         "group by shopId, currency, status " +
@@ -166,7 +179,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
         Thread.sleep(MESSAGE_TIMEOUT);
 
         //check sum for succeeded refund
-        sum = jdbcTemplate.queryForObject(
+        sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT shopId, sum(totalAmount) as sum " +
                         "from analytic.events_sink_adjustment " +
                         "group by shopId, currency, status " +

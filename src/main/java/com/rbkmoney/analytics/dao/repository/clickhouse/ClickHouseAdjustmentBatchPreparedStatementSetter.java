@@ -1,4 +1,4 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.model.MgAdjustmentRow;
 import com.rbkmoney.analytics.domain.CashFlowResult;
