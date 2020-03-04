@@ -1,7 +1,6 @@
 package com.rbkmoney.analytics.dao.repository.postgres;
 
 import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
-import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHousePaymentBatchPreparedStatementSetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,8 +24,8 @@ public class PostgresPaymentRepository {
                 mgPaymentSinkRows.get(0).getInvoiceId());
 
         postgresJdbcTemplate.batchUpdate(
-                ClickHousePaymentBatchPreparedStatementSetter.INSERT,
-                new ClickHousePaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
+                PostgresPaymentBatchPreparedStatementSetter.INSERT,
+                new PostgresPaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
 
         log.info("Batch inserted mgPaymentSinkRows: {} firstElement: {}",
                 mgPaymentSinkRows.size(),

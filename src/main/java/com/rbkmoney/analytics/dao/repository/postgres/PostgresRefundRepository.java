@@ -1,7 +1,6 @@
 package com.rbkmoney.analytics.dao.repository.postgres;
 
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
-import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHouseRefundBatchPreparedStatementSetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,8 +24,8 @@ public class PostgresRefundRepository {
                 mgRefundRows.get(0).getInvoiceId());
 
         postgresJdbcTemplate.batchUpdate(
-                ClickHouseRefundBatchPreparedStatementSetter.INSERT,
-                new ClickHouseRefundBatchPreparedStatementSetter(mgRefundRows));
+                PostgresRefundBatchPreparedStatementSetter.INSERT,
+                new PostgresRefundBatchPreparedStatementSetter(mgRefundRows));
 
         log.info("Batch inserted mgRefundRows: {} firstElement: {}",
                 mgRefundRows.size(),

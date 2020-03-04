@@ -1,7 +1,6 @@
 package com.rbkmoney.analytics.dao.repository.postgres;
 
 import com.rbkmoney.analytics.dao.model.MgAdjustmentRow;
-import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHouseAdjustmentBatchPreparedStatementSetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,8 +24,8 @@ public class PostgresAdjustmentRepository {
                 adjustmentRows.get(0).getInvoiceId());
 
         postgresJdbcTemplate.batchUpdate(
-                ClickHouseAdjustmentBatchPreparedStatementSetter.INSERT,
-                new ClickHouseAdjustmentBatchPreparedStatementSetter(adjustmentRows));
+                PostgresAdjustmentBatchPreparedStatementSetter.INSERT,
+                new PostgresAdjustmentBatchPreparedStatementSetter(adjustmentRows));
 
         log.info("Batch inserted adjustmentRows: {} firstElement: {}",
                 adjustmentRows.size(),
