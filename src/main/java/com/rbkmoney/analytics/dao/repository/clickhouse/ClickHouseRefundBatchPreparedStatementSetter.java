@@ -14,10 +14,10 @@ public class ClickHouseRefundBatchPreparedStatementSetter implements BatchPrepar
 
     public static final String INSERT = "INSERT INTO analytic.events_sink_refund " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
-            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
+            "amount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
             "status, errorReason,  invoiceId, paymentId, refundId, sequenceId, ip, " +
             "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgRefundRow> batch;
 
@@ -36,8 +36,7 @@ public class ClickHouseRefundBatchPreparedStatementSetter implements BatchPrepar
 
         CashFlowResult cashFlowResult = row.getCashFlowResult();
         if (cashFlowResult != null) {
-            ps.setLong(l++, cashFlowResult.getTotalAmount());
-            ps.setLong(l++, cashFlowResult.getMerchantAmount());
+            ps.setLong(l++, cashFlowResult.getAmount());
             ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
             ps.setLong(l++, cashFlowResult.getSystemFee());
             ps.setLong(l++, cashFlowResult.getExternalFee());

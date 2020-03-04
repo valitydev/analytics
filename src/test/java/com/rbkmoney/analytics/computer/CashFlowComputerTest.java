@@ -30,8 +30,7 @@ public class CashFlowComputerTest {
         CashFlowResult result = compute.get();
 
         assertThat(result.getAccountId(), is(1L));
-        assertThat(result.getTotalAmount(), is(1100L));
-        assertThat(result.getMerchantAmount(), is(1000L));
+        assertThat(result.getAmount(), is(1000L));
         assertThat(result.getSystemFee(), is(100L));
         assertThat(result.getProviderFee(), is(20L));
         assertThat(result.getExternalFee(), is(10L));

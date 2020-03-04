@@ -113,13 +113,13 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         //check sum for captured payment
         long sum = clickHouseJdbcTemplate.queryForObject(
-                "SELECT shopId, sum(totalAmount) as sum " +
+                "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink " +
                         "group by shopId, currency, status " +
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'captured' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(1100L, sum);
+        Assert.assertEquals(1000L, sum);
 
         //statistic for paymentTool
         List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
@@ -152,17 +152,17 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         //check sum for succeeded refund
         sum = clickHouseJdbcTemplate.queryForObject(
-                "SELECT shopId, sum(totalAmount) as sum " +
+                "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink_refund " +
                         "group by shopId, currency, status " +
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'succeeded' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(446L, sum);
+        Assert.assertEquals(246L, sum);
 
         //check collapsing sum for pending refund
         List<Map<String, Object>> resultList = clickHouseJdbcTemplate.queryForList(
-                "SELECT shopId, sum(totalAmount) as sum " +
+                "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink_refund " +
                         "group by shopId, currency, status " +
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'pending' and currency = 'RUB'");
@@ -180,13 +180,13 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         //check sum for succeeded refund
         sum = clickHouseJdbcTemplate.queryForObject(
-                "SELECT shopId, sum(totalAmount) as sum " +
+                "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink_adjustment " +
                         "group by shopId, currency, status " +
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'captured' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(123L, sum);
+        Assert.assertEquals(23L, sum);
     }
 
     private void mockPayment(String sourceId) throws TException, IOException {

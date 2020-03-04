@@ -14,11 +14,11 @@ public class ClickHouseAdjustmentBatchPreparedStatementSetter implements BatchPr
 
     public static final String INSERT = "INSERT INTO analytic.events_sink_adjustment " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
-            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, " +
-            "oldTotalAmount, oldMerchantAmount, oldGuaranteeDeposit, oldSystemFee, oldProviderFee, oldExternalFee, " +
+            "amount, guaranteeDeposit, systemFee, providerFee, externalFee, " +
+            "oldAmount, oldGuaranteeDeposit, oldSystemFee, oldProviderFee, oldExternalFee, " +
             "currency, providerName, status, errorReason,  invoiceId, paymentId, adjustmentId, sequenceId, ip, " +
             "fingerprint, cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgAdjustmentRow> batch;
 
@@ -64,8 +64,7 @@ public class ClickHouseAdjustmentBatchPreparedStatementSetter implements BatchPr
     }
 
     private int initCashFlow(PreparedStatement ps, int l, CashFlowResult cashFlowResult) throws SQLException {
-        ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getTotalAmount() : 0);
-        ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getMerchantAmount() : 0);
+        ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getAmount() : 0);
         ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getGuaranteeDeposit() : 0);
         ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getSystemFee() : 0);
         ps.setLong(l++, cashFlowResult != null ? cashFlowResult.getExternalFee() : 0);

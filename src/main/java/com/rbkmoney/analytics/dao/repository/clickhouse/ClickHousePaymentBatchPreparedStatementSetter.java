@@ -15,10 +15,10 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
 
     public static final String INSERT = "INSERT INTO analytic.events_sink " +
             "(timestamp, eventTime, eventTimeHour, partyId, shopId, email," +
-            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
+            "amount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
             "status, errorReason,  invoiceId, paymentId, sequenceId, ip, bin, maskedPan, paymentTool, " +
             "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgPaymentSinkRow> batch;
 
@@ -37,8 +37,7 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
 
         CashFlowResult cashFlowResult = row.getCashFlowResult();
         if (cashFlowResult != null) {
-            ps.setLong(l++, cashFlowResult.getTotalAmount());
-            ps.setLong(l++, cashFlowResult.getMerchantAmount());
+            ps.setLong(l++, cashFlowResult.getAmount());
             ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
             ps.setLong(l++, cashFlowResult.getSystemFee());
             ps.setLong(l++, cashFlowResult.getExternalFee());

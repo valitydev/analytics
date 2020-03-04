@@ -14,7 +14,7 @@ public class ReversedCashFlowComputer {
 
     public Optional<CashFlowResult> compute(List<FinalCashFlowPosting> reversedCashFlow) {
         long accountId = -1;
-        long merchantAmount = 0L;
+        long amount = 0L;
         long systemFee = 0L;
         long providerFee = 0L;
         long externalFee = 0L;
@@ -31,12 +31,12 @@ public class ReversedCashFlowComputer {
 
             if (isReversedPayment(posting)) {
                 accountId = posting.getSource().getAccountId();
-                merchantAmount += posting.getVolume().getAmount();
+                amount += posting.getVolume().getAmount();
             }
 
             if (isReversedRefund(posting)) {
                 accountId = posting.getDestination().getAccountId();
-                merchantAmount += posting.getVolume().getAmount();
+                amount += posting.getVolume().getAmount();
             }
 
             if (isReversedSystemFee(posting)) {
@@ -60,8 +60,7 @@ public class ReversedCashFlowComputer {
 
         return Optional.ofNullable(CashFlowResult.builder()
                 .accountId(accountId)
-                .totalAmount(merchantAmount + systemFee)
-                .merchantAmount(merchantAmount)
+                .amount(amount)
                 .systemFee(systemFee)
                 .providerFee(providerFee)
                 .externalFee(externalFee)

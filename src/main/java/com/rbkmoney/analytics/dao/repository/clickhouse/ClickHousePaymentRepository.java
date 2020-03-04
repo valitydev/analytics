@@ -56,7 +56,7 @@ public class ClickHousePaymentRepository {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, avg(totalAmount) as num " +
+        String selectSql = "SELECT currency, avg(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -87,7 +87,7 @@ public class ClickHousePaymentRepository {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, sum(totalAmount) as num " +
+        String selectSql = "SELECT currency, sum(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -149,7 +149,7 @@ public class ClickHousePaymentRepository {
                                                          SplitUnit splitUnit) {
         String groupBy = SplitUtils.initGroupByFunction(splitUnit);
 
-        String selectSql = "SELECT " + groupBy + " , currency, sum(totalAmount) as num " +
+        String selectSql = "SELECT " + groupBy + " , currency, sum(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency, " + groupBy +
