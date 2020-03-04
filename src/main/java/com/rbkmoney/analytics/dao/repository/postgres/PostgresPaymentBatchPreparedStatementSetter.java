@@ -12,10 +12,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostgresPaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
-    public static final String INSERT = "INSERT INTO an.balance_change " +
-            "(timestamp, party_id, shop_id, amount, currency)" +
-            " VALUES (?, ?, ?, ?, ?)";
-
     private final List<MgPaymentSinkRow> batch;
 
     @Override

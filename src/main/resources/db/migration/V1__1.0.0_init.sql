@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS analytics;
 
-CREATE TABLE an.balance_change
+CREATE TABLE IF NOT EXISTS analytics.balance_change
 (
     id        BIGSERIAL                   NOT NULL,
     timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -11,6 +11,6 @@ CREATE TABLE an.balance_change
     CONSTRAINT balance_change_pkey PRIMARY KEY (id)
 );
 
-CREATE INDEX balance_change_timestamp on an.balance_change (timestamp);
-CREATE INDEX balance_change_party_id on an.balance_change (party_id);
-CREATE INDEX balance_change_party_id on an.balance_change (shop_id);
+CREATE INDEX IF NOT EXISTS balance_change_timestamp on analytics.balance_change (timestamp);
+CREATE INDEX IF NOT EXISTS balance_change_party_id on analytics.balance_change (party_id);
+CREATE INDEX IF NOT EXISTS balance_change_party_id on analytics.balance_change (shop_id);

@@ -1,8 +1,6 @@
 package com.rbkmoney.analytics;
 
-import com.rbkmoney.analytics.dao.repository.postgres.PostgresAdjustmentRepository;
-import com.rbkmoney.analytics.dao.repository.postgres.PostgresPaymentRepository;
-import com.rbkmoney.analytics.dao.repository.postgres.PostgresRefundRepository;
+import com.rbkmoney.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
 import com.rbkmoney.analytics.service.HgClientService;
 import com.rbkmoney.analytics.utils.BuildUtils;
 import com.rbkmoney.analytics.utils.EventRangeFactory;
@@ -67,13 +65,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
     InvoicingSrv.Iface invoicingClient;
 
     @MockBean
-    PostgresPaymentRepository postgresPaymentRepository;
-
-    @MockBean
-    PostgresRefundRepository postgresRefundRepository;
-
-    @MockBean
-    PostgresAdjustmentRepository postgresAdjustmentRepository;
+    PostgresBalanceChangesRepository postgresBalanceChangesRepository;
 
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;
