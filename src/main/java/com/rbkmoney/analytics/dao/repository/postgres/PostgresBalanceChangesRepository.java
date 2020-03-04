@@ -6,13 +6,18 @@ import com.rbkmoney.analytics.dao.model.MgRefundRow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
 @Service
+@EnableRetry
 @RequiredArgsConstructor
 public class PostgresBalanceChangesRepository {
 
@@ -22,6 +27,7 @@ public class PostgresBalanceChangesRepository {
 
     private final JdbcTemplate postgresJdbcTemplate;
 
+    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertPayments(List<MgPaymentSinkRow> mgPaymentSinkRows) {
         if (CollectionUtils.isEmpty(mgPaymentSinkRows)) return;
 
@@ -38,6 +44,7 @@ public class PostgresBalanceChangesRepository {
                 mgPaymentSinkRows.get(0).getInvoiceId());
     }
 
+    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertAdjustments(List<MgAdjustmentRow> adjustmentRows) {
         if (CollectionUtils.isEmpty(adjustmentRows)) return;
 
@@ -54,6 +61,7 @@ public class PostgresBalanceChangesRepository {
                 adjustmentRows.get(0).getInvoiceId());
     }
 
+    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertRefunds(List<MgRefundRow> mgRefundRows) {
         if (CollectionUtils.isEmpty(mgRefundRows)) return;
 
