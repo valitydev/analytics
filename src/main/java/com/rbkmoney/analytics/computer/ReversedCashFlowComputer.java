@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import static org.msgpack.core.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkState;
 
 @Service
-public class CashFlowComputer {
+public class ReversedCashFlowComputer {
 
-    public Optional<CashFlowResult> compute(List<FinalCashFlowPosting> cashFlow) {
+    public Optional<CashFlowResult> compute(List<FinalCashFlowPosting> reversedCashFlow) {
         long accountId = -1;
         long merchantAmount = 0L;
         long systemFee = 0L;
@@ -20,43 +20,44 @@ public class CashFlowComputer {
         long externalFee = 0L;
         long guaranteeDeposit = 0L;
 
-        if (cashFlow == null) {
+        if (reversedCashFlow == null) {
             return Optional.empty();
         }
 
-        for (FinalCashFlowPosting posting : cashFlow) {
+        for (FinalCashFlowPosting posting : reversedCashFlow) {
             if (!posting.isSetSource() || !posting.isSetDestination()) {
                 continue;
             }
 
-            if (isPayment(posting)) {
-                accountId = posting.getDestination().getAccountId();
-                merchantAmount += posting.getVolume().getAmount();
-            }
-
-            if (isRefund(posting)) {
+            if (isReversedPayment(posting)) {
                 accountId = posting.getSource().getAccountId();
                 merchantAmount += posting.getVolume().getAmount();
             }
 
-            if (isSystemFee(posting)) {
+            if (isReversedRefund(posting)) {
+                accountId = posting.getDestination().getAccountId();
+                merchantAmount += posting.getVolume().getAmount();
+            }
+
+            if (isReversedSystemFee(posting)) {
                 systemFee += posting.getVolume().getAmount();
             }
 
-            if (isProviderFee(posting)) {
+            if (isReversedProviderFee(posting)) {
                 providerFee += posting.getVolume().getAmount();
             }
 
-            if (isExternalFee(posting)) {
+            if (isReversedExternalFee(posting)) {
                 externalFee += posting.getVolume().getAmount();
             }
 
-            if (isGuaranteeDeposit(posting)) {
+            if (isReversedGuaranteeDeposit(posting)) {
                 guaranteeDeposit += posting.getVolume().getAmount();
             }
 
             checkState(accountId > 0, "Unable to get correct accountId");
         }
+
         return Optional.ofNullable(CashFlowResult.builder()
                 .accountId(accountId)
                 .totalAmount(merchantAmount + systemFee)
@@ -68,34 +69,34 @@ public class CashFlowComputer {
                 .build());
     }
 
-    private boolean isPayment(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetProvider() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetMerchant() && isSettlement(posting.getDestination());
+    private boolean isReversedPayment(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetProvider() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetMerchant() && isSettlement(posting.getSource());
     }
 
-    private boolean isRefund(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetMerchant() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetProvider() && isSettlement(posting.getDestination());
+    private boolean isReversedRefund(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetMerchant() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetProvider() && isSettlement(posting.getSource());
     }
 
-    private boolean isSystemFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetMerchant() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetSystem() && isSettlement(posting.getDestination());
+    private boolean isReversedSystemFee(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetMerchant() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetSystem() && isSettlement(posting.getSource());
     }
 
-    private boolean isProviderFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetSystem() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetProvider() && isSettlement(posting.getDestination());
+    private boolean isReversedProviderFee(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetSystem() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetProvider() && isSettlement(posting.getSource());
     }
 
-    private boolean isExternalFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetSystem() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetExternal() && isExternal(posting.getDestination());
+    private boolean isReversedExternalFee(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetSystem() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetExternal() && isExternal(posting.getSource());
     }
 
-    private boolean isGuaranteeDeposit(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetMerchant() && isSettlement(posting.getSource())
-                && posting.getDestination().getAccountType().isSetMerchant() && isGuarantee(posting.getDestination());
+    private boolean isReversedGuaranteeDeposit(FinalCashFlowPosting posting) {
+        return posting.getDestination().getAccountType().isSetMerchant() && isSettlement(posting.getDestination())
+                && posting.getSource().getAccountType().isSetMerchant() && isGuarantee(posting.getSource());
     }
 
     private boolean isSettlement(FinalCashFlowAccount account) {

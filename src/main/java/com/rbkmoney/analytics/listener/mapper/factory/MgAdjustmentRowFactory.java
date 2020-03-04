@@ -1,6 +1,7 @@
 package com.rbkmoney.analytics.listener.mapper.factory;
 
 import com.rbkmoney.analytics.computer.CashFlowComputer;
+import com.rbkmoney.analytics.computer.ReversedCashFlowComputer;
 import com.rbkmoney.analytics.dao.model.MgAdjustmentRow;
 import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.domain.Invoice;
@@ -18,6 +19,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MgAdjustmentRowFactory extends MgBaseRowFactory<MgAdjustmentRow> {
+
+    private final CashFlowComputer cashFlowComputer;
+    private final ReversedCashFlowComputer reversedCashFlowComputer;
 
     @Override
     public MgAdjustmentRow create(MachineEvent machineEvent, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo,
@@ -40,12 +44,12 @@ public class MgAdjustmentRowFactory extends MgBaseRowFactory<MgAdjustmentRow> {
                         List<FinalCashFlowPosting> cashFlow = adjustment.getNewCashFlow();
                         row.setAdjustmentId(id);
                         row.setPaymentId(payment.getPayment().getId());
-                        CashFlowComputer.compute(cashFlow)
+                        cashFlowComputer.compute(cashFlow)
                                 .ifPresent(row::setCashFlowResult);
                         initBaseRow(machineEvent, row, payment);
                         List<FinalCashFlowPosting> oldCashFlow = adjustment.getNewCashFlow();
                         if (!CollectionUtils.isEmpty(oldCashFlow)) {
-                            CashFlowComputer.compute(oldCashFlow)
+                            reversedCashFlowComputer.compute(oldCashFlow)
                                     .ifPresent(row::setOldCashFlowResult);
                         }
                     }
