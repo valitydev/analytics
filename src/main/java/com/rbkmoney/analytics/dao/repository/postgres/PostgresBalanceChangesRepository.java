@@ -14,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,8 +22,9 @@ import java.util.Map;
 public class PostgresBalanceChangesRepository {
 
     private static final String INSERT = "INSERT INTO analytics.balance_change " +
-            "(id, timestamp, party_id, shop_id, amount, currency)" +
-            " VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING";
+            "(id, timestamp, party_id, shop_id, amount, currency) " +
+            "VALUES (?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (id) DO NOTHING";
 
     private final JdbcTemplate postgresJdbcTemplate;
 
