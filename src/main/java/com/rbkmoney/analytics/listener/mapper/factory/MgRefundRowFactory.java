@@ -17,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MgRefundRowFactory extends MgBaseRowFactory<MgRefundRow> {
 
+    private final CashFlowComputer cashFlowComputer;
+
     @Override
     public MgRefundRow create(MachineEvent machineEvent, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo, String refundId) {
         MgRefundRow mgPaymentSinkRow = new MgRefundRow();
@@ -38,7 +40,7 @@ public class MgRefundRowFactory extends MgBaseRowFactory<MgRefundRow> {
                         List<FinalCashFlowPosting> cashFlow = refund.isSetCashFlow() ? refund.getCashFlow() : payment.getCashFlow();
                         row.setRefundId(refundId);
                         row.setPaymentId(payment.getPayment().getId());
-                        CashFlowComputer.compute(cashFlow)
+                        cashFlowComputer.compute(cashFlow)
                                 .ifPresent(row::setCashFlowResult);
                         initBaseRow(machineEvent, row, payment);
                     }

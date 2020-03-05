@@ -17,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MgPaymentSinkRowFactory extends MgBaseRowFactory<MgPaymentSinkRow> {
 
+    private final CashFlowComputer cashFlowComputer;
+
     @Override
     public MgPaymentSinkRow create(MachineEvent machineEvent, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo, String paymentId) {
         MgPaymentSinkRow mgPaymentSinkRow = new MgPaymentSinkRow();
@@ -35,7 +37,7 @@ public class MgPaymentSinkRowFactory extends MgBaseRowFactory<MgPaymentSinkRow> 
         for (InvoicePayment payment : invoiceInfo.getPayments()) {
             if (payment.isSetPayment() && payment.getPayment().getId().equals(paymentId)) {
                 List<FinalCashFlowPosting> cashFlow = payment.getCashFlow();
-                CashFlowComputer.compute(cashFlow)
+                cashFlowComputer.compute(cashFlow)
                         .ifPresent(row::setCashFlowResult);
                 initBaseRow(machineEvent, row, payment);
             }

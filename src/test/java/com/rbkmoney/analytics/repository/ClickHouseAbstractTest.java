@@ -1,7 +1,7 @@
 package com.rbkmoney.analytics.repository;
 
-import com.rbkmoney.analytics.config.ClickhouseConfig;
-import com.rbkmoney.analytics.config.properties.ClickhouseDbProperties;
+import com.rbkmoney.analytics.config.ClickHouseConfig;
+import com.rbkmoney.analytics.config.properties.ClickHouseDbProperties;
 import com.rbkmoney.analytics.utils.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -19,9 +19,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @Slf4j
-@ContextConfiguration(initializers = ClickhouseAbstractTest.Initializer.class,
-        classes = {JdbcTemplateAutoConfiguration.class, ClickhouseDbProperties.class, ClickhouseConfig.class})
-public class ClickhouseAbstractTest {
+@ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
+        classes = {JdbcTemplateAutoConfiguration.class, ClickHouseDbProperties.class, ClickHouseConfig.class})
+public class ClickHouseAbstractTest {
 
     @ClassRule
     public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();

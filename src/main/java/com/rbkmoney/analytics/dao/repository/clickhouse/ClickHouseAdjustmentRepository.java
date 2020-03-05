@@ -1,4 +1,4 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.model.MgAdjustmentRow;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +11,16 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MgAdjustmentRepository {
+public class ClickHouseAdjustmentRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate clickHouseJdbcTemplate;
 
     public void insertBatch(List<MgAdjustmentRow> adjustmentRows) {
         if (adjustmentRows != null && !adjustmentRows.isEmpty()) {
             log.info("Batch start insert adjustmentRows: {} firstElement: {}", adjustmentRows.size(),
                     adjustmentRows.get(0).getInvoiceId());
-            jdbcTemplate.batchUpdate(MgAdjustmentBatchPreparedStatementSetter.INSERT,
-                    new MgAdjustmentBatchPreparedStatementSetter(adjustmentRows));
+            clickHouseJdbcTemplate.batchUpdate(ClickHouseAdjustmentBatchPreparedStatementSetter.INSERT,
+                    new ClickHouseAdjustmentBatchPreparedStatementSetter(adjustmentRows));
             log.info("Batch inserted adjustmentRows: {} firstElement: {}", adjustmentRows.size(),
                     adjustmentRows.get(0).getInvoiceId());
         }

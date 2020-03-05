@@ -1,4 +1,4 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
 import com.rbkmoney.analytics.dao.mapper.SplitRowsMapper;
@@ -23,14 +23,14 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MgPaymentRepository {
+public class ClickHousePaymentRepository {
 
     public static final String SHOP_ID = "shopId";
     public static final String PARTY_ID = "partyId";
     public static final String PAYMENT_TOOL = "paymentTool";
     public static final String ERROR_REASON = "errorReason";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate clickHouseJdbcTemplate;
 
     private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
     private final CommonRowsMapper<NumberModel> countModelCommonRowsMapper;
@@ -42,8 +42,8 @@ public class MgPaymentRepository {
         if (mgPaymentSinkRows != null && !mgPaymentSinkRows.isEmpty()) {
             log.info("Batch start insert mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),
                     mgPaymentSinkRows.get(0).getInvoiceId());
-            jdbcTemplate.batchUpdate(MgPaymentBatchPreparedStatementSetter.INSERT,
-                    new MgPaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
+            clickHouseJdbcTemplate.batchUpdate(ClickHousePaymentBatchPreparedStatementSetter.INSERT,
+                    new ClickHousePaymentBatchPreparedStatementSetter(mgPaymentSinkRows));
             log.info("Batch inserted mgPaymentSinkRows: {} firstElement: {}", mgPaymentSinkRows.size(),
                     mgPaymentSinkRows.get(0).getInvoiceId());
         }
@@ -56,7 +56,7 @@ public class MgPaymentRepository {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, avg(totalAmount) as num " +
+        String selectSql = "SELECT currency, avg(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -76,7 +76,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return costCommonRowsMapper.map(rows);
     }
 
@@ -87,7 +87,7 @@ public class MgPaymentRepository {
         Date dateFrom = DateFilterUtils.parseDate(from);
         Date dateTo = DateFilterUtils.parseDate(to);
 
-        String selectSql = "SELECT currency, sum(totalAmount) as num " +
+        String selectSql = "SELECT currency, sum(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
@@ -107,7 +107,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return costCommonRowsMapper.map(rows);
     }
 
@@ -138,7 +138,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return countModelCommonRowsMapper.map(rows);
     }
 
@@ -149,7 +149,7 @@ public class MgPaymentRepository {
                                                          SplitUnit splitUnit) {
         String groupBy = SplitUtils.initGroupByFunction(splitUnit);
 
-        String selectSql = "SELECT " + groupBy + " , currency, sum(totalAmount) as num " +
+        String selectSql = "SELECT " + groupBy + " , currency, sum(amount) as num " +
                 "from analytic.events_sink ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency, " + groupBy +
@@ -171,7 +171,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return splitCostCommonRowsMapper.map(rows, splitUnit);
     }
 
@@ -204,7 +204,7 @@ public class MgPaymentRepository {
             params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());
         return splitStatusRowsMapper.map(rows, splitUnit);
     }
 
@@ -246,7 +246,7 @@ public class MgPaymentRepository {
             params = new Object[]{dateFrom, dateTo, from, to, from, to, partyId, dateFrom, dateTo, from, to, from, to, partyId};
         }
 
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+        List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params);
         return namingDistributionCommonRowsMapper.map(rows);
     }
 

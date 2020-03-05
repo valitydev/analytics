@@ -28,6 +28,12 @@ clickhouse.db:
   connection.timeout: 50000
   compress: false
 
+postgres.db:
+  url: @postgres.db.url@
+  user: @postgres.db.user@
+  password: @postgres.db.password@
+  schema: @postgres.db.schema@
+
 kafka:
   bootstrap.servers: localhost:9092
   max:

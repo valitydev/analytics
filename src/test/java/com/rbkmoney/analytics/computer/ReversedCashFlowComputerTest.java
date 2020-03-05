@@ -8,22 +8,21 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-public class CashFlowComputerTest {
+public class ReversedCashFlowComputerTest {
 
-    private CashFlowComputer cashFlowComputer;
+    private ReversedCashFlowComputer reversedCashFlowComputer;
 
     @Before
     public void setUp() {
-        cashFlowComputer = new CashFlowComputer();
+        reversedCashFlowComputer = new ReversedCashFlowComputer();
     }
 
     @Test
     public void shouldComputeCashFlowResult() {
         // Given - When
-        Optional<CashFlowResult> compute = cashFlowComputer.compute(BuildUtils.createCashFlow(1000L, 100L));
+        Optional<CashFlowResult> compute = reversedCashFlowComputer.compute(BuildUtils.createReversedCashFlow(1000L, 100L));
 
         // Then
         assertTrue(compute.isPresent());

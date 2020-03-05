@@ -1,7 +1,7 @@
 package com.rbkmoney.analytics.listener.handler;
 
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
-import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
+import com.rbkmoney.analytics.dao.repository.MgRepositoryFacade;
 import com.rbkmoney.analytics.listener.Processor;
 import com.rbkmoney.analytics.listener.mapper.RefundPaymentMapper;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RefundBatchHandler implements BatchHandler<InvoiceChange, MachineEvent> {
 
-    private final MgRefundRepository mgRefundRepository;
+    private final MgRepositoryFacade mgRepositoryFacade;
     private final List<RefundPaymentMapper> mappers;
 
     @Override
@@ -41,6 +41,6 @@ public class RefundBatchHandler implements BatchHandler<InvoiceChange, MachineEv
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        return () -> mgRefundRepository.insertBatch(invoiceEvents);
+        return () -> mgRepositoryFacade.insertRefunds(invoiceEvents);
     }
 }

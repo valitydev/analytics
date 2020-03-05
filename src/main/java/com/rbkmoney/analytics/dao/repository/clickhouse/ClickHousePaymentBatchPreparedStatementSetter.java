@@ -1,6 +1,7 @@
-package com.rbkmoney.analytics.dao.repository;
+package com.rbkmoney.analytics.dao.repository.clickhouse;
 
-import com.rbkmoney.analytics.dao.model.MgRefundRow;
+import com.rbkmoney.analytics.constant.ClickHouseUtilsValue;
+import com.rbkmoney.analytics.dao.model.MgPaymentSinkRow;
 import com.rbkmoney.analytics.domain.CashFlowResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -10,20 +11,20 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class MgRefundBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
+public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
-    public static final String INSERT = "INSERT INTO analytic.events_sink_refund " +
-            "(timestamp, eventTime, eventTimeHour, partyId, shopId, email, " +
-            "totalAmount, merchantAmount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
-            "status, errorReason,  invoiceId, paymentId, refundId, sequenceId, ip, " +
+    public static final String INSERT = "INSERT INTO analytic.events_sink " +
+            "(timestamp, eventTime, eventTimeHour, partyId, shopId, email," +
+            "amount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
+            "status, errorReason,  invoiceId, paymentId, sequenceId, ip, bin, maskedPan, paymentTool, " +
             "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private final List<MgRefundRow> batch;
+    private final List<MgPaymentSinkRow> batch;
 
     @Override
     public void setValues(PreparedStatement ps, int i) throws SQLException {
-        MgRefundRow row = batch.get(i);
+        MgPaymentSinkRow row = batch.get(i);
         int l = 1;
         ps.setDate(l++, row.getTimestamp());
         ps.setLong(l++, row.getEventTime());
@@ -36,8 +37,7 @@ public class MgRefundBatchPreparedStatementSetter implements BatchPreparedStatem
 
         CashFlowResult cashFlowResult = row.getCashFlowResult();
         if (cashFlowResult != null) {
-            ps.setLong(l++, cashFlowResult.getTotalAmount());
-            ps.setLong(l++, cashFlowResult.getMerchantAmount());
+            ps.setLong(l++, cashFlowResult.getAmount());
             ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
             ps.setLong(l++, cashFlowResult.getSystemFee());
             ps.setLong(l++, cashFlowResult.getExternalFee());
@@ -53,10 +53,12 @@ public class MgRefundBatchPreparedStatementSetter implements BatchPreparedStatem
 
         ps.setString(l++, row.getInvoiceId());
         ps.setString(l++, row.getPaymentId());
-        ps.setString(l++, row.getRefundId());
         ps.setLong(l++, row.getSequenceId());
 
         ps.setString(l++, row.getIp());
+        ps.setString(l++, row.getBin());
+        ps.setString(l++, row.getMaskedPan());
+        ps.setString(l++, row.getPaymentTool() != null ? row.getPaymentTool().name() : ClickHouseUtilsValue.UNKNOWN);
 
         ps.setString(l++, row.getFingerprint());
         ps.setString(l++, row.getCardToken());

@@ -54,8 +54,9 @@ public abstract class KafkaAbstractTest {
 
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues
-                    .of("kafka.bootstrap.servers=" + kafka.getBootstrapServers())
+            TestPropertyValues.of(
+                    "kafka.bootstrap.servers=" + kafka.getBootstrapServers(),
+                    "spring.flyway.enabled=false")
                     .applyTo(configurableApplicationContext.getEnvironment());
             initTopic(EVENT_SINK);
         }

@@ -14,8 +14,7 @@ create table analytic.events_sink
     email                 String,
     providerName          String,
 
-    totalAmount           UInt64,
-    merchantAmount        UInt64,
+    amount                UInt64,
     guaranteeDeposit      UInt64,
     systemFee             UInt64,
     providerFee           UInt64,
@@ -59,8 +58,7 @@ create table analytic.events_sink_refund
     email                 String,
     providerName          String,
 
-    totalAmount           UInt64,
-    merchantAmount        UInt64,
+    amount                UInt64,
     guaranteeDeposit      UInt64,
     systemFee             UInt64,
     providerFee           UInt64,
@@ -104,15 +102,13 @@ create table analytic.events_sink_adjustment
     email                 String,
     providerName          String,
 
-    totalAmount           UInt64,
-    merchantAmount        UInt64,
+    amount                UInt64,
     guaranteeDeposit      UInt64,
     systemFee             UInt64,
     providerFee           UInt64,
     externalFee           UInt64,
 
-    oldTotalAmount        UInt64,
-    oldMerchantAmount     UInt64,
+    oldAmount             UInt64,
     oldGuaranteeDeposit   UInt64,
     oldSystemFee          UInt64,
     oldProviderFee        UInt64,

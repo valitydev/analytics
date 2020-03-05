@@ -4,9 +4,9 @@ import com.rbkmoney.analytics.config.RawMapperConfig;
 import com.rbkmoney.analytics.converter.*;
 import com.rbkmoney.analytics.dao.mapper.SplitRowsMapper;
 import com.rbkmoney.analytics.dao.mapper.SplitStatusRowsMapper;
-import com.rbkmoney.analytics.dao.repository.MgPaymentRepository;
-import com.rbkmoney.analytics.dao.repository.MgRefundRepository;
-import com.rbkmoney.analytics.repository.ClickhouseAbstractTest;
+import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHousePaymentRepository;
+import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHouseRefundRepository;
+import com.rbkmoney.analytics.repository.ClickHouseAbstractTest;
 import com.rbkmoney.analytics.repository.PaymentRepositoryTest;
 import com.rbkmoney.damsel.analytics.*;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +26,11 @@ import java.util.List;
 @ContextConfiguration(initializers = PaymentRepositoryTest.Initializer.class,
         classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
-                RawMapperConfig.class, MgPaymentRepository.class, MgRefundRepository.class, AnalyticsHandler.class,
+                RawMapperConfig.class, ClickHousePaymentRepository.class, ClickHouseRefundRepository.class, AnalyticsHandler.class,
                 DaoErrorDistributionsToResponseConverter.class, DaoNamingDistributionsToResponseConverter.class,
                 CostToAmountResponseConverter.class, CountModelCountResponseConverter.class,
                 GroupedCurAmountToResponseConverter.class, GroupedCurCountToResponseConverter.class})
-public class AnalyticsHandlerTest extends ClickhouseAbstractTest {
+public class AnalyticsHandlerTest extends ClickHouseAbstractTest {
 
     @Autowired
     private AnalyticsHandler analyticsHandler;

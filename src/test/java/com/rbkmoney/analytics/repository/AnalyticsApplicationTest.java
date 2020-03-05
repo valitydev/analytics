@@ -14,31 +14,31 @@ import java.util.Map;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
+public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate clickHouseJdbcTemplate;
 
     @Test
     public void testAmount() {
-        long sum = jdbcTemplate.queryForObject(
-                "SELECT shopId, sum(totalAmount) as sum " +
+        long sum = clickHouseJdbcTemplate.queryForObject(
+                "SELECT shopId, sum(amount) as sum " +
                         "from analytic.events_sink where status = 'captured'" +
                         "group by partyId, shopId, currency " +
                         "having shopId = 'ad8b7bfd-0760-4781-a400-51903ee8e501' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
         Assert.assertEquals(5000L, sum);
 
-        sum = jdbcTemplate.queryForObject(
-                "SELECT partyId, sum(totalAmount) as sum " +
+        sum = clickHouseJdbcTemplate.queryForObject(
+                "SELECT partyId, sum(amount) as sum " +
                         "from analytic.events_sink where status = 'captured' " +
                         "group by partyId, currency " +
                         "having partyId = 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772f' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
         Assert.assertEquals(55000L, sum);
 
-        sum = jdbcTemplate.queryForObject(
-                "SELECT partyId, avg(totalAmount) as sum " +
+        sum = clickHouseJdbcTemplate.queryForObject(
+                "SELECT partyId, avg(amount) as sum " +
                         "from analytic.events_sink where status = 'captured' " +
                         "group by partyId, currency " +
                         "having partyId = 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772f' and currency = 'RUB'",
@@ -48,7 +48,7 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testCount() {
-        long sum = jdbcTemplate.queryForObject(
+        long sum = clickHouseJdbcTemplate.queryForObject(
                 "SELECT partyId, uniq(invoiceId, paymentId) as sum " +
                         "from analytic.events_sink where status = 'captured'" +
                         "group by partyId, currency " +
@@ -59,8 +59,8 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testCountCurrent() {
-        long sum = jdbcTemplate.queryForObject(
-                "SELECT partyId, sum(totalAmount) as sum " +
+        long sum = clickHouseJdbcTemplate.queryForObject(
+                "SELECT partyId, sum(amount) as sum " +
                         "from analytic.events_sink " +
                         "group by partyId, currency " +
                         "having partyId = 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772a' and currency = 'RUB'",
@@ -70,7 +70,7 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testStatusListPayment() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, status, count() as cnt " +
                         "from analytic.events_sink " +
                         "group by partyId, currency, status " +
@@ -85,8 +85,8 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testAmountListPayment() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
-                "SELECT partyId, status, sum(totalAmount) as sum " +
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
+                "SELECT partyId, status, sum(amount) as sum " +
                         "from analytic.events_sink " +
                         "group by partyId, currency, status " +
                         "having partyId = 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772a' and currency = 'RUB' and status in('captured', 'processed')");
@@ -100,7 +100,7 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testPaymentTool() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, paymentTool," +
                         "( SELECT count() from analytic.events_sink " +
                         "group by partyId, currency " +
@@ -120,7 +120,7 @@ public class AnalyticsApplicationTest extends ClickhouseAbstractTest {
 
     @Test
     public void testErrorReason() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(
+        List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
                 "SELECT partyId, errorReason," +
                         "( SELECT count() from analytic.events_sink " +
                         "group by partyId,status, currency " +
