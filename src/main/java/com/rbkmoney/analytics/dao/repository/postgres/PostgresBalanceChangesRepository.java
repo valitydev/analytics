@@ -22,8 +22,9 @@ import java.util.List;
 public class PostgresBalanceChangesRepository {
 
     private static final String INSERT = "INSERT INTO analytics.balance_change " +
-            "(timestamp, party_id, shop_id, amount, currency)" +
-            " VALUES (?, ?, ?, ?, ?)";
+            "(id, timestamp, party_id, shop_id, amount, currency) " +
+            "VALUES (?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (id) DO NOTHING";
 
     private final JdbcTemplate postgresJdbcTemplate;
 
