@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS analytics;
 
 CREATE TABLE IF NOT EXISTS analytics.balance_change
 (
-    id        BIGSERIAL                   NOT NULL,
+    id        CHARACTER VARYING           NOT NULL,
     timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     party_id  CHARACTER VARYING           NOT NULL,
     shop_id   CHARACTER VARYING           NOT NULL,

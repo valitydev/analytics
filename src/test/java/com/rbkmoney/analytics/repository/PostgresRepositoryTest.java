@@ -73,6 +73,7 @@ public class PostgresRepositoryTest {
     private MgPaymentSinkRow payment() {
         MgPaymentSinkRow mgPaymentSinkRow = new MgPaymentSinkRow();
         mgPaymentSinkRow.setInvoiceId("invoice_id");
+        mgPaymentSinkRow.setSequenceId(1L);
         mgPaymentSinkRow.setTimestamp(Date.valueOf(LocalDate.EPOCH));
         mgPaymentSinkRow.setCurrency("RUB");
         mgPaymentSinkRow.setPartyId("party_id");
@@ -88,6 +89,7 @@ public class PostgresRepositoryTest {
     private MgRefundRow refund() {
         MgRefundRow mgRefundRow = new MgRefundRow();
         mgRefundRow.setInvoiceId("invoice_id");
+        mgRefundRow.setSequenceId(2L);
         mgRefundRow.setTimestamp(Date.valueOf(LocalDate.EPOCH));
         mgRefundRow.setCurrency("RUB");
         mgRefundRow.setPartyId("party_id");
@@ -103,6 +105,7 @@ public class PostgresRepositoryTest {
     private MgAdjustmentRow adjustment() {
         MgAdjustmentRow mgAdjustmentRow = new MgAdjustmentRow();
         mgAdjustmentRow.setInvoiceId("invoice_id");
+        mgAdjustmentRow.setSequenceId(3L);
         mgAdjustmentRow.setTimestamp(Date.valueOf(LocalDate.EPOCH));
         mgAdjustmentRow.setCurrency("RUB");
         mgAdjustmentRow.setPartyId("party_id");
