@@ -1,9 +1,8 @@
 package com.rbkmoney.analytics.dao.repository.clickhouse;
 
 import com.rbkmoney.analytics.dao.mapper.CommonRowsMapper;
-import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.model.MgRefundRow;
-import com.rbkmoney.analytics.dao.utils.DateFilterUtils;
+import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.utils.QueryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.clickhouse.except.ClickHouseException;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,17 +39,16 @@ public class ClickHouseRefundRepository {
 
     public List<NumberModel> getPaymentsAmount(String partyId,
                                                List<String> shopIds,
-                                               Long from,
-                                               Long to) {
-        Date dateFrom = DateFilterUtils.parseDate(from);
-        Date dateTo = DateFilterUtils.parseDate(to);
+                                               LocalDateTime from,
+                                               LocalDateTime to) {
+        long fromMillis = from.toInstant(ZoneOffset.UTC).toEpochMilli();
+        long toMillis = to.toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        String selectSql = "SELECT currency, sum(amount * sign) as amount " +
+        String selectSql = "SELECT currency, sum(amount) as amount " +
                 "from analytic.events_sink_refund ";
         String whereSql = "where timestamp >= ? and timestamp <= ? AND eventTimeHour >= ? AND eventTimeHour <= ? AND eventTime >= ? AND eventTime <= ?";
         String groupedSql = " group by partyId, currency " +
-                " having partyId = ? " +
-                " AND sum(sign) > 0";
+                " having partyId = ?";
 
         String sql = selectSql;
         List<Object> params = null;
@@ -57,12 +56,12 @@ public class ClickHouseRefundRepository {
         if (!CollectionUtils.isEmpty(shopIds)) {
             StringBuilder inList = QueryUtils.generateInList(shopIds);
             sql = sql + whereSql + " AND shopId " + inList + groupedSql;
-            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to));
+            params = new ArrayList<>(Arrays.asList(from.toLocalDate(), to.toLocalDate(), fromMillis, toMillis, fromMillis, toMillis));
             params.addAll(shopIds);
             params.add(partyId);
         } else {
             sql = sql + whereSql + groupedSql;
-            params = new ArrayList<>(Arrays.asList(dateFrom, dateTo, from, to, from, to, partyId));
+            params = new ArrayList<>(Arrays.asList(from.toLocalDate(), to.toLocalDate(), fromMillis, toMillis, fromMillis, toMillis, partyId));
         }
 
         List<Map<String, Object>> rows = clickHouseJdbcTemplate.queryForList(sql, params.toArray());

@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,8 +20,8 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
             "amount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
             "status, errorCode, errorReason,  invoiceId, paymentId, sequenceId, ip, bin, maskedPan, paymentTool, " +
             "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator," +
-            "paymentCountry, bankCountry)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "paymentCountry, bankCountry, paymentTime, providerId, terminal)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<MgPaymentSinkRow> batch;
 
@@ -27,9 +29,9 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
     public void setValues(PreparedStatement ps, int i) throws SQLException {
         MgPaymentSinkRow row = batch.get(i);
         int l = 1;
-        ps.setDate(l++, row.getTimestamp());
-        ps.setLong(l++, row.getEventTime());
-        ps.setLong(l++, row.getEventTimeHour());
+        ps.setObject(l++, row.getEventTime().toLocalDate());
+        ps.setLong(l++, row.getEventTime().toEpochSecond(ZoneOffset.UTC));
+        ps.setLong(l++, row.getEventTime().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.HOURS).toEpochMilli());
 
         ps.setString(l++, row.getPartyId());
         ps.setString(l++, row.getShopId());
@@ -70,7 +72,11 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
         ps.setString(l++, row.getMobileOperator());
 
         ps.setString(l++, row.getPaymentCountry());
-        ps.setString(l, row.getBankCountry());
+        ps.setString(l++, row.getBankCountry());
+
+        ps.setLong(l++, row.getPaymentTime().toEpochSecond(ZoneOffset.UTC));
+        ps.setString(l++, row.getProviderId() != null ? row.getProviderId().toString() : ClickHouseUtilsValue.UNKNOWN);
+        ps.setString(l, row.getTerminal() != null ? row.getTerminal().toString() : ClickHouseUtilsValue.UNKNOWN);
     }
 
     @Override

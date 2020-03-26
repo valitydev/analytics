@@ -10,7 +10,6 @@ import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -32,8 +31,12 @@ import ru.yandex.clickhouse.settings.ClickHouseProperties;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -111,7 +114,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'captured' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(1000L, sum);
+        assertEquals(1000L, sum);
 
         //statistic for paymentTool
         List<Map<String, Object>> list = clickHouseJdbcTemplate.queryForList(
@@ -126,7 +129,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
 
         list.forEach(stringObjectMap -> {
                     Object cnt = stringObjectMap.get("sum");
-                    Assert.assertEquals(100.0, cnt);
+                    assertEquals(100.0, cnt);
                     System.out.println(stringObjectMap);
                 }
         );
@@ -150,7 +153,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'succeeded' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(246L, sum);
+        assertEquals(246L, sum);
 
         //check collapsing sum for pending refund
         List<Map<String, Object>> resultList = clickHouseJdbcTemplate.queryForList(
@@ -159,7 +162,7 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                         "group by shopId, currency, status " +
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'pending' and currency = 'RUB'");
 
-        Assert.assertTrue(resultList.isEmpty());
+        assertTrue(resultList.isEmpty());
 
         String source_adjustment = "source_adjustment";
         mockPayment(source_adjustment);
@@ -178,7 +181,12 @@ public class EventSinkListenerTest extends KafkaAbstractTest {
                         "having shopId = '" + MgEventSinkFlowGenerator.SHOP_ID + "' and status = 'captured' and currency = 'RUB'",
                 (resultSet, i) -> resultSet.getLong("sum"));
 
-        Assert.assertEquals(23L, sum);
+        assertEquals(23L, sum);
+
+        List<LocalDate> localDates = clickHouseJdbcTemplate.queryForList(
+                "SELECT timestamp from analytic.events_sink ", LocalDate.class);
+
+        System.out.println(localDates);
     }
 
     private void mockPayment(String sourceId) throws TException, IOException {

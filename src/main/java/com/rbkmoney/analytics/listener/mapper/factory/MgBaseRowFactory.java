@@ -4,7 +4,6 @@ import com.rbkmoney.analytics.constant.ClickHouseUtilsValue;
 import com.rbkmoney.analytics.constant.PaymentToolType;
 import com.rbkmoney.analytics.dao.model.MgBaseRow;
 import com.rbkmoney.analytics.service.GeoProvider;
-import com.rbkmoney.analytics.utils.TimeUtils;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.geck.common.util.TBaseUtil;
@@ -12,11 +11,6 @@ import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-
-import static java.time.ZoneOffset.UTC;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,10 +21,16 @@ public abstract class MgBaseRowFactory<T extends MgBaseRow> implements RowFactor
 
     @Override
     public void initBaseRow(MachineEvent machineEvent, T row, InvoicePayment invoicePayment) {
-        initTime(machineEvent, row);
-        row.setCurrency(invoicePayment.getPayment().getCost().getCurrency().getSymbolicCode());
-        row.setPaymentId(invoicePayment.getPayment().getId());
-        Payer payer = invoicePayment.getPayment().getPayer();
+        row.setEventTime(TypeUtil.stringToLocalDateTime(machineEvent.getCreatedAt()));
+        com.rbkmoney.damsel.domain.InvoicePayment payment = invoicePayment.getPayment();
+        row.setCurrency(payment.getCost().getCurrency().getSymbolicCode());
+        row.setPaymentId(payment.getId());
+        row.setPaymentTime(TypeUtil.stringToLocalDateTime(payment.getCreatedAt()));
+        if (invoicePayment.isSetRoute()) {
+            row.setTerminal(invoicePayment.getRoute().getTerminal().getId());
+            row.setProviderId(invoicePayment.getRoute().getProvider().getId());
+        }
+        Payer payer = payment.getPayer();
         if (payer.isSetPaymentResource() && payer.getPaymentResource().isSetResource()) {
             DisposablePaymentResource resource = payer.getPaymentResource().getResource();
             PaymentTool paymentTool = resource.getPaymentTool();
@@ -82,17 +82,6 @@ public abstract class MgBaseRowFactory<T extends MgBaseRow> implements RowFactor
         } else if (paymentTool.isSetMobileCommerce()) {
             row.setMobileOperator(paymentTool.getMobileCommerce().getOperator().name());
         }
-    }
-
-    private void initTime(MachineEvent event, T row) {
-        LocalDateTime localDateTime = TypeUtil.stringToLocalDateTime(event.getCreatedAt());
-        Instant instant = localDateTime.atZone(UTC).toInstant();
-        long timestamp = instant.toEpochMilli();
-        row.setTimestamp(java.sql.Date
-                .valueOf(instant.atZone(UTC).toLocalDate())
-        );
-        row.setEventTime(timestamp);
-        row.setEventTimeHour(TimeUtils.parseEventTimeHour(timestamp));
     }
 
 }
