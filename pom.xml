@@ -34,6 +34,14 @@
         <woody.thrift.version>1.1.15</woody.thrift.version>
         <analytics-proto.version>1.22-692755b</analytics-proto.version>
         <mg-event-sink-listener-spring-boot-starter.version>0.0.5-SNAPSHOT</mg-event-sink-listener-spring-boot-starter.version>
+        <db-common-lib.version>0.0.3</db-common-lib.version>
+        <sink-common-lib.version>0.0.4</sink-common-lib.version>
+        <db.port>5432</db.port>
+        <db.user>postgres</db.user>
+        <db.password>postgres</db.password>
+        <db.name>analytics</db.name>
+        <db.schema>analytics</db.schema>
+        <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
     </properties>
 
     <dependencies>
@@ -87,6 +95,16 @@
             <groupId>com.rbkmoney.geck</groupId>
             <artifactId>filter</artifactId>
             <version>0.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>sink-common-lib</artifactId>
+            <version>${sink-common-lib.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>db-common-lib</artifactId>
+            <version>${db-common-lib.version}</version>
         </dependency>
 
         <!--spring-->
@@ -171,6 +189,11 @@
             <artifactId>caffeine</artifactId>
             <version>2.5.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
 
         <!--test-->
         <dependency>
@@ -200,6 +223,18 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>clickhouse</artifactId>
             <version>1.12.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.benas</groupId>
+            <artifactId>random-beans</artifactId>
+            <version>3.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.0.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -259,6 +294,63 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.rbkmoney.maven.plugins</groupId>
+                <artifactId>pg-embedded-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <port>${db.port}</port>
+                    <dbName>${db.name}</dbName>
+                    <schemas>
+                        <schema>${db.schema}</schema>
+                    </schemas>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>PG_server_start</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>PG_server_stop</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <configuration>
+                    <url>${db.url}</url>
+                    <user>${db.user}</user>
+                    <password>${db.password}</password>
+                    <schemas>
+                        <schema>${db.schema}</schema>
+                    </schemas>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>migrate</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
@@ -271,6 +363,46 @@
                         <id>agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>${jooq.version}</version>
+                <configuration>
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <url>${db.url}</url>
+                        <user>${db.user}</user>
+                        <password>${db.password}</password>
+                    </jdbc>
+                    <generator>
+                        <generate>
+                            <javaTimeTypes>true</javaTimeTypes>
+                            <pojos>true</pojos>
+                            <pojosEqualsAndHashCode>true</pojosEqualsAndHashCode>
+                            <pojosToString>true</pojosToString>
+                        </generate>
+                        <database>
+                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                            <includes>.*</includes>
+                            <excludes>schema_version|.*func|get_adjustment.*|get_cashflow.*|get_payment.*|get_payout.*|get_refund.*</excludes>
+                            <inputSchema>${db.schema}</inputSchema>
+                        </database>
+                        <target>
+                            <packageName>com.rbkmoney.analytics.domain.db</packageName>
+                            <directory>src/main/java/</directory>
+                        </target>
+                    </generator>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>gen-src</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>generate</goal>
                         </goals>
                     </execution>
                 </executions>

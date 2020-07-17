@@ -51,6 +51,8 @@ kafka:
       initial: event_sink
     payout:
       initial: payout
+    party:
+      initial: mg-events-party
   consumer:
       prefix: analytics
       concurrency: 7
@@ -61,6 +63,8 @@ kafka:
     event.sink:
       enabled: true
     payout:
+      enabled: true
+    party:
       enabled: true
 
 service:
@@ -73,3 +77,9 @@ service:
 
 columbus.url: http://columbus:8022/repo
 repository.insert.enabled: true
+
+cache:
+  party:
+    size: 10000
+  shop:
+    size: 10000

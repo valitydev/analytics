@@ -3,6 +3,7 @@ package com.rbkmoney.analytics.config;
 import com.rbkmoney.analytics.config.properties.KafkaSslProperties;
 import com.rbkmoney.analytics.serde.MachineEventDeserializer;
 import com.rbkmoney.analytics.serde.PayoutEventDeserializer;
+import com.rbkmoney.damsel.payout_processing.Event;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.mg.event.sink.service.ConsumerGroupIdService;
 import com.rbkmoney.mg.event.sink.utils.SslKafkaUtils;
@@ -19,8 +20,6 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
-import com.rbkmoney.damsel.payout_processing.Event;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +33,8 @@ import static org.apache.kafka.clients.consumer.OffsetResetStrategy.EARLIEST;
 public class KafkaConfig {
 
     private static final String RESULT_ANALYTICS = "result-analytics";
+
+    private static final String PARTY_RESULT_ANALYTICS = "party-result-analytics";
 
     @Value("${kafka.max.poll.records}")
     private String maxPollRecords;
@@ -74,6 +75,15 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, Event> factory = new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(RESULT_ANALYTICS);
         initDefaultListenerProperties(factory, consumerGroup, new PayoutEventDeserializer());
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MachineEvent> partyListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        String consumerGroup = consumerGroupIdService.generateGroupId(PARTY_RESULT_ANALYTICS);
+        initDefaultListenerProperties(factory, consumerGroup, new MachineEventDeserializer());
 
         return factory;
     }
