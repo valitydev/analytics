@@ -3,7 +3,6 @@ package com.rbkmoney.analytics.listener.mapper.party;
 import com.rbkmoney.analytics.domain.db.enums.Blocking;
 import com.rbkmoney.analytics.domain.db.enums.Suspension;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Shop;
-import com.rbkmoney.analytics.service.PartyService;
 import com.rbkmoney.damsel.payment_processing.ClaimEffect;
 import com.rbkmoney.damsel.payment_processing.PartyChange;
 import com.rbkmoney.damsel.payment_processing.ShopEffectUnit;
@@ -12,16 +11,13 @@ import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ShopCreatedHandler extends AbstractClaimChangeHandler<Shop> {
-
-    private final PartyService partyService;
+public class ShopCreatedHandler extends AbstractClaimChangeHandler<List<Shop>> {
 
     @Override
     public boolean accept(PartyChange change) {
@@ -30,17 +26,19 @@ public class ShopCreatedHandler extends AbstractClaimChangeHandler<Shop> {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void handleChange(PartyChange change, MachineEvent event) {
+    public List<Shop> handleChange(PartyChange change, MachineEvent event) {
         List<ClaimEffect> claimEffects = getClaimStatus(change).getAccepted().getEffects();
+        List<Shop> shopList = new ArrayList<>();
         for (ClaimEffect claimEffect : claimEffects) {
             if (claimEffect.isSetShopEffect() && claimEffect.getShopEffect().getEffect().isSetCreated()) {
-                handleEvent(event, claimEffect);
+                shopList.add(handleEvent(event, claimEffect));
             }
         }
+
+        return shopList;
     }
 
-    private void handleEvent(MachineEvent event, ClaimEffect effect) {
+    private Shop handleEvent(MachineEvent event, ClaimEffect effect) {
         ShopEffectUnit shopEffect = effect.getShopEffect();
         com.rbkmoney.damsel.domain.Shop shopCreated = shopEffect.getEffect().getCreated();
         String shopId = shopEffect.getShopId();
@@ -84,7 +82,7 @@ public class ShopCreatedHandler extends AbstractClaimChangeHandler<Shop> {
            shop.setPayoutScheduleId(shopCreated.getPayoutSchedule().getId());
        }
 
-        partyService.saveShop(shop);
+        return shop;
     }
 
 

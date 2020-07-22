@@ -1,7 +1,7 @@
 package com.rbkmoney.analytics.listener.mapper.party;
 
+import com.rbkmoney.analytics.domain.db.enums.ContractorIdentificationLvl;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Party;
-import com.rbkmoney.analytics.service.PartyService;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.ClaimEffect;
 import com.rbkmoney.damsel.payment_processing.ContractorEffectUnit;
@@ -15,14 +15,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ContractorCreatedHandler extends AbstractClaimChangeHandler<Party> {
-
-    private final PartyService partyService;
+public class ContractorCreatedHandler extends AbstractClaimChangeHandler<List<Party>> {
 
     @Override
     public boolean accept(PartyChange change) {
@@ -32,16 +31,18 @@ public class ContractorCreatedHandler extends AbstractClaimChangeHandler<Party> 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void handleChange(PartyChange change, MachineEvent event) {
+    public List<Party> handleChange(PartyChange change, MachineEvent event) {
         List<ClaimEffect> claimEffects = getClaimStatus(change).getAccepted().getEffects();
+        List<Party> partyList = new ArrayList<>();
         for (ClaimEffect claimEffect : claimEffects) {
             if (claimEffect.isSetContractorEffect() && claimEffect.getContractorEffect().getEffect().isSetCreated()) {
-                handleEvent(event, claimEffect);
+                partyList.add(handleEvent(event, claimEffect));
             }
         }
+        return partyList;
     }
 
-    private void handleEvent(MachineEvent event, ClaimEffect effect) {
+    private Party handleEvent(MachineEvent event, ClaimEffect effect) {
         ContractorEffectUnit contractorEffect = effect.getContractorEffect();
         PartyContractor partyContractor = contractorEffect.getEffect().getCreated();
         Contractor contractor = partyContractor.getContractor();
@@ -49,7 +50,8 @@ public class ContractorCreatedHandler extends AbstractClaimChangeHandler<Party> 
         String contractorId = contractorEffect.getId();
         String partyId = event.getSourceId();
 
-        Party party = partyService.getParty(partyId);
+        Party party = new Party();
+        party.setPartyId(partyId);
         party.setEventId(event.getEventId());
         party.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
         party.setContractorId(contractorId);
@@ -93,7 +95,8 @@ public class ContractorCreatedHandler extends AbstractClaimChangeHandler<Party> 
                 party.setRussianPrivateEntityMiddleName(russianPrivateEntity.getMiddleName());
             }
         }
+        party.setContractorIdentificationLevel(ContractorIdentificationLvl.valueOf(partyContractor.getStatus().name()));
 
-        partyService.saveParty(party);
+        return party;
     }
 }

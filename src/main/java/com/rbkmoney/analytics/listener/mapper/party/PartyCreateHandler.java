@@ -5,7 +5,6 @@ import com.rbkmoney.analytics.domain.db.enums.Blocking;
 import com.rbkmoney.analytics.domain.db.enums.Suspension;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Party;
 import com.rbkmoney.analytics.listener.mapper.ChangeHandler;
-import com.rbkmoney.analytics.service.PartyService;
 import com.rbkmoney.damsel.payment_processing.PartyChange;
 import com.rbkmoney.damsel.payment_processing.PartyCreated;
 import com.rbkmoney.geck.common.util.TypeUtil;
@@ -13,21 +12,17 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEvent, Party> {
-
-    private final PartyService partyService;
+public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEvent, List<Party>> {
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void handleChange(PartyChange change, MachineEvent event) {
+    public List<Party> handleChange(PartyChange change, MachineEvent event) {
         PartyCreated partyCreated = change.getPartyCreated();
         LocalDateTime partyCreatedAt = TypeUtil.stringToLocalDateTime(partyCreated.getCreatedAt());
         Party party = new Party();
@@ -44,7 +39,7 @@ public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEve
         party.setRevisionId("0");
         party.setRevisionChangedAt(partyCreatedAt);
 
-        partyService.saveParty(party);
+        return List.of(party);
     }
 
     @Override

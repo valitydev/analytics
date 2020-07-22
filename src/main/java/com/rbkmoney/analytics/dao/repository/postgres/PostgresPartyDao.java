@@ -6,11 +6,16 @@ import com.rbkmoney.analytics.domain.db.tables.records.PartyRecord;
 import com.rbkmoney.analytics.domain.db.tables.records.ShopRecord;
 import com.rbkmoney.dao.impl.AbstractGenericDao;
 import com.rbkmoney.mapper.RecordRowMapper;
+import org.jooq.InsertOnDuplicateSetMoreStep;
 import org.jooq.Query;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.rbkmoney.analytics.domain.db.Tables.PARTY;
 import static com.rbkmoney.analytics.domain.db.Tables.SHOP;
@@ -38,9 +43,24 @@ public class PostgresPartyDao extends AbstractGenericDao {
         execute(query);
     }
 
-    public Party getParty(String partyId) {
+    public void saveParty(List<Party> partyList) {
+        List<Query> queries = partyList.stream()
+                .map(party -> getDslContext().newRecord(PARTY, party))
+                .map(partyRecord -> {
+                    return getDslContext()
+                            .insertInto(PARTY).set(partyRecord)
+                            .onConflict(PARTY.PARTY_ID)
+                            .doUpdate()
+                            .set(partyRecord);
+                })
+                .collect(Collectors.toList());
+        batchExecute(queries);
+    }
+
+    public Party getPartyForUpdate(String partyId) {
         Query query = getDslContext().selectFrom(PARTY)
-                .where(PARTY.PARTY_ID.eq(partyId));
+                .where(PARTY.PARTY_ID.eq(partyId))
+                .forUpdate();
         return fetchOne(query, partyRowMapper);
     }
 
@@ -54,9 +74,24 @@ public class PostgresPartyDao extends AbstractGenericDao {
         execute(query);
     }
 
-    public Shop getShop(String partyId, String shopId) {
+    public void saveShop(List<Shop> shops) {
+        List<Query> queries = shops.stream()
+                .map(shop -> getDslContext().newRecord(SHOP, shop))
+                .map(shopRecord -> {
+                    return getDslContext()
+                            .insertInto(SHOP).set(shopRecord)
+                            .onConflict(SHOP.PARTY_ID, SHOP.SHOP_ID)
+                            .doUpdate()
+                            .set(shopRecord);
+                })
+                .collect(Collectors.toList());
+        batchExecute(queries);
+    }
+
+    public Shop getShopForUpdate(String partyId, String shopId) {
         Query query = getDslContext().selectFrom(SHOP)
-                .where(SHOP.PARTY_ID.eq(partyId).and(SHOP.SHOP_ID.eq(shopId)));
+                .where(SHOP.PARTY_ID.eq(partyId).and(SHOP.SHOP_ID.eq(shopId)))
+                .forUpdate();
         return fetchOne(query, shopRowMapper);
     }
 
