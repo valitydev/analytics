@@ -26,7 +26,8 @@ public class ContractCreatedHandler extends AbstractClaimChangeHandler<List<Part
     @Override
     public boolean accept(PartyChange change) {
         return isClaimEffect(change, claimEffect -> claimEffect.isSetContractEffect()
-                && claimEffect.getContractEffect().getEffect().isSetCreated());
+                && claimEffect.getContractEffect().getEffect().isSetCreated()
+                && claimEffect.getContractEffect().getEffect().getCreated().isSetContractor());
     }
 
     @Override
@@ -34,7 +35,9 @@ public class ContractCreatedHandler extends AbstractClaimChangeHandler<List<Part
         List<ClaimEffect> claimEffects = getClaimStatus(change).getAccepted().getEffects();
         List<Party> partyList = new ArrayList<>();
         for (ClaimEffect claimEffect : claimEffects) {
-            if (claimEffect.isSetContractEffect() && claimEffect.getContractEffect().getEffect().isSetCreated()) {
+            if (claimEffect.isSetContractEffect()
+                    && claimEffect.getContractEffect().getEffect().isSetCreated()
+                    && claimEffect.getContractEffect().getEffect().getCreated().isSetContractor()) {
                 partyList.add(handleEvent(event, claimEffect));
             }
         }
