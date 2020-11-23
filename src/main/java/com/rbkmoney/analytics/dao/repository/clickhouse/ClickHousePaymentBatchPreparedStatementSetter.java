@@ -20,8 +20,8 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
             "amount, guaranteeDeposit, systemFee, providerFee, externalFee, currency, providerName, " +
             "status, errorCode, errorReason,  invoiceId, paymentId, sequenceId, ip, bin, maskedPan, paymentTool, " +
             "fingerprint,cardToken, paymentSystem, digitalWalletProvider, digitalWalletToken, cryptoCurrency, mobileOperator," +
-            "paymentCountry, bankCountry, paymentTime, providerId, terminal, cardHolderName)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "paymentCountry, bankCountry, paymentTime, providerId, terminal, cardHolderName, bankCardTokenProvider, riskScore, rrn, paymentTerminal)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<PaymentRow> batch;
 
@@ -42,8 +42,8 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
         ps.setLong(l++, cashFlowResult.getAmount());
         ps.setLong(l++, cashFlowResult.getGuaranteeDeposit());
         ps.setLong(l++, cashFlowResult.getSystemFee());
-        ps.setLong(l++, cashFlowResult.getExternalFee());
         ps.setLong(l++, cashFlowResult.getProviderFee());
+        ps.setLong(l++, cashFlowResult.getExternalFee());
 
         ps.setString(l++, row.getCurrency());
 
@@ -77,7 +77,11 @@ public class ClickHousePaymentBatchPreparedStatementSetter implements BatchPrepa
         ps.setLong(l++, row.getPaymentTime().toEpochSecond(ZoneOffset.UTC));
         ps.setString(l++, row.getProviderId() != null ? row.getProviderId().toString() : ClickHouseUtilsValue.UNKNOWN);
         ps.setString(l++, row.getTerminal() != null ? row.getTerminal().toString() : ClickHouseUtilsValue.UNKNOWN);
-        ps.setString(l, row.getCardHolderName() != null ? row.getCardHolderName().toString() : ClickHouseUtilsValue.UNKNOWN);
+        ps.setString(l++, row.getCardHolderName() != null ? row.getCardHolderName().toString() : ClickHouseUtilsValue.UNKNOWN);
+        ps.setString(l++, row.getBankCardTokenProvider());
+        ps.setString(l++, row.getRiskScore());
+        ps.setString(l++, row.getRrn());
+        ps.setString(l, row.getPaymentTerminal());
     }
 
     @Override

@@ -67,6 +67,7 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
     private void initContactInfo(T row, ContactInfo contactInfo) {
         if (contactInfo != null) {
             row.setEmail(contactInfo.getEmail());
+            row.setPhoneNumber(contactInfo.getPhoneNumber());
         }
     }
 
@@ -81,6 +82,12 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
             row.setBin(bankCard.getBin());
             row.setMaskedPan(bankCard.getLastDigits());
             row.setPaymentSystem(bankCard.getPaymentSystem().name());
+            if (bankCard.getTokenProvider() != null) {
+                row.setBankCardTokenProvider(bankCard.getTokenProvider().name());
+            }
+            if (paymentTool.isSetPaymentTerminal()) {
+                row.setPaymentTerminal(paymentTool.getPaymentTerminal().getTerminalType().name());
+            }
         } else if (paymentTool.isSetDigitalWallet()) {
             row.setDigitalWalletProvider(paymentTool.getDigitalWallet().getProvider().name());
             row.setDigitalWalletToken(paymentTool.getDigitalWallet().getToken());
