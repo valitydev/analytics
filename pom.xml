@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.rbkmoney</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.4.RELEASE</version>
+        <version>2.3.7.RELEASE</version>
     </parent>
 
     <artifactId>analytics</artifactId>
@@ -428,7 +428,7 @@
                         </database>
                         <target>
                             <packageName>com.rbkmoney.analytics.domain.db</packageName>
-                            <directory>src/main/java/</directory>
+                            <directory>target/generated-sources/jooq</directory>
                         </target>
                     </generator>
                 </configuration>
