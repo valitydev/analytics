@@ -66,6 +66,8 @@ kafka:
       initial: payout
     party:
       initial: mg-events-party
+    rate:
+      initial: mg-events-rates
   consumer:
       prefix: analytics
       concurrency: 7
@@ -78,6 +80,8 @@ kafka:
     payout:
       enabled: true
     party:
+      enabled: true
+    rate:
       enabled: true
 
 service:
