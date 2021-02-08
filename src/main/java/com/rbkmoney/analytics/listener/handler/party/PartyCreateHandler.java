@@ -1,10 +1,12 @@
-package com.rbkmoney.analytics.listener.mapper.party;
+package com.rbkmoney.analytics.listener.handler.party;
 
 import com.rbkmoney.analytics.constant.EventType;
+import com.rbkmoney.analytics.dao.repository.postgres.party.management.PartyDao;
 import com.rbkmoney.analytics.domain.db.enums.Blocking;
 import com.rbkmoney.analytics.domain.db.enums.Suspension;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Party;
-import com.rbkmoney.analytics.listener.mapper.ChangeHandler;
+import com.rbkmoney.analytics.listener.handler.merger.PartyEventMerger;
+import com.rbkmoney.analytics.listener.handler.ChangeHandler;
 import com.rbkmoney.damsel.payment_processing.PartyChange;
 import com.rbkmoney.damsel.payment_processing.PartyCreated;
 import com.rbkmoney.geck.common.util.TypeUtil;
@@ -12,17 +14,21 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEvent, List<Party>> {
+public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEvent> {
+
+    private final PartyDao partyDao;
 
     @Override
-    public List<Party> handleChange(PartyChange change, MachineEvent event) {
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void handleChange(PartyChange change, MachineEvent event) {
         PartyCreated partyCreated = change.getPartyCreated();
         LocalDateTime partyCreatedAt = TypeUtil.stringToLocalDateTime(partyCreated.getCreatedAt());
         Party party = new Party();
@@ -39,7 +45,9 @@ public class PartyCreateHandler implements ChangeHandler<PartyChange, MachineEve
         party.setRevisionId("0");
         party.setRevisionChangedAt(partyCreatedAt);
 
-        return List.of(party);
+        partyDao.saveParty(party);
+
+        log.debug("Party create event saveParty: {}", party);
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.rbkmoney.analytics.dao.repository.postgres.party.management.Contracto
 import com.rbkmoney.analytics.dao.repository.postgres.party.management.PartyDao;
 import com.rbkmoney.analytics.dao.repository.postgres.party.management.ShopDao;
 import com.rbkmoney.analytics.domain.db.enums.ContractorType;
-import com.rbkmoney.analytics.domain.db.enums.LegalEntity;
 import com.rbkmoney.analytics.domain.db.enums.Suspension;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Contractor;
 import com.rbkmoney.analytics.domain.db.tables.pojos.Party;
@@ -14,11 +13,10 @@ import com.rbkmoney.analytics.utils.KafkaAbstractTest;
 import com.rbkmoney.analytics.utils.PartyFlowGenerator;
 import com.rbkmoney.damsel.domain.PartyContractor;
 import com.rbkmoney.damsel.domain.RussianLegalEntity;
-import com.rbkmoney.damsel.payment_processing.PartyChange;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,9 +35,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
-import static com.rbkmoney.analytics.utils.PartyFlowGenerator.*;
+import static com.rbkmoney.analytics.utils.PartyFlowGenerator.CONTRACTOR_ID;
+import static com.rbkmoney.analytics.utils.PartyFlowGenerator.SETTLEMENT_ID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.*;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -81,7 +81,13 @@ public class PartyListenerTest extends KafkaAbstractTest {
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
 
+    @Before
+    public void clean(){
+        clearDb();
+    }
+
     @Test
+    // This flow show forward case: party events - contractor - contract - shop
     public void testPartyEventSink() throws IOException {
         String partyId = UUID.randomUUID().toString();
         String shopId = UUID.randomUUID().toString();
@@ -99,7 +105,8 @@ public class PartyListenerTest extends KafkaAbstractTest {
     }
 
     @Test
-    public void testPartyFlowSave() throws IOException {
+    // This flow show only party and contractor flow
+    public void testPartyFlowSave() throws IOException, InterruptedException {
         String partyId = UUID.randomUUID().toString();
         List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyContractorFlow(partyId);
 
@@ -117,12 +124,12 @@ public class PartyListenerTest extends KafkaAbstractTest {
         });
 
         Party party = partyDao.getPartyById(partyId);
-        Assert.assertFalse(party.getPartyId().isEmpty());
-        Assert.assertEquals(PartyFlowGenerator.PARTY_BLOCK_REASON, party.getBlockedReason());
-        Assert.assertNotNull(party.getBlockedSince());
-        Assert.assertEquals(Suspension.active, party.getSuspension());
-        Assert.assertEquals(PartyFlowGenerator.PARTY_REVISION_ID.toString(), party.getRevisionId());
-        Assert.assertEquals(PartyFlowGenerator.PARTY_EMAIL, party.getEmail());
+        assertFalse(party.getPartyId().isEmpty());
+        assertEquals(PartyFlowGenerator.PARTY_BLOCK_REASON, party.getBlockedReason());
+        assertNotNull(party.getBlockedSince());
+        assertEquals(Suspension.active, party.getSuspension());
+        assertEquals(PartyFlowGenerator.PARTY_REVISION_ID.toString(), party.getRevisionId());
+        assertEquals(PartyFlowGenerator.PARTY_EMAIL, party.getEmail());
     }
 
     @NotNull
@@ -136,6 +143,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
     }
 
     @Test
+    // old flow when contract and shop come before contractor
     public void testShopFlowSave() throws IOException {
         String partyId = UUID.randomUUID().toString();
         String shopId = UUID.randomUUID().toString();
@@ -143,7 +151,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
         sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
         await().atMost(60, SECONDS).until(() -> {
             Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.shop WHERE shop_id = '%s' AND suspension = 'suspended'", shopId), Integer.class);
+                    "SELECT count(*) FROM analytics.shop WHERE shop_id = '%s' AND suspension = 'suspended' AND contractor_type='legal_entity'", shopId), Integer.class);
             if (lastShopCount <= 0) {
                 Thread.sleep(1000);
                 return false;
@@ -152,41 +160,41 @@ public class PartyListenerTest extends KafkaAbstractTest {
         });
 
         Shop shop = shopDao.getShopByPartyIdAndShopId(partyId, shopId);
-        Assert.assertEquals(partyId, shop.getPartyId());
-        Assert.assertEquals(shopId, shop.getShopId());
-        Assert.assertEquals(PartyFlowGenerator.CURRENCY_SYMBOL, shop.getAccountCurrencyCode());
-        Assert.assertFalse(shop.getAccountGuarantee().isEmpty());
-        Assert.assertEquals(PartyFlowGenerator.SHOP_UNBLOCK_REASON, shop.getUnblockedReason());
-        Assert.assertNotNull(shop.getUnblockedSince());
-        Assert.assertEquals(Suspension.suspended, shop.getSuspension());
-        Assert.assertNotNull(shop.getSuspensionSuspendedSince());
-        Assert.assertNotNull(shop.getSuspensionActiveSince());
-        Assert.assertEquals(PartyFlowGenerator.CATEGORY_ID, shop.getCategoryId());
-        Assert.assertEquals(PartyFlowGenerator.DETAILS_NAME, shop.getDetailsName());
-        Assert.assertEquals(PartyFlowGenerator.DETAILS_DESCRIPTION, shop.getDetailsDescription());
-        Assert.assertEquals(PartyFlowGenerator.SCHEDULE_ID, shop.getPayoutScheduleId());
-        Assert.assertEquals(PartyFlowGenerator.PAYOUT_TOOL_ID, shop.getPayoutToolId());
-        Assert.assertEquals(PartyFlowGenerator.SHOP_ACCOUNT_PAYOUT.toString(), shop.getAccountPayout());
-        Assert.assertEquals(String.valueOf(SETTLEMENT_ID), shop.getAccountSettlement());
-        Assert.assertEquals(ContractorType.legal_entity, shop.getContractorType());
-        Assert.assertEquals(LegalEntity.russian_legal_entity, shop.getLegalEntityType());
-        Assert.assertNotNull(shop.getRussianLegalEntityActualAddress());
-        Assert.assertNotNull(shop.getRussianLegalEntityBankAccount());
-        Assert.assertNotNull(shop.getRussianLegalEntityBankBik());
-        Assert.assertNotNull(shop.getRussianLegalEntityBankName());
-        Assert.assertNotNull(shop.getRussianLegalEntityBankPostAccount());
-        Assert.assertNotNull(shop.getRussianLegalEntityInn());
-        Assert.assertNotNull(shop.getRussianLegalEntityName());
-        Assert.assertNotNull(shop.getRussianLegalEntityPostAddress());
-        Assert.assertNotNull(shop.getRussianLegalEntityRegisteredNumber());
-        Assert.assertNotNull(shop.getRussianLegalEntityRepresentativeDocument());
-        Assert.assertNotNull(shop.getRussianLegalEntityRepresentativeFullName());
-        Assert.assertNotNull(shop.getRussianLegalEntityRepresentativePosition());
+        assertEquals(partyId, shop.getPartyId());
+        assertEquals(shopId, shop.getShopId());
+        assertEquals(PartyFlowGenerator.CURRENCY_SYMBOL, shop.getAccountCurrencyCode());
+        assertFalse(shop.getAccountGuarantee().isEmpty());
+        assertEquals(PartyFlowGenerator.SHOP_UNBLOCK_REASON, shop.getUnblockedReason());
+        assertNotNull(shop.getUnblockedSince());
+        assertEquals(Suspension.suspended, shop.getSuspension());
+        assertNotNull(shop.getSuspensionSuspendedSince());
+        assertNotNull(shop.getSuspensionActiveSince());
+        assertEquals(PartyFlowGenerator.CATEGORY_ID, shop.getCategoryId());
+        assertEquals(PartyFlowGenerator.DETAILS_NAME, shop.getDetailsName());
+        assertEquals(PartyFlowGenerator.DETAILS_DESCRIPTION, shop.getDetailsDescription());
+        assertEquals(PartyFlowGenerator.SCHEDULE_ID, shop.getPayoutScheduleId());
+        assertEquals(PartyFlowGenerator.PAYOUT_TOOL_ID, shop.getPayoutToolId());
+        assertEquals(PartyFlowGenerator.SHOP_ACCOUNT_PAYOUT.toString(), shop.getAccountPayout());
+        assertEquals(String.valueOf(SETTLEMENT_ID), shop.getAccountSettlement());
+        assertEquals(ContractorType.legal_entity, shop.getContractorType());
+        assertNotNull(shop.getRussianLegalEntityActualAddress());
+        assertNotNull(shop.getRussianLegalEntityBankAccount());
+        assertNotNull(shop.getRussianLegalEntityBankBik());
+        assertNotNull(shop.getRussianLegalEntityBankName());
+        assertNotNull(shop.getRussianLegalEntityBankPostAccount());
+        assertNotNull(shop.getRussianLegalEntityInn());
+        assertNotNull(shop.getRussianLegalEntityName());
+        assertNotNull(shop.getRussianLegalEntityPostAddress());
+        assertNotNull(shop.getRussianLegalEntityRegisteredNumber());
+        assertNotNull(shop.getRussianLegalEntityRepresentativeDocument());
+        assertNotNull(shop.getRussianLegalEntityRepresentativeFullName());
+        assertNotNull(shop.getRussianLegalEntityRepresentativePosition());
     }
 
     @Test
-    public void testMultiplePartySave() throws IOException {
-        Integer count = 50;
+    //multi events flow
+    public void testMultiplePartySave() throws IOException, InterruptedException {
+        Integer count = 3;
         String lastPartyId = UUID.randomUUID().toString();
         String lastShopId = UUID.randomUUID().toString();
 
@@ -194,15 +202,10 @@ public class PartyListenerTest extends KafkaAbstractTest {
         RussianLegalEntity russianLegalEntity = partyContractor.getContractor().getLegalEntity().getRussianLegalEntity();
         List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyFlowWithCount(count, lastPartyId, lastShopId, partyContractor);
         sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
-        await().atMost(120, SECONDS).until(() -> {
-            Integer partyCount = postgresJdbcTemplate.queryForObject("SELECT count(*) FROM analytics.party", Integer.class);
-            if (partyCount < count) {
-                Thread.sleep(1000);
-                return false;
-            }
+        await().atMost(60, SECONDS).until(() -> {
             Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.shop WHERE shop_id = '%s' AND russian_legal_entity_inn = '%s' ",
-                    lastShopId, russianLegalEntity.getInn()), Integer.class);
+                    "SELECT count(*) FROM analytics.contractor WHERE contractor_id = '%s'",
+                    2, russianLegalEntity.getInn()), Integer.class);
             if (lastShopCount <= 0) {
                 Thread.sleep(1000);
                 return false;
@@ -215,172 +218,42 @@ public class PartyListenerTest extends KafkaAbstractTest {
         checkShopFields(russianLegalEntity, lastPartyId, lastShopId);
     }
 
-    @Test
-    public void testMachineEventWithMultiplePartyChange() throws IOException {
-        Integer count = 10;
-        String partyId = UUID.randomUUID().toString();
-        PartyContractor partyContractor = PartyFlowGenerator.buildRussianLegalPartyContractor();
-        RussianLegalEntity russianLegalEntity = partyContractor.getContractor().getLegalEntity().getRussianLegalEntity();
-        List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyFlowWithMultiplePartyChange(count, partyId, partyContractor);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
-        await().atMost(60, SECONDS).until(() -> {
-            Integer partyCount = postgresJdbcTemplate.queryForObject("SELECT count(*) FROM analytics.party", Integer.class);
-            if (partyCount < count) {
-                Thread.sleep(1000);
-                return false;
-            }
-            Integer lastPartyCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.contractor WHERE party_id = '%s' and russian_legal_entity_inn = '%s'", partyId, russianLegalEntity.getInn()), Integer.class);
-            if (lastPartyCount <= 0) {
-                Thread.sleep(1000);
-                return false;
-            }
-            return true;
-        });
-
-        checkContractorFields(russianLegalEntity);
-    }
-
-    @Test
-    public void testMachineEventWithMultiplePartyShopChange() throws IOException {
-        Integer count = 10;
-        String partyId = UUID.randomUUID().toString();
-        String shopId = UUID.randomUUID().toString();
-        String contractId = UUID.randomUUID().toString();
-
-        String payoutToolId = "testPayoutToolId";
-        PartyChange shopPayoutToolChangedPartyChange = buildShopPayoutToolChangedPartyChange(shopId, payoutToolId);
-        List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyFlowWithMultiplePartyShopChange(count, partyId, shopId, contractId, shopPayoutToolChangedPartyChange);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
-        await().atMost(60, SECONDS).until(() -> {
-            Integer shopCount = postgresJdbcTemplate.queryForObject("SELECT count(*) FROM analytics.shop", Integer.class);
-            if (shopCount < count) {
-                Thread.sleep(1000);
-                return false;
-            }
-            Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.shop WHERE party_id = '%s' and shop_id = '%s' and payout_tool_id = '%s'", partyId, shopId, payoutToolId), Integer.class);
-            if (lastShopCount <= 0) {
-                Thread.sleep(1000);
-                return false;
-            }
-            return true;
-        });
-        Shop shop = shopDao.getShopByPartyIdAndShopId(partyId, shopId);
-        Assert.assertNotNull(shop.getShopId());
-        Assert.assertNotNull(shop.getPartyId());
-        Assert.assertNotNull(shop.getSuspensionActiveSince());
-        Assert.assertNotNull(shop.getSuspension());
-        Assert.assertNotNull(shop.getCategoryId());
-        Assert.assertNotNull(shop.getUnblockedSince());
-        Assert.assertNotNull(shop.getAccountCurrencyCode());
-        Assert.assertNotNull(shop.getAccountGuarantee());
-        Assert.assertNotNull(shop.getAccountPayout());
-        Assert.assertNotNull(shop.getAccountSettlement());
-        Assert.assertNotNull(shop.getDetailsDescription());
-        Assert.assertNotNull(shop.getDetailsName());
-        Assert.assertNotNull(shop.getDetailsDescription());
-        Assert.assertNotNull(shop.getPayoutScheduleId());
-        Assert.assertNotNull(shop.getBlocking());
-        Assert.assertNotNull(shop.getBlockedSince());
-        Assert.assertNotNull(shop.getBlockedReason());
-        Assert.assertNotNull(shop.getContractId());
-        Assert.assertNotNull(shop.getCreatedAt());
-        Assert.assertNotNull(shop.getLocationUrl());
-        Assert.assertNotNull(shop.getEventId());
-        Assert.assertNotNull(shop.getEventTime());
-        Assert.assertEquals(payoutToolId, shop.getPayoutToolId());
-    }
-
-    @Test
-    public void testMachineEventWithMultipleShopInOneChange() throws IOException {
-        String partyId = UUID.randomUUID().toString();
-        String shopId = UUID.randomUUID().toString();
-        String contractId = UUID.randomUUID().toString();
-
-        String payoutToolId = "testPayoutToolId";
-        PartyChange shopPayoutToolChangedPartyChange = buildShopPayoutToolChangedPartyChange(shopId, payoutToolId);
-        List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyFlowWithMultipleShopInOneChange(partyId, shopId, contractId, shopPayoutToolChangedPartyChange);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
-        await().atMost(60, SECONDS).until(() -> {
-            Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.shop WHERE party_id = '%s' and shop_id = '%s' and payout_tool_id = '%s'", partyId, shopId, payoutToolId), Integer.class);
-            if (lastShopCount <= 0) {
-                Thread.sleep(1000);
-                return false;
-            }
-            return true;
-        });
-        Shop shop = shopDao.getShopByPartyIdAndShopId(partyId, shopId);
-        Assert.assertNotNull(shop.getShopId());
-        Assert.assertNotNull(shop.getPartyId());
-        Assert.assertNotNull(shop.getCreatedAt());
-        Assert.assertNotNull(shop.getBlocking());
-        Assert.assertNotNull(shop.getBlockedSince());
-        Assert.assertNotNull(shop.getBlockedReason());
-        Assert.assertNotNull(shop.getAccountCurrencyCode());
-        Assert.assertNotNull(shop.getAccountGuarantee());
-        Assert.assertNotNull(shop.getAccountPayout());
-        Assert.assertNotNull(shop.getAccountSettlement());
-        Assert.assertNotNull(shop.getPayoutScheduleId());
-        Assert.assertNotNull(shop.getEventId());
-        Assert.assertNotNull(shop.getEventTime());
-        Assert.assertEquals(payoutToolId, shop.getPayoutToolId());
-    }
-
-    @Test
-    public void testCotractWithContractorSave() throws IOException {
-        String partyId = UUID.randomUUID().toString();
-        com.rbkmoney.damsel.domain.LegalEntity legalEntity = new com.rbkmoney.damsel.domain.LegalEntity();
-        RussianLegalEntity russianLegalEntity = PartyFlowGenerator.buildRussianLegalEntity();
-        legalEntity.setRussianLegalEntity(russianLegalEntity);
-        List<SinkEvent> sinkEvents = generatePartyFlowWithContract(partyId, legalEntity);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
-        await().atMost(60, SECONDS).until(() -> {
-            Integer lastPartyCount = postgresJdbcTemplate.queryForObject(String.format(
-                    "SELECT count(*) FROM analytics.contractor "
-                            + "WHERE party_id = '%s' and russian_legal_entity_inn = '%s'",
-                    partyId, russianLegalEntity.getInn()), Integer.class);
-            if (lastPartyCount <= 0) {
-                Thread.sleep(1000);
-                return false;
-            }
-            return true;
-        });
-
-        checkContractorFields(russianLegalEntity);
+    private void clearDb() {
+        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.contractor;");
+        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.party;");
+        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.shop;");
+        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.contract;");
     }
 
     private void checkContractorFields(RussianLegalEntity russianLegalEntity) {
         Contractor contractorForUpdate = contractorDao.getContractorById(CONTRACTOR_ID);
-        Assert.assertEquals(russianLegalEntity.getInn(), contractorForUpdate.getRussianLegalEntityInn());
-        Assert.assertEquals(russianLegalEntity.getActualAddress(), contractorForUpdate.getRussianLegalEntityActualAddress());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getAccount(), contractorForUpdate.getRussianLegalEntityBankAccount());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankBik(), contractorForUpdate.getRussianLegalEntityBankBik());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankName(), contractorForUpdate.getRussianLegalEntityBankName());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankPostAccount(), contractorForUpdate.getRussianLegalEntityBankPostAccount());
-        Assert.assertEquals(russianLegalEntity.getRegisteredName(), contractorForUpdate.getRussianLegalEntityName());
-        Assert.assertEquals(russianLegalEntity.getPostAddress(), contractorForUpdate.getRussianLegalEntityPostAddress());
-        Assert.assertEquals(russianLegalEntity.getRegisteredNumber(), contractorForUpdate.getRussianLegalEntityRegisteredNumber());
-        Assert.assertEquals(russianLegalEntity.getRepresentativeDocument(), contractorForUpdate.getRussianLegalEntityRepresentativeDocument());
-        Assert.assertEquals(russianLegalEntity.getRepresentativeFullName(), contractorForUpdate.getRussianLegalEntityRepresentativeFullName());
-        Assert.assertEquals(russianLegalEntity.getRepresentativePosition(), contractorForUpdate.getRussianLegalEntityRepresentativePosition());
+        assertEquals(russianLegalEntity.getInn(), contractorForUpdate.getRussianLegalEntityInn());
+        assertEquals(russianLegalEntity.getActualAddress(), contractorForUpdate.getRussianLegalEntityActualAddress());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getAccount(), contractorForUpdate.getRussianLegalEntityBankAccount());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankBik(), contractorForUpdate.getRussianLegalEntityBankBik());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankName(), contractorForUpdate.getRussianLegalEntityBankName());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankPostAccount(), contractorForUpdate.getRussianLegalEntityBankPostAccount());
+        assertEquals(russianLegalEntity.getRegisteredName(), contractorForUpdate.getRussianLegalEntityName());
+        assertEquals(russianLegalEntity.getPostAddress(), contractorForUpdate.getRussianLegalEntityPostAddress());
+        assertEquals(russianLegalEntity.getRegisteredNumber(), contractorForUpdate.getRussianLegalEntityRegisteredNumber());
+        assertEquals(russianLegalEntity.getRepresentativeDocument(), contractorForUpdate.getRussianLegalEntityRepresentativeDocument());
+        assertEquals(russianLegalEntity.getRepresentativeFullName(), contractorForUpdate.getRussianLegalEntityRepresentativeFullName());
+        assertEquals(russianLegalEntity.getRepresentativePosition(), contractorForUpdate.getRussianLegalEntityRepresentativePosition());
     }
 
     private void checkShopFields(RussianLegalEntity russianLegalEntity, String partyId, String shopId) {
         Shop contractorForUpdate = shopDao.getShopByPartyIdAndShopId(partyId, shopId);
-        Assert.assertEquals(russianLegalEntity.getInn(), contractorForUpdate.getRussianLegalEntityInn());
-        Assert.assertEquals(russianLegalEntity.getActualAddress(), contractorForUpdate.getRussianLegalEntityActualAddress());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getAccount(), contractorForUpdate.getRussianLegalEntityBankAccount());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankBik(), contractorForUpdate.getRussianLegalEntityBankBik());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankName(), contractorForUpdate.getRussianLegalEntityBankName());
-        Assert.assertEquals(russianLegalEntity.getRussianBankAccount().getBankPostAccount(), contractorForUpdate.getRussianLegalEntityBankPostAccount());
-        Assert.assertEquals(russianLegalEntity.getRegisteredName(), contractorForUpdate.getRussianLegalEntityName());
-        Assert.assertEquals(russianLegalEntity.getPostAddress(), contractorForUpdate.getRussianLegalEntityPostAddress());
-        Assert.assertEquals(russianLegalEntity.getRegisteredNumber(), contractorForUpdate.getRussianLegalEntityRegisteredNumber());
-        Assert.assertEquals(russianLegalEntity.getRepresentativeDocument(), contractorForUpdate.getRussianLegalEntityRepresentativeDocument());
-        Assert.assertEquals(russianLegalEntity.getRepresentativeFullName(), contractorForUpdate.getRussianLegalEntityRepresentativeFullName());
-        Assert.assertEquals(russianLegalEntity.getRepresentativePosition(), contractorForUpdate.getRussianLegalEntityRepresentativePosition());
+        assertEquals(russianLegalEntity.getInn(), contractorForUpdate.getRussianLegalEntityInn());
+        assertEquals(russianLegalEntity.getActualAddress(), contractorForUpdate.getRussianLegalEntityActualAddress());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getAccount(), contractorForUpdate.getRussianLegalEntityBankAccount());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankBik(), contractorForUpdate.getRussianLegalEntityBankBik());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankName(), contractorForUpdate.getRussianLegalEntityBankName());
+        assertEquals(russianLegalEntity.getRussianBankAccount().getBankPostAccount(), contractorForUpdate.getRussianLegalEntityBankPostAccount());
+        assertEquals(russianLegalEntity.getRegisteredName(), contractorForUpdate.getRussianLegalEntityName());
+        assertEquals(russianLegalEntity.getPostAddress(), contractorForUpdate.getRussianLegalEntityPostAddress());
+        assertEquals(russianLegalEntity.getRegisteredNumber(), contractorForUpdate.getRussianLegalEntityRegisteredNumber());
+        assertEquals(russianLegalEntity.getRepresentativeDocument(), contractorForUpdate.getRussianLegalEntityRepresentativeDocument());
+        assertEquals(russianLegalEntity.getRepresentativeFullName(), contractorForUpdate.getRussianLegalEntityRepresentativeFullName());
+        assertEquals(russianLegalEntity.getRepresentativePosition(), contractorForUpdate.getRussianLegalEntityRepresentativePosition());
     }
-
 }

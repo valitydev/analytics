@@ -1,8 +1,11 @@
 package com.rbkmoney.analytics.dao.repository.postgres.party.management;
 
 import com.rbkmoney.analytics.domain.db.tables.pojos.Contractor;
+import com.rbkmoney.analytics.domain.db.tables.records.ContractorRecord;
 import com.rbkmoney.dao.impl.AbstractGenericDao;
 import com.rbkmoney.mapper.RecordRowMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.InsertOnDuplicateSetMoreStep;
 import org.jooq.Query;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static com.rbkmoney.analytics.domain.db.Tables.CONTRACTOR;
 
+@Slf4j
 @Component
 public class ContractorDao extends AbstractGenericDao {
 
@@ -23,7 +27,17 @@ public class ContractorDao extends AbstractGenericDao {
         this.currentContractorRowMapper = new RecordRowMapper<>(CONTRACTOR, Contractor.class);
     }
 
-    public void saveContractor(List<Contractor> currentContractors) {
+    public void saveContractor(Contractor currentContractor) {
+        final ContractorRecord contractorRecord = getDslContext().newRecord(CONTRACTOR, currentContractor);
+        final InsertOnDuplicateSetMoreStep<ContractorRecord> query = getDslContext().insertInto(CONTRACTOR)
+                .set(contractorRecord)
+                .onConflict(CONTRACTOR.CONTRACTOR_ID)
+                .doUpdate()
+                .set(contractorRecord);
+        execute(query);
+    }
+
+    public void saveContractors(List<Contractor> currentContractors) {
         List<Query> queries = currentContractors.stream()
                 .map(contractor -> getDslContext().newRecord(CONTRACTOR, contractor))
                 .map(currentContractorRecord -> getDslContext()
@@ -38,7 +52,9 @@ public class ContractorDao extends AbstractGenericDao {
     public Contractor getContractorById(String contractorId) {
         Query query = getDslContext().selectFrom(CONTRACTOR)
                 .where(CONTRACTOR.CONTRACTOR_ID.eq(contractorId));
-        return fetchOne(query, currentContractorRowMapper);
+        final Contractor contractor = fetchOne(query, currentContractorRowMapper);
+        log.debug("getContractorById: {} contractor: {}", contractorId, contractor);
+        return contractor;
     }
 
 }
