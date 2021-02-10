@@ -32,7 +32,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -213,7 +212,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
             return true;
         });
 
-        checkContractorFields(russianLegalEntity);
+        checkContractorFields(lastPartyId, russianLegalEntity);
 
         checkShopFields(russianLegalEntity, lastPartyId, lastShopId);
     }
@@ -225,8 +224,8 @@ public class PartyListenerTest extends KafkaAbstractTest {
         postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.contract;");
     }
 
-    private void checkContractorFields(RussianLegalEntity russianLegalEntity) {
-        Contractor contractorForUpdate = contractorDao.getContractorById(CONTRACTOR_ID);
+    private void checkContractorFields(String partyId, RussianLegalEntity russianLegalEntity) {
+        Contractor contractorForUpdate = contractorDao.getContractorByPartyIdAndContractorId(partyId, CONTRACTOR_ID);
         assertEquals(russianLegalEntity.getInn(), contractorForUpdate.getRussianLegalEntityInn());
         assertEquals(russianLegalEntity.getActualAddress(), contractorForUpdate.getRussianLegalEntityActualAddress());
         assertEquals(russianLegalEntity.getRussianBankAccount().getAccount(), contractorForUpdate.getRussianLegalEntityBankAccount());

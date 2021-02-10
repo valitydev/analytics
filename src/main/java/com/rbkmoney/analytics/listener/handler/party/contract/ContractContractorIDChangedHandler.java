@@ -67,16 +67,16 @@ public class ContractContractorIDChangedHandler extends AbstractClaimChangeHandl
 
     @Nullable
     private Shop updateShop(MachineEvent event, String partyId, Contract contract, Contract mergedContract) {
-        final Shop shopByContractId = shopDao.getShopByContractId(mergedContract.getContractId());
-        if (shopByContractId != null) {
-            final Contractor contractorById = contractorDao.getContractorById(contract.getContractorId());
-            final Shop shop = contractorToShopConverter.convert(contractorById);
-            final Shop mergedShop = shopEventMerger.mergeShop(partyId, shopByContractId.getShopId(), shop);
+        final Shop currentShopState = shopDao.getShopByPartyIdAndContractId(partyId, mergedContract.getContractId());
+        if (currentShopState != null) {
+            final Contractor currentContractorState = contractorDao.getContractorByPartyIdAndContractorId(partyId, contract.getContractorId());
+            final Shop shop = contractorToShopConverter.convert(currentContractorState);
+            final Shop mergedShop = shopEventMerger.mergeShop(partyId, currentShopState.getShopId(), shop);
             mergedShop.setEventId(event.getEventId());
             mergedShop.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
             shopDao.saveShop(mergedShop);
         }
-        return shopByContractId;
+        return currentShopState;
     }
 
 }
