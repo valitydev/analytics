@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-@Order(2)
+@Order(3)
 @RequiredArgsConstructor
 public class ContractCreatedHandler extends AbstractClaimChangeHandler {
 
@@ -33,8 +33,7 @@ public class ContractCreatedHandler extends AbstractClaimChangeHandler {
     @Override
     public boolean accept(PartyChange change) {
         return isClaimEffect(change, claimEffect -> claimEffect.isSetContractEffect()
-                && claimEffect.getContractEffect().getEffect().isSetCreated()
-                && claimEffect.getContractEffect().getEffect().getCreated().isSetContractor());
+                && claimEffect.getContractEffect().getEffect().isSetCreated());
     }
 
     @Override
@@ -43,8 +42,7 @@ public class ContractCreatedHandler extends AbstractClaimChangeHandler {
         log.debug("ContractCreatedHandler handleChange change: {}", change);
         getClaimStatus(change).getAccepted().getEffects().stream()
                 .filter(claimEffect -> claimEffect.isSetContractEffect()
-                        && claimEffect.getContractEffect().getEffect().isSetCreated()
-                        && claimEffect.getContractEffect().getEffect().getCreated().isSetContractor())
+                        && claimEffect.getContractEffect().getEffect().isSetCreated())
                 .forEach(claimEffect -> handleEvent(event, claimEffect));
     }
 
@@ -52,28 +50,36 @@ public class ContractCreatedHandler extends AbstractClaimChangeHandler {
         String partyId = event.getSourceId();
         ContractEffectUnit contractEffectUnit = effect.getContractEffect();
         com.rbkmoney.damsel.domain.Contract contractCreated = contractEffectUnit.getEffect().getCreated();
-        Contractor contractor = contractCreated.getContractor();
-
-        log.debug("ContractCreatedHandler contractor: {}", contractor);
 
         Contract contract = new Contract();
         contract.setPartyId(partyId);
         contract.setEventId(event.getEventId());
         contract.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
 
-        String contractorId = initContractorId(contractCreated);
-        com.rbkmoney.analytics.domain.db.tables.pojos.Contractor currentContractor = contractorToCurrentContractorConverter.convert(contractor);
-        currentContractor.setContractorId(contractorId);
-        currentContractor.setEventId(event.getEventId());
-        currentContractor.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
-        currentContractor.setPartyId(partyId);
-
+        String contractorId = checkAndCreateContractor(event, partyId, contractCreated);
         contract.setContractorId(contractorId);
         contract.setContractId(contractEffectUnit.getContractId());
-
         contractDao.saveContract(contract);
-        contractorDao.saveContractor(currentContractor);
-        log.debug("ContractCreatedHandler result contract: {} currentContractor: {}", contract, currentContractor);
+
+        log.debug("ContractCreatedHandler result contract: {}", contract);
+    }
+
+    private String checkAndCreateContractor(MachineEvent event, String partyId,
+                                            com.rbkmoney.damsel.domain.Contract contractCreated) {
+        Contractor contractor = contractCreated.getContractor();
+        log.debug("ContractCreatedHandler contractor: {}", contractor);
+        String contractorId = initContractorId(contractCreated);
+        if (contractor != null) {
+            com.rbkmoney.analytics.domain.db.tables.pojos.Contractor currentContractor =
+                    contractorToCurrentContractorConverter.convert(contractor);
+            currentContractor.setContractorId(contractorId);
+            currentContractor.setEventId(event.getEventId());
+            currentContractor.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
+            currentContractor.setPartyId(partyId);
+            contractorDao.saveContractor(currentContractor);
+            log.debug("ContractCreatedHandler save currentContractor: {}", currentContractor);
+        }
+        return contractorId;
     }
 
     private String initContractorId(com.rbkmoney.damsel.domain.Contract contractCreated) {
