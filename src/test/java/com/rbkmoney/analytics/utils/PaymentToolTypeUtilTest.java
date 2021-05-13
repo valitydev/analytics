@@ -34,6 +34,7 @@ class PaymentToolTypeUtilTest {
         paymentTool.setBankCard(new BankCard());
         assertEquals(PaymentToolType.bank_card, PaymentToolTypeUtil.getPaymentToolType(paymentTool));
     }
+
     @Test
     void paymentTerminalTest() {
         PaymentTool paymentTool = new PaymentTool();
