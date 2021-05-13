@@ -1,9 +1,9 @@
 package com.rbkmoney.analytics.listener.mapper.factory;
 
 import com.rbkmoney.analytics.constant.ClickHouseUtilsValue;
-import com.rbkmoney.analytics.constant.PaymentToolType;
 import com.rbkmoney.analytics.dao.model.InvoiceBaseRow;
 import com.rbkmoney.analytics.service.GeoProvider;
+import com.rbkmoney.analytics.utils.PaymentToolTypeUtil;
 import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.ClientInfo;
 import com.rbkmoney.damsel.domain.ContactInfo;
@@ -14,7 +14,6 @@ import com.rbkmoney.damsel.domain.Payer;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.domain.RecurrentPayer;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
-import com.rbkmoney.geck.common.util.TBaseUtil;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.mamsel.CryptoCurrencyUtil;
@@ -87,7 +86,7 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
     }
 
     private void initCardData(T row, PaymentTool paymentTool) {
-        row.setPaymentTool(TBaseUtil.unionFieldToEnum(paymentTool, PaymentToolType.class));
+        row.setPaymentTool(PaymentToolTypeUtil.getPaymentToolType(paymentTool));
         if (paymentTool.isSetBankCard()) {
             BankCard bankCard = paymentTool.getBankCard();
             row.setBankCountry(bankCard.isSetIssuerCountry()
