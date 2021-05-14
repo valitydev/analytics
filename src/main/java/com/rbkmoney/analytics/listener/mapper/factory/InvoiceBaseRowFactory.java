@@ -1,16 +1,30 @@
 package com.rbkmoney.analytics.listener.mapper.factory;
 
 import com.rbkmoney.analytics.constant.ClickHouseUtilsValue;
-import com.rbkmoney.analytics.constant.PaymentToolType;
 import com.rbkmoney.analytics.dao.model.InvoiceBaseRow;
 import com.rbkmoney.analytics.service.GeoProvider;
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.analytics.utils.PaymentToolTypeUtil;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.ClientInfo;
+import com.rbkmoney.damsel.domain.ContactInfo;
+import com.rbkmoney.damsel.domain.CustomerPayer;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
+import com.rbkmoney.damsel.domain.Invoice;
+import com.rbkmoney.damsel.domain.Payer;
+import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.RecurrentPayer;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
-import com.rbkmoney.geck.common.util.TBaseUtil;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.mamsel.CryptoCurrencyUtil;
+import com.rbkmoney.mamsel.DigitalWalletUtil;
+import com.rbkmoney.mamsel.MobileOperatorUtil;
+import com.rbkmoney.mamsel.PaymentSystemUtil;
+import com.rbkmoney.mamsel.TerminalPaymentUtil;
+import com.rbkmoney.mamsel.TokenProviderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 @Slf4j
@@ -72,31 +86,33 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
     }
 
     private void initCardData(T row, PaymentTool paymentTool) {
-        row.setPaymentTool(TBaseUtil.unionFieldToEnum(paymentTool, PaymentToolType.class));
+        row.setPaymentTool(PaymentToolTypeUtil.getPaymentToolType(paymentTool));
         if (paymentTool.isSetBankCard()) {
             BankCard bankCard = paymentTool.getBankCard();
             row.setBankCountry(bankCard.isSetIssuerCountry()
                     ? bankCard.getIssuerCountry().name() : ClickHouseUtilsValue.UNKNOWN);
             row.setProvider(bankCard.getBankName());
             row.setCardToken(bankCard.getToken());
-            row.setCardHolderName(StringUtils.isEmpty(bankCard.getCardholderName())
-                    ? ClickHouseUtilsValue.UNKNOWN : bankCard.getCardholderName());
+            row.setCardHolderName(StringUtils.hasLength(bankCard.getCardholderName())
+                    ? bankCard.getCardholderName() : ClickHouseUtilsValue.UNKNOWN);
             row.setBin(bankCard.getBin());
             row.setMaskedPan(bankCard.getLastDigits());
-            row.setPaymentSystem(bankCard.getPaymentSystem().name());
-            if (bankCard.getTokenProvider() != null) {
-                row.setBankCardTokenProvider(bankCard.getTokenProvider().name());
+            row.setPaymentSystem(PaymentSystemUtil.getPaymentSystemName(bankCard));
+            if (TokenProviderUtil.isSetTokenProvider(bankCard)) {
+                row.setBankCardTokenProvider(TokenProviderUtil.getTokenProviderName(bankCard));
             }
             if (paymentTool.isSetPaymentTerminal()) {
-                row.setPaymentTerminal(paymentTool.getPaymentTerminal().getTerminalType().name());
+                row.setPaymentTerminal(
+                        TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())
+                );
             }
         } else if (paymentTool.isSetDigitalWallet()) {
-            row.setDigitalWalletProvider(paymentTool.getDigitalWallet().getProvider().name());
+            row.setDigitalWalletProvider(DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             row.setDigitalWalletToken(paymentTool.getDigitalWallet().getToken());
-        } else if (paymentTool.isSetCryptoCurrency()) {
-            row.setCryptoCurrency(paymentTool.getCryptoCurrency().name());
+        } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
+            row.setCryptoCurrency(CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
         } else if (paymentTool.isSetMobileCommerce()) {
-            row.setMobileOperator(paymentTool.getMobileCommerce().getOperator().name());
+            row.setMobileOperator(MobileOperatorUtil.getMobileOperatorName(paymentTool.getMobileCommerce()));
         }
     }
 
