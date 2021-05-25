@@ -31,6 +31,7 @@ public class ContractorToShopConverter implements Converter<Contractor, Shop> {
         shop.setInternationalLegalEntityRegisteredAddress(contractor.getInternationalLegalEntityRegisteredAddress());
         shop.setInternationalActualAddress(contractor.getInternationalActualAddress());
         shop.setInternationalLegalEntityRegisteredNumber(contractor.getInternationalLegalEntityRegisteredNumber());
+        shop.setInternationalLegalEntityCountryCode(contractor.getInternationalLegalEntityCountryCode());
         shop.setPrivateEntityType(contractor.getPrivateEntityType());
         shop.setRussianPrivateEntityEmail(contractor.getRussianPrivateEntityEmail());
         shop.setRussianPrivateEntityPhoneNumber(contractor.getRussianPrivateEntityPhoneNumber());

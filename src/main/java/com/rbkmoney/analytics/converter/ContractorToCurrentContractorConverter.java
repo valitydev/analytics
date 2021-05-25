@@ -53,6 +53,10 @@ public class ContractorToCurrentContractorConverter implements Converter<Contrac
                 currentContractor.setInternationalActualAddress(internationalLegalEntity.getActualAddress());
                 currentContractor.setInternationalLegalEntityRegisteredNumber(
                         internationalLegalEntity.getRegisteredNumber());
+                if (internationalLegalEntity.isSetCountry()) {
+                    currentContractor.setInternationalLegalEntityCountryCode(
+                            internationalLegalEntity.getCountry().getId().name());
+                }
             }
         } else if (contractor.isSetPrivateEntity()) {
             currentContractor.setPrivateEntityType(TBaseUtil.unionFieldToEnum(contractor.getPrivateEntity(),
