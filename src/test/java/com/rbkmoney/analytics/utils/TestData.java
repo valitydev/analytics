@@ -4,6 +4,8 @@ import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.domain_config.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class TestData {
 
@@ -61,6 +63,30 @@ public class TestData {
         categoryObject.setRef(categoryRef);
 
         return categoryObject;
+    }
+
+    public static CountryObject buildCountryObject() {
+        Country country = new Country();
+        country.setName(randomString());
+        country.setTradeBlocs(Set.of(new TradeBlocRef().setId(randomString())));
+        CountryObject countryObject = new CountryObject();
+        countryObject.setData(country);
+        countryObject.setRef(new CountryRef().setId(CountryCode.ABH));
+        return countryObject;
+    }
+
+    public static TradeBlocObject buildTradeBlocObject() {
+        TradeBloc tradeBloc = new TradeBloc();
+        tradeBloc.setName(randomString());
+        tradeBloc.setDescription(randomString());
+        TradeBlocObject tradeBlocObject = new TradeBlocObject();
+        tradeBlocObject.setData(tradeBloc);
+        tradeBlocObject.setRef(new TradeBlocRef().setId(randomString()));
+        return tradeBlocObject;
+    }
+
+    public static String randomString() {
+        return UUID.randomUUID().toString();
     }
 
 }
