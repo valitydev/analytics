@@ -5,8 +5,8 @@ import com.rbkmoney.analytics.dao.repository.RepositoryFacade;
 import com.rbkmoney.analytics.listener.Processor;
 import com.rbkmoney.analytics.listener.handler.BatchHandler;
 import com.rbkmoney.analytics.listener.mapper.payout.PayoutMapper;
-import com.rbkmoney.damsel.payout_processing.Event;
-import com.rbkmoney.damsel.payout_processing.PayoutChange;
+import com.rbkmoney.payout.manager.Event;
+import com.rbkmoney.payout.manager.PayoutChange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

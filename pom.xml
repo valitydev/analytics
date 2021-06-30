@@ -99,6 +99,11 @@
             <artifactId>xrates-proto</artifactId>
             <version>${xrates-proto.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>payout-manager-proto</artifactId>
+            <version>1.7-d2eed21</version>
+        </dependency>
 
         <!--spring-->
         <dependency>
