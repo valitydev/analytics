@@ -114,7 +114,6 @@ public class KafkaConfig {
         factory.setConcurrency(concurrencyListeners);
         factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
         factory.setBatchListener(true);
-        factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
     }
 
