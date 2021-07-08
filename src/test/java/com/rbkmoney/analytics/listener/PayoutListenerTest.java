@@ -4,6 +4,7 @@ import com.rbkmoney.analytics.AnalyticsApplication;
 import com.rbkmoney.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
 import com.rbkmoney.analytics.utils.FileUtil;
 import com.rbkmoney.analytics.utils.KafkaAbstractTest;
+import com.rbkmoney.clickhouse.initializer.ChInitializer;
 import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.geo_ip.GeoIpServiceSrv;
 import com.rbkmoney.geck.common.util.TypeUtil;
@@ -63,14 +64,10 @@ public class PayoutListenerTest extends KafkaAbstractTest {
 
     @Before
     public void init() throws SQLException {
-        try (Connection connection = getSystemConn()) {
-            String sql = FileUtil.getFile("sql/V1__db_init.sql") + ";" +
-                    FileUtil.getFile("sql/V7__new_payouts.sql");
-            String[] split = sql.split(";");
-            for (String exec : split) {
-                connection.createStatement().execute(exec);
-            }
-        }
+        ChInitializer.initAllScripts(clickHouseContainer, List.of(
+                "sql/V1__db_init.sql",
+                "sql/V7__new_payouts.sql"
+        ));
     }
 
     private Connection getSystemConn() throws SQLException {

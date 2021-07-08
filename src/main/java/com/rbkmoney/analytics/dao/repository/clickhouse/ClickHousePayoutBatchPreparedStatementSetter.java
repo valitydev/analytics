@@ -29,7 +29,7 @@ public class ClickHousePayoutBatchPreparedStatementSetter implements BatchPrepar
 
         ps.setString(l++, row.getPayoutId());
         ps.setString(l++, row.getStatus().name());
-        ps.setString(l++, row.getPayoutId());
+        ps.setString(l++, row.getPayoutToolId());
         ps.setString(l++, row.getStatusCancelledDetails());
         ps.setBoolean(l++, row.isCancelledAfterBeingPaid());
 
