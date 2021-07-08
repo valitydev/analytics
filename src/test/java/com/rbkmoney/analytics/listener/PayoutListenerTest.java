@@ -2,7 +2,6 @@ package com.rbkmoney.analytics.listener;
 
 import com.rbkmoney.analytics.AnalyticsApplication;
 import com.rbkmoney.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
-import com.rbkmoney.analytics.utils.FileUtil;
 import com.rbkmoney.analytics.utils.KafkaAbstractTest;
 import com.rbkmoney.clickhouse.initializer.ChInitializer;
 import com.rbkmoney.damsel.domain.CurrencyRef;
@@ -25,18 +24,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.ClickHouseContainer;
-import ru.yandex.clickhouse.ClickHouseDataSource;
-import ru.yandex.clickhouse.settings.ClickHouseProperties;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -70,12 +63,6 @@ public class PayoutListenerTest extends KafkaAbstractTest {
         ));
     }
 
-    private Connection getSystemConn() throws SQLException {
-        ClickHouseProperties properties = new ClickHouseProperties();
-        ClickHouseDataSource dataSource = new ClickHouseDataSource(clickHouseContainer.getJdbcUrl(), properties);
-        return dataSource.getConnection();
-    }
-
     @Test
     public void testPayout() throws InterruptedException, TException {
         // Given
@@ -86,7 +73,12 @@ public class PayoutListenerTest extends KafkaAbstractTest {
                 .setPayoutId(PAYOUT_ID)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setPayout(new Payout()
+                        .setPayoutId(PAYOUT_ID)
+                        .setPartyId("1")
                         .setShopId(SHOP_ID)
+                        .setStatus(PayoutStatus.paid(new PayoutPaid()))
+                        .setPayoutToolId("111")
+                        .setFee(0L)
                         .setAmount(10L)
                         .setCurrency(new CurrencyRef()
                                 .setSymbolicCode("RUB"))
