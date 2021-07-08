@@ -6,8 +6,8 @@ import com.rbkmoney.analytics.utils.FileUtil;
 import com.rbkmoney.analytics.utils.KafkaAbstractTest;
 import com.rbkmoney.damsel.domain.CurrencyRef;
 import com.rbkmoney.damsel.geo_ip.GeoIpServiceSrv;
-import com.rbkmoney.damsel.payout_processing.*;
 import com.rbkmoney.geck.common.util.TypeUtil;
+import com.rbkmoney.payout.manager.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.junit.Before;
@@ -57,8 +57,6 @@ public class PayoutListenerTest extends KafkaAbstractTest {
     @MockBean
     private GeoIpServiceSrv.Iface iface;
     @MockBean
-    private PayoutManagementSrv.Iface payouterClient;
-    @MockBean
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;
@@ -66,7 +64,8 @@ public class PayoutListenerTest extends KafkaAbstractTest {
     @Before
     public void init() throws SQLException {
         try (Connection connection = getSystemConn()) {
-            String sql = FileUtil.getFile("sql/V1__db_init.sql");
+            String sql = FileUtil.getFile("sql/V1__db_init.sql") + ";" +
+                    FileUtil.getFile("sql/V7__new_payouts.sql");
             String[] split = sql.split(";");
             for (String exec : split) {
                 connection.createStatement().execute(exec);
@@ -84,14 +83,17 @@ public class PayoutListenerTest extends KafkaAbstractTest {
     public void testPayout() throws InterruptedException, TException {
         // Given
         Event payoutEvent = new Event()
-                .setId(1L)
-                .setPayload(EventPayload.payout_changes(List.of(
-                        PayoutChange.payout_status_changed(new PayoutStatusChanged()
-                                .setStatus(PayoutStatus.paid(new PayoutPaid()))))))
-                .setSource(EventSource.payout_id(PAYOUT_ID))
-                .setCreatedAt(TypeUtil.temporalToString(Instant.now()));
-
-        mockPayout();
+                .setPayoutChange(
+                        PayoutChange.status_changed(new PayoutStatusChanged()
+                                .setStatus(PayoutStatus.paid(new PayoutPaid()))))
+                .setPayoutId(PAYOUT_ID)
+                .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
+                .setPayout(new Payout()
+                        .setShopId(SHOP_ID)
+                        .setAmount(10L)
+                        .setCurrency(new CurrencyRef()
+                                .setSymbolicCode("RUB"))
+                        .setCreatedAt(TypeUtil.temporalToString(Instant.now())));
 
         // When
         produceMessageToPayout(payoutEvent);
@@ -104,29 +106,6 @@ public class PayoutListenerTest extends KafkaAbstractTest {
                 (resultSet, i) -> resultSet.getLong("sum"));
 
         assertEquals(10L, sum);
-    }
-
-    private void mockPayout() throws TException {
-        when(payouterClient.getEvents(eq(PAYOUT_ID), any(EventRange.class)))
-                .thenReturn(List.of(
-                        new Event()
-                                .setId(2L)
-                                .setSource(EventSource.payout_id(PAYOUT_ID))
-                                .setPayload(EventPayload.payout_changes(List.of(
-                                        PayoutChange.payout_created(new PayoutCreated()
-                                                .setPayout(new Payout()
-                                                        .setShopId(SHOP_ID)
-                                                        .setAmount(10L)
-                                                        .setCurrency(new CurrencyRef()
-                                                                .setSymbolicCode("RUB"))
-                                                        .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
-                                                        .setType(PayoutType.wallet(new Wallet()))))))),
-                        new Event()
-                                .setId(3L)
-                                .setSource(EventSource.payout_id(PAYOUT_ID))
-                                .setPayload(EventPayload.payout_changes(List.of(
-                                        PayoutChange.payout_status_changed(new PayoutStatusChanged()
-                                                .setStatus(PayoutStatus.paid(new PayoutPaid()))))))));
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
