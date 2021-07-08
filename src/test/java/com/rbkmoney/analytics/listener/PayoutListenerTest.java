@@ -27,6 +27,7 @@ import org.testcontainers.containers.ClickHouseContainer;
 
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -82,6 +83,7 @@ public class PayoutListenerTest extends KafkaAbstractTest {
                         .setAmount(10L)
                         .setCurrency(new CurrencyRef()
                                 .setSymbolicCode("RUB"))
+                        .setCashFlow(Collections.emptyList())
                         .setCreatedAt(TypeUtil.temporalToString(Instant.now())));
 
         // When
