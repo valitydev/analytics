@@ -32,7 +32,8 @@ public class ClickHouseAbstractTest {
                 "sql/V2__add_fields.sql",
                 "sql/V3__add_provider_field.sql",
                 "sql/test.data/inserts_event_sink.sql",
-                "sql/V7__new_payouts.sql")
+                "sql/V7__new_payouts.sql",
+                "sql/test.data/inserts_event_sink_payouts.sql")
         );
     }
 
