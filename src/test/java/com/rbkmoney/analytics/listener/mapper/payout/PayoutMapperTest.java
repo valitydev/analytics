@@ -1,6 +1,7 @@
 package com.rbkmoney.analytics.listener.mapper.payout;
 
 import com.rbkmoney.analytics.dao.model.PayoutRow;
+import com.rbkmoney.analytics.dao.repository.clickhouse.ClickHousePayoutRepository;
 import com.rbkmoney.analytics.listener.mapper.factory.PayoutRowFactory;
 import com.rbkmoney.payout.manager.*;
 import org.junit.Before;
@@ -24,6 +25,9 @@ public class PayoutMapperTest {
     @Mock
     private PayoutRowFactory payoutRowFactory;
 
+    @Mock
+    private ClickHousePayoutRepository clickHousePayoutRepository;
+
     @InjectMocks
     private PayoutMapper payoutMapper;
 
@@ -31,6 +35,8 @@ public class PayoutMapperTest {
     public void setUp() {
         when(payoutRowFactory.create(any(), any(), any(), any()))
                 .thenReturn(new PayoutRow());
+
+        when(clickHousePayoutRepository.getPaidEvent(PAYOUT_ID)).thenReturn(PAYOUT_ID);
     }
 
     @Test
@@ -40,15 +46,12 @@ public class PayoutMapperTest {
                 new PayoutStatusChanged()
                         .setStatus(PayoutStatus.paid(new PayoutPaid())));
 
+        Payout payoutCreated = new Payout();
+
         Event event = new Event()
                 .setSequenceId(1)
-                .setPayoutId(PAYOUT_ID);
-
-        Payout payoutCreated = new Payout();
-        Event payoutCreatedEvent = new Event()
-                .setSequenceId(2)
-                .setPayoutChange(PayoutChange.created(new PayoutCreated()
-                        .setPayout(payoutCreated)));
+                .setPayoutId(PAYOUT_ID)
+                .setPayout(payoutCreated);
 
         // When
         payoutMapper.map(payoutChange, event);
@@ -65,11 +68,12 @@ public class PayoutMapperTest {
                 new PayoutStatusChanged()
                         .setStatus(PayoutStatus.cancelled(new PayoutCancelled())));
 
+        Payout payoutCreated = new Payout();
+
         Event event = new Event()
                 .setSequenceId(1)
-                .setPayoutId(PAYOUT_ID);
-
-        Payout payoutCreated = new Payout();
+                .setPayoutId(PAYOUT_ID)
+                .setPayout(payoutCreated);
 
         // When
         PayoutRow row = payoutMapper.map(payoutChange, event);
