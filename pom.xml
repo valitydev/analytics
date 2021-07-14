@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.rbkmoney</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.2.7</version>
+        <version>1.2.9</version>
     </parent>
 
     <artifactId>analytics</artifactId>
@@ -175,7 +175,6 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>kafka-common-lib</artifactId>
-            <version>0.1.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
