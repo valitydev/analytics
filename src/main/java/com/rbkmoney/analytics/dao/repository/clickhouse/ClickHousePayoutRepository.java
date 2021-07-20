@@ -1,5 +1,6 @@
 package com.rbkmoney.analytics.dao.repository.clickhouse;
 
+import com.rbkmoney.analytics.dao.model.NumberModel;
 import com.rbkmoney.analytics.dao.model.PayoutRow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.clickhouse.except.ClickHouseException;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -31,5 +34,10 @@ public class ClickHousePayoutRepository {
 
         log.info("Batch inserted payoutRows: {} firstElement: {}", payoutRows.size(),
                 payoutRows.get(0).getPayoutId());
+    }
+
+    public String getPaidEvent(String payoutId) {
+        String selectSql = "select payoutId from analytic.events_sink_payout where payoutId = ? and status = 'paid'";
+        return clickHouseJdbcTemplate.queryForObject(selectSql, String.class, payoutId);
     }
 }

@@ -1,8 +1,8 @@
 package com.rbkmoney.analytics.listener;
 
 import com.rbkmoney.analytics.listener.handler.payout.PayoutBatchHandler;
-import com.rbkmoney.damsel.payout_processing.Event;
-import com.rbkmoney.damsel.payout_processing.PayoutChange;
+import com.rbkmoney.payout.manager.Event;
+import com.rbkmoney.payout.manager.PayoutChange;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,14 +50,9 @@ public class PayoutListener {
             }
 
             batch.stream()
-                    .map(payoutEvent -> Map.entry(payoutEvent, payoutEvent.getPayload()))
-                    .filter(entry -> entry.getValue().isSetPayoutChanges())
-                    .map(entry -> entry.getValue().getPayoutChanges().stream()
-                            .map(payoutChange -> Map.entry(entry.getKey(), payoutChange))
-                            .collect(toList()))
-                    .flatMap(List::stream)
+                    .map(payoutEvent -> Map.entry(payoutEvent, payoutEvent.getPayoutChange()))
                     .collect(groupingBy(
-                            entry -> Optional.ofNullable(getHandler(entry.getValue())),
+                            entry -> getHandler(entry.getValue()),
                             toList()))
                     .forEach((handler, entries) -> handler
                             .ifPresent(eventBatchHandler -> eventBatchHandler.handle(entries).execute()));
@@ -68,13 +63,7 @@ public class PayoutListener {
         }
     }
 
-    private PayoutBatchHandler getHandler(PayoutChange change) {
-        for (PayoutBatchHandler handler : payoutBatchHandlers) {
-            if (handler.accept(change)) {
-                return handler;
-            }
-        }
-
-        return null;
+    private Optional<PayoutBatchHandler> getHandler(PayoutChange change) {
+        return payoutBatchHandlers.stream().filter(h -> h.accept(change)).findFirst();
     }
 }

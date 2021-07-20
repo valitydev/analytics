@@ -2,9 +2,9 @@ package com.rbkmoney.analytics.utils;
 
 import com.rbkmoney.analytics.serde.MachineEventDeserializer;
 import com.rbkmoney.analytics.serde.PayoutEventDeserializer;
-import com.rbkmoney.damsel.payout_processing.Event;
 import com.rbkmoney.kafka.common.serialization.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
+import com.rbkmoney.payout.manager.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -92,7 +92,7 @@ public abstract class KafkaAbstractTest {
         try (Producer<String, Event> producer = createProducerAggr()) {
             ProducerRecord<String, Event> producerRecord = new ProducerRecord<>(
                     payoutTopic,
-                    payoutEvent.getSource().getPayoutId(),
+                    payoutEvent.getPayoutId(),
                     payoutEvent);
             producer.send(producerRecord).get();
             log.info("produceMessageToPayout() payoutEvent: {}", payoutEvent);

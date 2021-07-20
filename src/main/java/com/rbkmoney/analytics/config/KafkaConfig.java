@@ -3,10 +3,10 @@ package com.rbkmoney.analytics.config;
 import com.rbkmoney.analytics.config.properties.KafkaSslProperties;
 import com.rbkmoney.analytics.serde.MachineEventDeserializer;
 import com.rbkmoney.analytics.serde.PayoutEventDeserializer;
-import com.rbkmoney.damsel.payout_processing.Event;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.mg.event.sink.service.ConsumerGroupIdService;
 import com.rbkmoney.mg.event.sink.utils.SslKafkaUtils;
+import com.rbkmoney.payout.manager.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -114,7 +114,6 @@ public class KafkaConfig {
         factory.setConcurrency(concurrencyListeners);
         factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
         factory.setBatchListener(true);
-        factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
     }
 
