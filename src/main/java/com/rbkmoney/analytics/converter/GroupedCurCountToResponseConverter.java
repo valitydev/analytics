@@ -14,6 +14,10 @@ import static java.util.stream.Collectors.toList;
 @Service
 public class GroupedCurCountToResponseConverter {
 
+    private static final String CAPTURED_STATUS = "captured";
+    private static final String FAILED_STATUS = "failed";
+    private static final String CANCELLED_STATUS = "cancelled";
+
     public SplitCountResponse convert(List<SplitStatusNumberModel> splitAmount) {
         Map<String, Map<String, List<SplitStatusNumberModel>>> maps = splitAmount.stream()
                 .collect(groupingBy(SplitStatusNumberModel::getCurrency,
@@ -53,19 +57,12 @@ public class GroupedCurCountToResponseConverter {
     }
 
     private PaymentStatus mapStatus(Map.Entry<String, List<SplitStatusNumberModel>> entry) {
-        switch (entry.getKey()) {
-            case "captured": {
-                return PaymentStatus.CAPTURED;
-            }
-            case "failed": {
-                return PaymentStatus.FAILED;
-            }
-            case "cancelled": {
-                return PaymentStatus.CANCELLED;
-            }
-            default:
-                throw new PaymentInfoRequestException();
-        }
+        return switch (entry.getKey()) {
+            case CAPTURED_STATUS -> PaymentStatus.CAPTURED;
+            case FAILED_STATUS -> PaymentStatus.FAILED;
+            case CANCELLED_STATUS -> PaymentStatus.CANCELLED;
+            default -> throw new PaymentInfoRequestException();
+        };
     }
 
 }
