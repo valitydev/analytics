@@ -52,7 +52,7 @@ public class CountryDominantHandler extends AbstractDominantHandler {
         String[] tradeBlocs = data.isSetTradeBlocs() ? data.getTradeBlocs()
                 .stream()
                 .map(TradeBlocRef::getId)
-                .toArray(String[]::new) : null;
+                .toArray(String[]::new) : new String[0];
         country.setTradeBloc(tradeBlocs);
         return country;
     }
