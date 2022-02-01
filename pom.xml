@@ -29,7 +29,7 @@
         <db.name>analytics</db.name>
         <db.schema>analytics</db.schema>
         <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
-        <testcontainers.version>1.16.3</testcontainers.version>
+        <testcontainers.version>1.15.3</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -139,6 +139,14 @@
 
         <!--third party-->
         <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
@@ -149,7 +157,7 @@
         <dependency>
             <groupId>ru.yandex.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.3.2</version>
+            <version>0.2.4</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
