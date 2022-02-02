@@ -22,7 +22,7 @@
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
         <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <schedlock.version>4.32.0</schedlock.version>
+        <schedlock.version>4.33.0</schedlock.version>
         <db.port>5432</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.21-e4784ab</version>
+            <version>1.22-111ea3d</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -214,19 +214,19 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.15.3</version>
+            <version>1.16.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
-            <version>1.15.3</version>
+            <version>1.16.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.15.3</version>
+            <version>1.16.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -286,7 +286,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>1.7.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
