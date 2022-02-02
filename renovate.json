@@ -13,6 +13,13 @@
       ],
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch"
+    },
+    {
+      "matchPackageNames": [
+        "ru.yandex.clickhouse",
+        "org.testcontainers:clickhouse"
+      ],
+      "enabled": false
     }
   ]
 }
