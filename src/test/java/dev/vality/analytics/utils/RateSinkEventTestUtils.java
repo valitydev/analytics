@@ -32,8 +32,8 @@ public class RateSinkEventTestUtils {
                             )
                     )
             );
-            TFieldIdEnum[] tFieldIdEnums = created.getFields();
-            System.out.println(tFieldIdEnums);
+            TFieldIdEnum[] thriftFieldIdEnums = created.getFields();
+            System.out.println(thriftFieldIdEnums);
             Geck.toMsgPack(created);
 //            create("asd");
         } catch (Exception ex) {
