@@ -16,7 +16,7 @@
     },
     {
       "matchPackageNames": [
-        "ru.yandex.clickhouse",
+        "ru.yandex.clickhouse:clickhouse-jdbc",
         "org.testcontainers:clickhouse"
       ],
       "enabled": false
