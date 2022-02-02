@@ -20,7 +20,7 @@ public class RateSinkEventTestUtils {
 
     public static List<SinkEvent> create(String sourceId, String... excludedFields) {
         List<Quote> quotes = randomListOf(4, Quote.class, excludedFields);
-        quotes.stream().forEach(quote -> {
+        quotes.forEach(quote -> {
             quote.getDestination().setExponent((short) 2);
             quote.getSource().setExponent((short) 2);
             quote.getExchangeRate().setQ(1L);
@@ -32,20 +32,15 @@ public class RateSinkEventTestUtils {
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setSourceId(sourceId)
                 .setSourceNs(sourceId)
-                .setData(Value.bin(Geck.toMsgPack(
-                        Change.created(
-                                new ExchangeRateCreated(
-                                        new ExchangeRateData(
-                                                new TimestampInterval(
-                                                        Instant.now().toString(),
-                                                        Instant.now().toString()
-                                                ),
-                                                quotes
-                                        )
-                                )
-                        ))
-                )));
+                .setData(Value.bin(Geck.toMsgPack(Change.created(
+                        new ExchangeRateCreated(
+                                new ExchangeRateData(
+                                        new TimestampInterval(
+                                                Instant.now().toString(),
+                                                Instant.now().toString()
+                                        ),
+                                        quotes
+                                )))))));
         return Collections.singletonList(sinkEvent);
     }
-
 }

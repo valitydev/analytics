@@ -7,11 +7,10 @@ management:
     port: '@management.port@'
   metrics:
     export:
-      statsd:
-        flavor: etsy
-        enabled: false
       prometheus:
         enabled: false
+    tags:
+      application: analytics
   endpoint:
     health:
       show-details: always
