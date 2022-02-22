@@ -21,21 +21,22 @@ FROM
                    %1$s
                    %2$s
                  GROUP BY shopId, currency
-             ) ANY LEFT JOIN (
-        SELECT
-            shopId as shop_id,
-            currency,
-            sum(amount + systemFee) as sum_succeeded_refund
-        FROM analytic.events_sink_refund
-        WHERE
-            ? >= timestamp
-            and status = 'succeeded'
-            and partyId = ?
-            %1$s
-            %2$s
-        GROUP BY shopId, currency
-    ) USING  shop_id, currency
-    ) ANY LEFT JOIN (
+             ) as sum_captured_payment_query
+             ANY LEFT JOIN (
+                SELECT
+                    shopId as shop_id,
+                    currency,
+                    sum(amount + systemFee) as sum_succeeded_refund
+                FROM analytic.events_sink_refund
+                WHERE
+                    ? >= timestamp
+                    and status = 'succeeded'
+                    and partyId = ?
+                    %1$s
+                    %2$s
+                GROUP BY shopId, currency
+            ) as sum_succeeded_refund_query USING  shop_id, currency
+    ) as sum_payment_without_refund_query ANY LEFT JOIN (
     SELECT
         shop_id,
         currency,
@@ -54,7 +55,8 @@ FROM
             %1$s
             %2$s
         GROUP BY shopId, currency
-    ) ANY LEFT JOIN (
+    ) as sum_paid_payout_query
+     ANY LEFT JOIN (
         SELECT
             shopId as shop_id,
             currency,
@@ -68,5 +70,5 @@ FROM
             %1$s
             %2$s
         GROUP BY shopId, currency
-    ) USING shop_id, currency
-) USING  shop_id, currency
+    ) as sum_cancelled_after_paid_payout_query USING shop_id, currency
+) as sum_payout_without_cancelled_query USING  shop_id, currency
