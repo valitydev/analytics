@@ -21,7 +21,7 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) as sum_payment_quey
+                      ) as sum_payment_query
                       ANY LEFT JOIN (
                         SELECT
                           currency,
@@ -36,7 +36,7 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) as sum_refund_quey USING currency
+                      ) as sum_refund_query USING currency
                   ) as sum_payment_without_refund_query ANY
                   LEFT JOIN (
                     SELECT
@@ -73,5 +73,5 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) as sum_cancelled_after_paid_payout_quey USING currency
+                      ) as sum_cancelled_after_paid_payout_query USING currency
                   ) as sum_payout_without_cancelled_query USING currency
