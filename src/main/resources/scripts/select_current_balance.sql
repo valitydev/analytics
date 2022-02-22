@@ -21,8 +21,8 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) ANY
-                      LEFT JOIN (
+                      ) as sum_payment_query
+                      ANY LEFT JOIN (
                         SELECT
                           currency,
                           sum(amount + systemFee) as sum_succeeded_refund
@@ -36,8 +36,8 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) USING currency
-                  ) ANY
+                      ) as sum_refund_query USING currency
+                  ) as sum_payment_without_refund_query ANY
                   LEFT JOIN (
                     SELECT
                       currency,
@@ -57,7 +57,7 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) ANY
+                      ) as sum_paid_payment_query ANY
                       LEFT JOIN (
                         SELECT
                           currency,
@@ -73,5 +73,5 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) USING currency
-                  ) USING currency
+                      ) as sum_cancelled_after_paid_payout_query USING currency
+                  ) as sum_payout_without_cancelled_query USING currency
