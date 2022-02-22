@@ -57,7 +57,7 @@
                           %2$s
                         GROUP BY
                           currency
-                      ) as sum_paid_payment_quey ANY
+                      ) as sum_paid_payment_query ANY
                       LEFT JOIN (
                         SELECT
                           currency,
