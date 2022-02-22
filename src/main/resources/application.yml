@@ -70,7 +70,6 @@ kafka:
       initial: mg-events-rates
       groupId: analytics-rate-group
       max.poll.records: 50
-
   consumer:
     prefix: analytics
     concurrency: 7
@@ -110,4 +109,3 @@ cache:
     size: 10000
 
 caffeine.cache-expiration-seconds: 60
-
