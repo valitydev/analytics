@@ -4,8 +4,8 @@ import dev.vality.analytics.AnalyticsApplication;
 import dev.vality.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
 import dev.vality.analytics.utils.KafkaAbstractTest;
 import dev.vality.clickhouse.initializer.ChInitializer;
+import dev.vality.columbus.ColumbusServiceSrv;
 import dev.vality.damsel.domain.CurrencyRef;
-import dev.vality.damsel.geo_ip.GeoIpServiceSrv;
 import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.payout.manager.*;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class PayoutListenerTest extends KafkaAbstractTest {
     @ClassRule
     public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
     @MockBean
-    private GeoIpServiceSrv.Iface iface;
+    private ColumbusServiceSrv.Iface iface;
     @MockBean
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
     @Autowired
