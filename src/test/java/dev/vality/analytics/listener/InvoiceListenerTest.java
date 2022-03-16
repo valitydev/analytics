@@ -7,8 +7,8 @@ import dev.vality.analytics.utils.BuildUtils;
 import dev.vality.analytics.utils.EventRangeFactory;
 import dev.vality.analytics.utils.KafkaAbstractTest;
 import dev.vality.clickhouse.initializer.ChInitializer;
+import dev.vality.columbus.ColumbusServiceSrv;
 import dev.vality.damsel.domain.*;
-import dev.vality.damsel.geo_ip.GeoIpServiceSrv;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +61,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     @ClassRule
     public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
     @MockBean
-    private GeoIpServiceSrv.Iface iface;
+    private ColumbusServiceSrv.Iface iface;
     @MockBean
     private InvoicingSrv.Iface invoicingClient;
     @MockBean
@@ -248,10 +248,10 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             log.info("clickhouse.db.url={}", clickHouseContainer.getJdbcUrl());
             TestPropertyValues.of(
-                    "clickhouse.db.url=" + clickHouseContainer.getJdbcUrl(),
-                    "clickhouse.db.user=" + clickHouseContainer.getUsername(),
-                    "clickhouse.db.password=" + clickHouseContainer.getPassword(),
-                    "spring.flyway.enabled=false")
+                            "clickhouse.db.url=" + clickHouseContainer.getJdbcUrl(),
+                            "clickhouse.db.user=" + clickHouseContainer.getUsername(),
+                            "clickhouse.db.password=" + clickHouseContainer.getPassword(),
+                            "spring.flyway.enabled=false")
                     .applyTo(configurableApplicationContext.getEnvironment());
         }
     }
