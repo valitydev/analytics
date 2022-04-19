@@ -7,10 +7,11 @@ import dev.vality.damsel.domain.*;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.machinegun.eventsink.MachineEvent;
-import dev.vality.mamsel.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -82,19 +83,28 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
                     ? bankCard.getCardholderName() : ClickHouseUtilsValue.UNKNOWN);
             row.setBin(bankCard.getBin());
             row.setMaskedPan(bankCard.getLastDigits());
-            row.setPaymentSystem(PaymentSystemUtil.getPaymentSystemName(bankCard));
-            row.setBankCardTokenProvider(TokenProviderUtil.getTokenProviderName(bankCard));
+            row.setPaymentSystem(
+                    Optional.ofNullable(bankCard.getPaymentSystem()).map(PaymentSystemRef::getId).orElse(null)
+            );
+            row.setBankCardTokenProvider(
+                    Optional.ofNullable(bankCard.getPaymentToken()).map(BankCardTokenServiceRef::getId).orElse(null)
+            );
         } else if (paymentTool.isSetPaymentTerminal()) {
             row.setPaymentTerminal(
-                    TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())
+                    Optional.ofNullable(paymentTool.getPaymentTerminal().getPaymentService())
+                            .map(PaymentServiceRef::getId).orElse(null)
             );
         } else if (paymentTool.isSetDigitalWallet()) {
-            row.setDigitalWalletProvider(DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
+            row.setDigitalWalletProvider(
+                    Optional.ofNullable(paymentTool.getDigitalWallet().getPaymentService())
+                            .map(PaymentServiceRef::getId).orElse(null));
             row.setDigitalWalletToken(paymentTool.getDigitalWallet().getToken());
-        } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
-            row.setCryptoCurrency(CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
+        } else if (paymentTool.isSetCryptoCurrency()) {
+            row.setCryptoCurrency(paymentTool.getCryptoCurrency().getId());
         } else if (paymentTool.isSetMobileCommerce()) {
-            row.setMobileOperator(MobileOperatorUtil.getMobileOperatorName(paymentTool.getMobileCommerce()));
+            row.setMobileOperator(
+                    Optional.ofNullable(paymentTool.getMobileCommerce().getOperator())
+                            .map(MobileOperatorRef::getId).orElse(null));
         }
     }
 }

@@ -51,10 +51,6 @@
             <artifactId>damsel</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.vality</groupId>
-            <artifactId>mamsel</artifactId>
-        </dependency>
-        <dependency>
             <groupId>dev.vality.woody</groupId>
             <artifactId>woody-thrift</artifactId>
         </dependency>
