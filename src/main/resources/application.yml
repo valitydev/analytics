@@ -58,7 +58,7 @@ postgres.db:
   schema: "analytics"
 
 kafka:
-  max-poll-records: 100
+  max.poll.records: 100
   topic:
     event.sink:
       initial: event_sink
