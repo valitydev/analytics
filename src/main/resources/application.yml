@@ -36,7 +36,6 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      max-poll-records: 100
       properties:
         session.timeout.ms: 60000
         max.poll.interval.ms: 60000
@@ -59,6 +58,7 @@ postgres.db:
   schema: "analytics"
 
 kafka:
+  max-poll-records: 100
   topic:
     event.sink:
       initial: event_sink
