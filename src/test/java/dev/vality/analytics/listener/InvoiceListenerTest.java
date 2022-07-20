@@ -2,7 +2,6 @@ package dev.vality.analytics.listener;
 
 import dev.vality.analytics.AnalyticsApplication;
 import dev.vality.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
-import dev.vality.analytics.service.HgClientService;
 import dev.vality.analytics.utils.BuildUtils;
 import dev.vality.analytics.utils.EventRangeFactory;
 import dev.vality.analytics.utils.KafkaAbstractTest;
@@ -212,7 +211,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     }
 
     private void mockPayment(String sourceId) throws TException, IOException {
-        Mockito.when(invoicingClient.get(HgClientService.USER_INFO, sourceId, eventRangeFactory.create(6)))
+        Mockito.when(invoicingClient.get(sourceId, eventRangeFactory.create(6)))
                 .thenReturn(BuildUtils.buildInvoice(InvoiceFlowGenerator.PARTY_ID, InvoiceFlowGenerator.SHOP_ID,
                         sourceId, "1", "1", FIRST, FIRST,
                         InvoiceStatus.paid(new InvoicePaid()),
@@ -220,7 +219,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     }
 
     private void mockRefund(String sourceId, int sequenceId, String refundId) throws TException, IOException {
-        Mockito.when(invoicingClient.get(HgClientService.USER_INFO, sourceId, eventRangeFactory.create(sequenceId)))
+        Mockito.when(invoicingClient.get(sourceId, eventRangeFactory.create(sequenceId)))
                 .thenReturn(BuildUtils.buildInvoice(InvoiceFlowGenerator.PARTY_ID, InvoiceFlowGenerator.SHOP_ID,
                         sourceId, "1", refundId, "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
@@ -228,7 +227,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     }
 
     private void mockAdjustment(String sourceId, int sequenceId, String adjustmentId) throws TException, IOException {
-        Mockito.when(invoicingClient.get(HgClientService.USER_INFO, sourceId, eventRangeFactory.create(sequenceId)))
+        Mockito.when(invoicingClient.get(sourceId, eventRangeFactory.create(sequenceId)))
                 .thenReturn(BuildUtils.buildInvoice(InvoiceFlowGenerator.PARTY_ID, InvoiceFlowGenerator.SHOP_ID,
                         sourceId, "1", "1", "1", adjustmentId,
                         InvoiceStatus.paid(new InvoicePaid()),
@@ -236,7 +235,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     }
 
     private void mockChargeback(String sourceId, int sequenceId, String chargebackId) throws TException, IOException {
-        Mockito.when(invoicingClient.get(HgClientService.USER_INFO, sourceId, eventRangeFactory.create(sequenceId)))
+        Mockito.when(invoicingClient.get(sourceId, eventRangeFactory.create(sequenceId)))
                 .thenReturn(BuildUtils.buildInvoice(InvoiceFlowGenerator.PARTY_ID, InvoiceFlowGenerator.SHOP_ID,
                         sourceId, "1", "1", chargebackId, "1",
                         InvoiceStatus.paid(new InvoicePaid()),
