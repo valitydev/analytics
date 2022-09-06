@@ -59,6 +59,11 @@ postgres.db:
 
 kafka:
   max.poll.records: 100
+  error-handler:
+    retry:
+      attempts: 3 #remove property or set negative for infinite attempts
+      min.interval: 1000
+      max.interval: 600000
   topic:
     event.sink:
       initial: event_sink

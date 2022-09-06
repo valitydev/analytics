@@ -2,6 +2,7 @@ package dev.vality.analytics.config;
 
 import dev.vality.analytics.serde.MachineEventDeserializer;
 import dev.vality.analytics.serde.PayoutEventDeserializer;
+import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.mg.event.sink.service.ConsumerGroupIdService;
 import dev.vality.payout.manager.Event;
@@ -17,8 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
 
 import java.util.Map;
 
@@ -29,12 +30,18 @@ import static org.apache.kafka.clients.consumer.OffsetResetStrategy.EARLIEST;
 @RequiredArgsConstructor
 public class KafkaConfig {
 
-    public static final String ANALYTICS_RATE = "rate";
+    public static final Double KAFKA_RETRY_BACKOFF_MULTIPLIER = 1.5;
     private static final String RESULT_ANALYTICS = "result-analytics";
     private static final String PARTY_RESULT_ANALYTICS = "party-result-analytics";
     private final ConsumerGroupIdService consumerGroupIdService;
     private final KafkaProperties kafkaProperties;
 
+    @Value("${kafka.error-handler.retry.attempts}")
+    private Integer maxRetryAttempts;
+    @Value("${kafka.error-handler.retry.min.interval}")
+    private Long minRetryInterval;
+    @Value("${kafka.error-handler.retry.max.interval}")
+    private Long maxRetryInterval;
     @Value("${kafka.max.poll.records}")
     private String maxPollRecords;
     @Value("${kafka.topic.party.max.poll.records}")
@@ -92,9 +99,18 @@ public class KafkaConfig {
                 consumerGroup, deserializer, maxPollRecords);
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(concurrencyListeners);
-        factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
+        factory.setCommonErrorHandler(kafkaErrorHandler());
         factory.setBatchListener(true);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+    }
+
+    private CommonErrorHandler kafkaErrorHandler() {
+        if (maxRetryAttempts != null && maxRetryAttempts > -1) {
+            return ExponentialBackOffDefaultErrorHandlerFactory
+                    .create(minRetryInterval, KAFKA_RETRY_BACKOFF_MULTIPLIER, maxRetryInterval, maxRetryAttempts);
+        }
+        return ExponentialBackOffDefaultErrorHandlerFactory
+                .create(minRetryInterval, KAFKA_RETRY_BACKOFF_MULTIPLIER, maxRetryInterval);
     }
 
     @NotNull
