@@ -33,6 +33,12 @@ spring:
     url: "jdbc:postgresql://localhost:5432/analytics"
     user: "user"
     password: "password"
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      properties:
+        session.timeout.ms: 60000
+        max.poll.interval.ms: 60000
 
 info:
   version: '@project.version@'
@@ -52,12 +58,12 @@ postgres.db:
   schema: "analytics"
 
 kafka:
-  bootstrap.servers: localhost:9092
-  max:
-    retry.attempts: 3
-    poll.records: 100
-    poll.interval.ms: 60000
-    session.timeout.ms: 60000
+  max.poll.records: 100
+  error-handler:
+    retry:
+      attempts: 3 #remove property or set negative for infinite attempts
+      min.interval: 1000
+      max.interval: 600000
   topic:
     event.sink:
       initial: event_sink
@@ -74,7 +80,6 @@ kafka:
     prefix: analytics
     concurrency: 7
     throttling-timeout-ms: 1000
-  ssl.enabled: false
   event-flow.resolver.enabled: false
   listener:
     event.sink:

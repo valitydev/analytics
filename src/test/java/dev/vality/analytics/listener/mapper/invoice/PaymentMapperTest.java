@@ -49,7 +49,7 @@ public class PaymentMapperTest {
     @Test
     public void map() throws TException {
         String paymentId = "test";
-        when(invoicingClient.get(any(), any(), any())).thenReturn(createInvoice(paymentId));
+        when(invoicingClient.get(any(), any())).thenReturn(createInvoice(paymentId));
         PaymentRow paymentRow = new PaymentRow();
         paymentRow.setCashFlowResult(CashFlowResult.EMPTY);
         when(paymentRowFactory.create(any(), any(), any())).thenReturn(paymentRow);

@@ -6,7 +6,9 @@ import dev.vality.analytics.domain.InvoicePaymentWrapper;
 import dev.vality.analytics.exception.PaymentInfoNotFoundException;
 import dev.vality.analytics.exception.PaymentInfoRequestException;
 import dev.vality.analytics.utils.EventRangeFactory;
-import dev.vality.damsel.payment_processing.*;
+import dev.vality.damsel.payment_processing.Invoice;
+import dev.vality.damsel.payment_processing.InvoicePayment;
+import dev.vality.damsel.payment_processing.InvoicingSrv;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
@@ -23,7 +25,6 @@ import java.util.function.BiFunction;
 public class HgClientService {
 
     public static final String ANALYTICS = "analytics";
-    public static final UserInfo USER_INFO = new UserInfo(ANALYTICS, UserType.service_user(new ServiceUser()));
     public static final String DELIMITER = "_";
 
     private final InvoicingSrv.Iface invoicingClient;
@@ -60,7 +61,7 @@ public class HgClientService {
                                                    String eventId, long sequenceId) {
         InvoicePaymentWrapper invoicePaymentWrapper = new InvoicePaymentWrapper();
         try {
-            Invoice invoiceInfo = invoicingClient.get(USER_INFO, invoiceId, eventRangeFactory.create(sequenceId));
+            Invoice invoiceInfo = invoicingClient.get(invoiceId, eventRangeFactory.create(sequenceId));
             if (invoiceInfo == null) {
                 throw new PaymentInfoNotFoundException("Not found invoice info in hg!");
             }
