@@ -6,11 +6,11 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>2.0.0-BETA-11</version>
+        <version>2.1.5</version>
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -22,8 +22,7 @@
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
         <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <schedlock.version>4.33.0</schedlock.version>
-        <db.port>5432</db.port>
+        <schedlock.version>4.33.0</s4.46.0</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
         <db.name>analytics</db.name>
@@ -36,7 +35,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>analytics-proto</artifactId>
-            <version>1.38-2472df0</version>
+            <version>1.38-24721.43-2d1fdc2</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -57,7 +56,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.22-111ea3d</version>
+            <version>1.22-111e1.41-96f7f11</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -80,12 +79,12 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>xrates-proto</artifactId>
-            <version>1.19-e7ad3f5</version>
+            <version>1.19-e7ad1.25-99d0c5c</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>payout-manager-proto</artifactId>
-            <version>1.25-cfe2120</version>
+            <version>1.25-cfe21.38-635dc24</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -157,7 +156,7 @@
         <dependency>
             <groupId>ru.yandex.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.2.4</version>
+            <version>0.2.4</ve0.3.2
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -219,32 +218,27 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.16.3</version>
-            <scope>test</scope>
+            <version>1.16.3</v1.19.1</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
-            <version>1.16.3</version>
-            <scope>test</scope>
+            <version>1.16.3</v1.19.1</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.16.3</version>
-            <scope>test</scope>
+            <version>1.16.3</v1.19.1</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>clickhouse</artifactId>
-            <version>1.16.3</version>
-            <scope>test</scope>
+            <version>1.16.3</v1.19.1</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-            <scope>test</scope>
+            <version>2.11.0</v2.14.0</scope>
         </dependency>
         <dependency>
             <groupId>io.github.benas</groupId>
@@ -296,7 +290,7 @@
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.1</version>
                     </dependency>
                 </dependencies>
                 <configuration>
