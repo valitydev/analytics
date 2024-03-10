@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -22,8 +22,7 @@
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
         <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <schedlock.version>4.33.0</schedlock.version>
-        <db.port>5432</db.port>
+        <schedlock.version>4.33.0</s4.47.0</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
         <db.name>analytics</db.name>
@@ -157,7 +156,7 @@
         <dependency>
             <groupId>ru.yandex.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.2.4</version>
+            <version>0.2.4</ve0.3.2
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -296,7 +295,7 @@
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
