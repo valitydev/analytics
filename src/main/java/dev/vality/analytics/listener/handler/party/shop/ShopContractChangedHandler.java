@@ -65,7 +65,6 @@ public class ShopContractChangedHandler extends AbstractClaimChangeHandler {
         shop.setEventId(event.getEventId());
         shop.setEventTime(TypeUtil.stringToLocalDateTime(event.getCreatedAt()));
         shop.setContractId(contractChanged.getContractId());
-        shop.setPayoutToolId(contractChanged.getPayoutToolId());
 
         final Shop mergedShop = shopEventMerger.mergeShop(partyId, shopId, shop);
         shopDao.saveShop(mergedShop);

@@ -101,23 +101,4 @@ public class PostgresBalanceChangesRepository {
                 refundRows.size(),
                 refundRows.get(0).getInvoiceId());
     }
-
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
-    public void insertPayouts(List<PayoutRow> payoutRows) {
-        if (CollectionUtils.isEmpty(payoutRows)) {
-            return;
-        }
-
-        log.info("Batch start insert payoutRows: {} firstElement: {}",
-                payoutRows.size(),
-                payoutRows.get(0).getPayoutId());
-
-        postgresJdbcTemplate.batchUpdate(
-                INSERT,
-                new PostgresPayoutBatchPreparedStatementSetter(payoutRows));
-
-        log.info("Batch inserted payoutRows: {} firstElement: {}",
-                payoutRows.size(),
-                payoutRows.get(0).getPayoutId());
-    }
 }

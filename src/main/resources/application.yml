@@ -67,8 +67,6 @@ kafka:
   topic:
     event.sink:
       initial: event_sink
-    payout:
-      initial: pm-events-payout
     party:
       initial: mg-events-party
       max.poll.records: 50
@@ -83,8 +81,6 @@ kafka:
   event-flow.resolver.enabled: false
   listener:
     event.sink:
-      enabled: true
-    payout:
       enabled: true
     party:
       enabled: true

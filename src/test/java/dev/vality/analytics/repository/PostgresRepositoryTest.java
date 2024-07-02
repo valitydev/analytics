@@ -1,10 +1,8 @@
 package dev.vality.analytics.repository;
 
 import dev.vality.analytics.AnalyticsApplication;
-import dev.vality.analytics.constant.PayoutStatus;
 import dev.vality.analytics.dao.model.AdjustmentRow;
 import dev.vality.analytics.dao.model.PaymentRow;
-import dev.vality.analytics.dao.model.PayoutRow;
 import dev.vality.analytics.dao.model.RefundRow;
 import dev.vality.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
 import dev.vality.analytics.dao.repository.postgres.party.management.PartyDao;
@@ -70,7 +68,6 @@ public class PostgresRepositoryTest {
         postgresBalanceChangesRepository.insertPayments(List.of(payment()));
         postgresBalanceChangesRepository.insertRefunds(List.of(refund()));
         postgresBalanceChangesRepository.insertAdjustments(List.of(adjustment()));
-        postgresBalanceChangesRepository.insertPayouts(List.of(payout()));
 
         long count = postgresJdbcTemplate.queryForObject(
                 "SELECT count(*) AS count FROM analytics.balance_change",
@@ -163,19 +160,6 @@ public class PostgresRepositoryTest {
                 .systemFee(100L)
                 .build());
         return adjustmentRow;
-    }
-
-    private PayoutRow payout() {
-        PayoutRow payoutRow = new PayoutRow();
-        payoutRow.setPayoutId("pauout_id");
-        payoutRow.setStatus(PayoutStatus.paid);
-        payoutRow.setEventTime(LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC));
-        payoutRow.setCurrency("RUB");
-        payoutRow.setPartyId("party_id");
-        payoutRow.setShopId("shop_id");
-        payoutRow.setAmount(10_000L);
-        payoutRow.setFee(1000L);
-        return payoutRow;
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
