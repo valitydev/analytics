@@ -59,14 +59,3 @@ VALUES ('2019-12-05', 1575556887, 1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39
        ('2019-12-05', 1575556887, 1575554400000, 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772f',
         'ad8b7bfd-0760-4781-a400-51903ee8e509', 'test@example.com', 'RSB', 5000, 0, 100, 0, 0, 'RUB', 'succeeded', '',
         '1DkratTHbpg', '1', '2', 15, '204.26.61.110');
-
-INSERT INTO analytic.events_sink_payout (payoutId, status, payoutToolId, statusCancelledDetails,
-                                         isCancelledAfterBeingPaid,
-                                         timestamp, eventTime, eventTimeHour, payoutTime, shopId, partyId,
-                                         amount, fee, currency)
-VALUES ('payoutId', 'confirmed', 'wallet', '', 0, '2019-12-05', 1575556887, 1575554400000, 1575556887,
-        'ca2e9162-eda2-4d17-bbfa-dc5e39b1772f', 'ad8b7bfd-0760-4781-a400-51903ee8e509',
-        10000, 1000, 'RUB'),
-       ('payoutId', 'confirmed', 'wallet', '', 0, '2019-12-05', 1575556887, 1575554400000, 1575556887,
-        'ca2e9162-eda2-4d17-bbfa-dc5e39b1772d', 'ca2e9162-eda2-4d17-bbfa-dc5e39b1772d',
-        1000, 100, 'RUB');

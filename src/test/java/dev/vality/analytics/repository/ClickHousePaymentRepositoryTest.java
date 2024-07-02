@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@ContextConfiguration(initializers = ClickHousePayoutRepositoryTest.Initializer.class,
+@ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
         classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class,
                 RawToSplitStatusConverter.class, RawToShopAmountModelConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,

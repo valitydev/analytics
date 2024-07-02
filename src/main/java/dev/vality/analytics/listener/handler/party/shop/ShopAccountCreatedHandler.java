@@ -55,7 +55,6 @@ public class ShopAccountCreatedHandler extends AbstractClaimChangeHandler {
         shop.setAccountCurrencyCode(accountCreated.getCurrency().getSymbolicCode());
         shop.setAccountGuarantee(String.valueOf(accountCreated.getGuarantee()));
         shop.setAccountSettlement(String.valueOf(accountCreated.getSettlement()));
-        shop.setAccountPayout(String.valueOf(accountCreated.getPayout()));
 
         final Shop mergedShop = shopEventMerger.mergeShop(partyId, shopId, shop);
         shopDao.saveShop(mergedShop);

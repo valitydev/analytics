@@ -7,7 +7,6 @@ import dev.vality.analytics.dao.mapper.SplitStatusRowsMapper;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHousePaymentRepositoryImpl;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseRefundRepository;
 import dev.vality.analytics.repository.ClickHouseAbstractTest;
-import dev.vality.analytics.repository.ClickHousePayoutRepositoryTest;
 import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.*;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@ContextConfiguration(initializers = ClickHousePayoutRepositoryTest.Initializer.class,
+@ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
         classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
                 RawToShopAmountModelConverter.class,

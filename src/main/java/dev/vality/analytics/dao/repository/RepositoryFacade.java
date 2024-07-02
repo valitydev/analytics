@@ -1,10 +1,15 @@
 package dev.vality.analytics.dao.repository;
 
-import dev.vality.analytics.constant.*;
-import dev.vality.analytics.dao.model.*;
+import dev.vality.analytics.constant.AdjustmentStatus;
+import dev.vality.analytics.constant.ChargebackStatus;
+import dev.vality.analytics.constant.PaymentStatus;
+import dev.vality.analytics.constant.RefundStatus;
+import dev.vality.analytics.dao.model.AdjustmentRow;
+import dev.vality.analytics.dao.model.ChargebackRow;
+import dev.vality.analytics.dao.model.PaymentRow;
+import dev.vality.analytics.dao.model.RefundRow;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseAdjustmentRepository;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseChargebackRepository;
-import dev.vality.analytics.dao.repository.clickhouse.ClickHousePayoutRepository;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseRefundRepository;
 import dev.vality.analytics.dao.repository.clickhouse.iface.ClickHousePaymentRepository;
 import dev.vality.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
@@ -27,7 +32,6 @@ public class RepositoryFacade {
     private final ClickHouseRefundRepository clickHouseRefundRepository;
     private final ClickHouseAdjustmentRepository clickHouseAdjustmentRepository;
     private final ClickHouseChargebackRepository clickHouseChargebackRepository;
-    private final ClickHousePayoutRepository clickHousePayoutRepository;
 
     public void insertPayments(List<PaymentRow> paymentRows) {
         List<PaymentRow> capturedPayments = paymentRows.stream()
@@ -72,17 +76,4 @@ public class RepositoryFacade {
         clickHouseChargebackRepository.insertBatch(chargebackRows);
         log.info("RepositoryFacade CH inserted insertChargebacks: {}", chargebackRows.size());
     }
-
-    public void insertPayouts(List<PayoutRow> payoutRows) {
-        List<PayoutRow> paidPayouts = payoutRows.stream()
-                .filter(payoutRow -> payoutRow.getStatus() == PayoutStatus.paid
-                        || (payoutRow.getStatus() == PayoutStatus.cancelled && payoutRow.isCancelledAfterBeingPaid()))
-                .collect(toList());
-
-        postgresBalanceChangesRepository.insertPayouts(paidPayouts);
-        log.info("RepositoryFacade PG inserted insertPayouts: {}", paidPayouts.size());
-        clickHousePayoutRepository.insertBatch(payoutRows);
-        log.info("RepositoryFacade CH inserted insertPayouts: {}", payoutRows.size());
-    }
-
 }

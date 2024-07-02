@@ -34,10 +34,6 @@ public class ShopEventMerger {
         targetShop.setEventTime(shop.getEventTime());
         targetShop.setCategoryId(shop.getCategoryId() != null ? shop.getCategoryId() : targetShop.getCategoryId());
         targetShop.setContractId(shop.getContractId() != null ? shop.getContractId() : targetShop.getContractId());
-        targetShop.setPayoutToolId(shop.getPayoutToolId() != null
-                ? shop.getPayoutToolId() : targetShop.getPayoutToolId());
-        targetShop.setPayoutScheduleId(shop.getPayoutScheduleId() != null
-                ? shop.getPayoutScheduleId() : targetShop.getPayoutScheduleId());
         targetShop.setCreatedAt(shop.getCreatedAt() != null ? shop.getCreatedAt() : targetShop.getCreatedAt());
         targetShop.setBlocking(shop.getBlocking() != null ? shop.getBlocking() : targetShop.getBlocking());
         targetShop.setBlockedReason(shop.getBlockedReason() != null
@@ -64,8 +60,6 @@ public class ShopEventMerger {
                 ? shop.getAccountSettlement() : targetShop.getAccountSettlement());
         targetShop.setAccountGuarantee(shop.getAccountGuarantee() != null
                 ? shop.getAccountGuarantee() : targetShop.getAccountGuarantee());
-        targetShop.setAccountPayout(shop.getAccountPayout() != null
-                ? shop.getAccountPayout() : targetShop.getAccountPayout());
         targetShop.setContractorId(shop.getContractorId() != null
                 ? shop.getContractorId() : targetShop.getContractorId());
         targetShop.setContractorType(shop.getContractorType() != null

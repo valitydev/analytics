@@ -31,15 +31,11 @@ public class PartyFlowGenerator {
     public static final Integer REVISION_ID = 431531;
     public static final Integer CATEGORY_ID = 542432;
     public static final String CONTRACT_ID = "142534";
-    public static final String PAYOUT_ID = "654635";
     public static final String DETAILS_NAME = "testDetailsName";
     public static final String DETAILS_DESCRIPTION = "testDescription";
-    public static final Integer SCHEDULE_ID = 15643653;
-    public static final String PAYOUT_TOOL_ID = "654635";
     public static final String CURRENCY_SYMBOL = "RUB";
     public static final Long SETTLEMENT_ID = 245234L;
     public static final String CONTRACTOR_ID = "563462";
-    public static final Long SHOP_ACCOUNT_PAYOUT = 5425234L;
     public static final String INN = "213123123123";
 
     public static List<SinkEvent> generatePartyFlow(String partyId, String shopId) throws IOException {
@@ -58,8 +54,6 @@ public class PartyFlowGenerator {
         sinkEvents.add(buildSinkEvent(buildMessageShopCategoryChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopContractChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopDetailsChanged(sequenceId++, partyId, shopId)));
-        sinkEvents.add(buildSinkEvent(buildMessageShopPayoutScheduleChanged(sequenceId++, partyId, shopId)));
-        sinkEvents.add(buildSinkEvent(buildMessageShopPayoutToolChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopAccountCreated(sequenceId++, partyId, shopId)));
 
         return sinkEvents;
@@ -89,12 +83,10 @@ public class PartyFlowGenerator {
                 .add(buildSinkEvent(buildContractorCreated(sequenceId++, buildRussianLegalPartyContractor(), partyId)));
         sinkEvents.add(buildSinkEvent(buildContractorIdChange(sequenceId++, contract, partyId, CONTRACTOR_ID)));
         sinkEvents.add(buildSinkEvent(buildMessageShopBlocking(sequenceId++, partyId, shopId)));
-        sinkEvents.add(buildSinkEvent(buildMessageShopPayoutToolChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopSuspension(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopCategoryChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopContractChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopDetailsChanged(sequenceId++, partyId, shopId)));
-        sinkEvents.add(buildSinkEvent(buildMessageShopPayoutScheduleChanged(sequenceId++, partyId, shopId)));
         sinkEvents.add(buildSinkEvent(buildMessageShopAccountCreated(sequenceId++, partyId, shopId)));
 
         sinkEvents.add(buildSinkEvent(buildMessageShopSuspension(
@@ -293,7 +285,6 @@ public class PartyFlowGenerator {
         shopEffectUnit.setShopId(shopId);
         ShopContractChanged shopContractChanged = new ShopContractChanged();
         shopContractChanged.setContractId(CONTRACT_ID);
-        shopContractChanged.setPayoutToolId(PAYOUT_ID);
         ShopEffect shopEffect = new ShopEffect();
         shopEffect.setContractChanged(shopContractChanged);
         shopEffectUnit.setEffect(shopEffect);
@@ -327,46 +318,6 @@ public class PartyFlowGenerator {
         return partyChange;
     }
 
-    public static MachineEvent buildMessageShopPayoutScheduleChanged(Long sequenceId, String partyId, String shopdId) {
-        PartyChange partyChange = buildShopPayouScheduleChangedPartyChange(shopdId);
-        return buildMachineEvent(partyId, sequenceId, partyChange);
-    }
-
-    public static PartyChange buildShopPayouScheduleChangedPartyChange(String shopdId) {
-        ShopEffectUnit shopEffectUnit = new ShopEffectUnit();
-        shopEffectUnit.setShopId(shopdId);
-        ScheduleChanged scheduleChanged = new ScheduleChanged();
-        scheduleChanged.setSchedule(new BusinessScheduleRef(SCHEDULE_ID));
-        ShopEffect shopEffect = new ShopEffect();
-        shopEffect.setPayoutScheduleChanged(scheduleChanged);
-        shopEffectUnit.setEffect(shopEffect);
-        ClaimEffect claimEffect = new ClaimEffect();
-        claimEffect.setShopEffect(shopEffectUnit);
-        Claim claim = buildClaimCreated(claimEffect);
-        PartyChange partyChange = new PartyChange();
-        partyChange.setClaimCreated(claim);
-        return partyChange;
-    }
-
-    public static MachineEvent buildMessageShopPayoutToolChanged(Long sequenceId, String partyId, String shopdId) {
-        PartyChange partyChange = buildShopPayoutToolChangedPartyChange(shopdId, PAYOUT_TOOL_ID);
-        return buildMachineEvent(partyId, sequenceId, partyChange);
-    }
-
-    public static PartyChange buildShopPayoutToolChangedPartyChange(String shopdId, String payoutToolId) {
-        ShopEffectUnit shopEffectUnit = new ShopEffectUnit();
-        shopEffectUnit.setShopId(shopdId);
-        ShopEffect shopEffect = new ShopEffect();
-        shopEffect.setPayoutToolChanged(payoutToolId);
-        shopEffectUnit.setEffect(shopEffect);
-        ClaimEffect claimEffect = new ClaimEffect();
-        claimEffect.setShopEffect(shopEffectUnit);
-        Claim claim = buildClaimCreated(claimEffect);
-        PartyChange partyChange = new PartyChange();
-        partyChange.setClaimCreated(claim);
-        return partyChange;
-    }
-
     public static MachineEvent buildMessageShopAccountCreated(Long sequenceId, String partyId, String shopdId) {
         PartyChange partyChange = buildShopAccountCreatedPartyChange(shopdId);
         return buildMachineEvent(partyId, sequenceId, partyChange);
@@ -377,7 +328,6 @@ public class PartyFlowGenerator {
         shopEffectUnit.setShopId(shopdId);
         ShopAccount shopAccount = new ShopAccount();
         shopAccount.setCurrency(new CurrencyRef(CURRENCY_SYMBOL));
-        shopAccount.setPayout(SHOP_ACCOUNT_PAYOUT);
         shopAccount.setSettlement(SETTLEMENT_ID);
         ShopEffect shopEffect = new ShopEffect();
         shopEffect.setAccountCreated(shopAccount);
@@ -536,7 +486,6 @@ public class PartyFlowGenerator {
         contract.setStatus(ContractStatus.active(new ContractActive()));
         contract.setTerms(new TermSetHierarchyRef());
         contract.setAdjustments(List.of());
-        contract.setPayoutTools(List.of());
         contract.setContractorId(null);
         return contract;
     }

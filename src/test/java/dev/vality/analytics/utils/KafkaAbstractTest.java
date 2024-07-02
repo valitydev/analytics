@@ -1,10 +1,8 @@
 package dev.vality.analytics.utils;
 
 import dev.vality.analytics.serde.MachineEventDeserializer;
-import dev.vality.analytics.serde.PayoutEventDeserializer;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.machinegun.eventsink.SinkEvent;
-import dev.vality.payout.manager.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -36,7 +34,6 @@ import java.util.Properties;
 public abstract class KafkaAbstractTest {
 
     public static final String EVENT_SINK_TOPIC = "event_sink";
-    public static final String PAYOUT_TOPIC = "payout";
     public static final String RATE_TOPIC = "mg-events-rates";
     private static final String CONFLUENT_PLATFORM_VERSION = "5.0.1";
     private static final String AGGR = "aggr";
@@ -47,9 +44,6 @@ public abstract class KafkaAbstractTest {
 
     @Value("${kafka.topic.event.sink.initial}")
     public String eventSinkTopic;
-
-    @Value("${kafka.topic.payout.initial}")
-    public String payoutTopic;
 
     @Value("${kafka.topic.party.initial}")
     public String partyTopic;
@@ -88,19 +82,6 @@ public abstract class KafkaAbstractTest {
         }
     }
 
-    protected void produceMessageToPayout(Event payoutEvent) {
-        try (Producer<String, Event> producer = createProducerAggr()) {
-            ProducerRecord<String, Event> producerRecord = new ProducerRecord<>(
-                    payoutTopic,
-                    payoutEvent.getPayoutId(),
-                    payoutEvent);
-            producer.send(producerRecord).get();
-            log.info("produceMessageToPayout() payoutEvent: {}", payoutEvent);
-        } catch (Exception e) {
-            log.error("Error when produceMessageToPayout e:", e);
-        }
-    }
-
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         @Override
@@ -109,7 +90,6 @@ public abstract class KafkaAbstractTest {
                     "spring.kafka.bootstrap-servers=" + kafka.getBootstrapServers())
                     .applyTo(configurableApplicationContext.getEnvironment());
             initTopic(EVENT_SINK_TOPIC, MachineEventDeserializer.class);
-            initTopic(PAYOUT_TOPIC, PayoutEventDeserializer.class);
             initTopic(RATE_TOPIC, MachineEventDeserializer.class);
             kafka.start();
         }
