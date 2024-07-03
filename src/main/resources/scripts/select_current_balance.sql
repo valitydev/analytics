@@ -1,6 +1,6 @@
                 SELECT
                   currency,
-                  sum_payment_without_refund - sum_payout_without_cancelled as num
+                  sum_payment_without_refund as num
                 FROM
                   (
                     SELECT
@@ -37,41 +37,4 @@
                         GROUP BY
                           currency
                       ) as sum_refund_query USING currency
-                  ) as sum_payment_without_refund_query ANY
-                  LEFT JOIN (
-                    SELECT
-                      currency,
-                      sum_paid_payout - sum_cancelled_after_paid_payout as sum_payout_without_cancelled
-                    FROM
-                      (
-                        SELECT
-                          currency,
-                          sum(amount + fee) as sum_paid_payout
-                        FROM
-                          analytic.events_sink_payout
-                        WHERE
-                          ? >= timestamp
-                          and status = 'confirmed'
-                          and partyId = ?
-                          %1$s
-                          %2$s
-                        GROUP BY
-                          currency
-                      ) as sum_paid_payment_query ANY
-                      LEFT JOIN (
-                        SELECT
-                          currency,
-                          sum(amount + fee) as sum_cancelled_after_paid_payout
-                        FROM
-                          analytic.events_sink_payout
-                        WHERE
-                          ? >= timestamp
-                          and status = 'cancelled'
-                          and isCancelledAfterBeingPaid = 1
-                          and partyId = ?
-                          %1$s
-                          %2$s
-                        GROUP BY
-                          currency
-                      ) as sum_cancelled_after_paid_payout_query USING currency
-                  ) as sum_payout_without_cancelled_query USING currency
+                  ) as sum_payment_without_refund_query
