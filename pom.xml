@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>analytics-proto</artifactId>
-            <version>1.38-2472df0</version>
+            <version>1.43-2d1fdc2</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
