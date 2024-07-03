@@ -235,7 +235,7 @@ public class ClickHousePaymentRepositoryImpl implements ClickHousePaymentReposit
         String sql = String.format(SELECT_BALANCES_SQL,
                 QueryUtils.generateIdsSql(shopIds, params, QueryUtils::generateInList),
                 QueryUtils.generateIdsSql(excludeShopIds, params, QueryUtils::generateNotInList));
-        params = Collections.nCopies(4, params).stream()
+        params = Collections.nCopies(2, params).stream()
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         log.info("getCurrentBalances sql: {} params: {}", sql, params);
@@ -251,7 +251,7 @@ public class ClickHousePaymentRepositoryImpl implements ClickHousePaymentReposit
         String sql = String.format(SELECT_SHOP_BALANCES_SQL,
                 QueryUtils.generateIdsSql(shopIds, params, QueryUtils::generateInList),
                 QueryUtils.generateIdsSql(excludeShopIds, params, QueryUtils::generateNotInList));
-        params = Collections.nCopies(4, params).stream()
+        params = Collections.nCopies(2, params).stream()
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         log.info("getShopBalances sql: {} params: {}", sql, params);
