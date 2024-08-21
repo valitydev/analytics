@@ -5,6 +5,7 @@ public enum ChargebackCategory {
     fraud,
     dispute,
     authorisation,
-    processing_error
+    processing_error,
+    system_set
 
 }
