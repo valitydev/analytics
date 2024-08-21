@@ -23,7 +23,7 @@ public class ClickHouseAbstractTest {
 
     @ClassRule
     public static ClickHouseContainer clickHouseContainer =
-            new ClickHouseContainer("yandex/clickhouse-server:21.3.20");
+            new ClickHouseContainer("yandex/clickhouse-server:latest");
 
     @Before
     public void init() throws SQLException {
