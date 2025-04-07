@@ -23,6 +23,7 @@
         <dockerfile.base.service.tag>c0612d6052ac049496b72a23a04acb142035f249</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
         <schedlock.version>4.33.0</schedlock.version>
+        <flyway.version>11.6.0</flyway.version>
         <db.port>5432</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
@@ -164,6 +165,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -338,6 +340,7 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
                 <configuration>
                     <url>${db.url}</url>
                     <user>${db.user}</user>
