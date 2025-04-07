@@ -23,7 +23,7 @@ public class RateListener {
             topics = "${kafka.topic.rate.initial}",
             containerFactory = "rateContainerFactory")
     public void handle(List<MachineEvent> batch,
-                       @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+                       @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
                        @Header(KafkaHeaders.OFFSET) int offsets,
                        Acknowledgment ack) throws InterruptedException {
         log.info("Got RateListener listen offsets: {}, partition: {}, batch.size: {}",
