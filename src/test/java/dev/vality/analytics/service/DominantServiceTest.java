@@ -13,13 +13,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.Duration;
@@ -29,6 +31,7 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 @Slf4j
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {DominantServiceTest.Initializer.class})
@@ -38,7 +41,7 @@ public class DominantServiceTest extends KafkaAbstractTest {
     @SuppressWarnings("rawtypes")
     public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
             .withStartupTimeout(Duration.ofMinutes(5));
-    @MockitoBean
+    @MockBean
     private RepositorySrv.Iface dominantClient;
     @Autowired
     private DominantService dominantService;

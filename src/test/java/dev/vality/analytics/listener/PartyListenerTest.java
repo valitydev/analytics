@@ -17,9 +17,10 @@ import dev.vality.damsel.domain.RussianLegalEntity;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -27,6 +28,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.IOException;
@@ -36,9 +38,10 @@ import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 @Slf4j
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {PartyListenerTest.Initializer.class})
@@ -57,7 +60,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
 
-    @BeforeEach
+    @Before
     public void clean() {
         clearDb();
     }

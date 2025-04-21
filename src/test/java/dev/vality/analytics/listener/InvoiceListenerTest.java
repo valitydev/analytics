@@ -12,18 +12,20 @@ import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
+import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.ClickHouseContainer;
 import ru.yandex.clickhouse.ClickHouseDataSource;
 import ru.yandex.clickhouse.settings.ClickHouseProperties;
@@ -41,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @Slf4j
-
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = InvoiceListenerTest.Initializer.class)
@@ -57,18 +59,18 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
 
     @ClassRule
     public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
-    @MockitoBean
+    @MockBean
     private ColumbusServiceSrv.Iface iface;
-    @MockitoBean
+    @MockBean
     private InvoicingSrv.Iface invoicingClient;
-    @MockitoBean
+    @MockBean
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;
     @Autowired
     private EventRangeFactory eventRangeFactory;
 
-    @BeforeEach
+    @Before
     public void init() throws SQLException {
         ChInitializer.initAllScripts(clickHouseContainer, List.of(
                 "sql/V1__db_init.sql",
