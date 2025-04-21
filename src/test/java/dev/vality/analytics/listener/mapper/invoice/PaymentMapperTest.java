@@ -14,9 +14,9 @@ import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import org.apache.thrift.TException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -39,7 +39,7 @@ public class PaymentMapperTest {
 
     private PaymentMapper paymentMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
         HgClientService hgClientService = new HgClientService(invoicingClient, eventRangeFactory);
@@ -56,7 +56,7 @@ public class PaymentMapperTest {
         PaymentRow sinkRow = paymentMapper.map(
                 InvoiceFlowGenerator.createInvoiceFailed(paymentId), new MachineEvent());
 
-        Assert.assertEquals(AMOUNT, sinkRow.getCashFlowResult().getAmount());
+        Assertions.assertEquals(AMOUNT, sinkRow.getCashFlowResult().getAmount());
     }
 
     private Invoice createInvoice(String paymentId) {

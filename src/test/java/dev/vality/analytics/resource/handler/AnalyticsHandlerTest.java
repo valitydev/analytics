@@ -14,10 +14,8 @@ import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
@@ -25,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
         classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,

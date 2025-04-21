@@ -12,20 +12,18 @@ import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.Duration;
@@ -37,7 +35,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {DominantListenerTest.Initializer.class})
@@ -53,10 +50,10 @@ public class DominantListenerTest extends KafkaAbstractTest {
     private CategoryDao categoryDao;
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-    @MockBean
+    @MockitoBean
     private RepositorySrv.Iface dominantClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.category");
     }
@@ -77,10 +74,10 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 1L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(categoryName, category.getName());
-        Assert.assertEquals(categoryDescription, category.getDescription());
-        Assert.assertEquals(categoryType.name(), category.getType());
+        Assertions.assertEquals(categoryId, category.getCategoryId());
+        Assertions.assertEquals(categoryName, category.getName());
+        Assertions.assertEquals(categoryDescription, category.getDescription());
+        Assertions.assertEquals(categoryType.name(), category.getType());
     }
 
     @Test
@@ -107,9 +104,9 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 2L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(updatedCategoryName, category.getName());
-        Assert.assertEquals(updatedCategoryDescription, category.getDescription());
+        Assertions.assertEquals(categoryId, category.getCategoryId());
+        Assertions.assertEquals(updatedCategoryName, category.getName());
+        Assertions.assertEquals(updatedCategoryDescription, category.getDescription());
     }
 
     @Test
@@ -132,11 +129,11 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 2L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(categoryName, category.getName());
-        Assert.assertEquals(categoryDescription, category.getDescription());
-        Assert.assertEquals(categoryType.name(), category.getType());
-        Assert.assertTrue(category.getDeleted());
+        Assertions.assertEquals(categoryId, category.getCategoryId());
+        Assertions.assertEquals(categoryName, category.getName());
+        Assertions.assertEquals(categoryDescription, category.getDescription());
+        Assertions.assertEquals(categoryType.name(), category.getType());
+        Assertions.assertTrue(category.getDeleted());
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
