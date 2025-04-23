@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -63,7 +62,6 @@ public class PostgresConfig {
     }
 
     @Bean
-    @Autowired
     public JdbcTemplate postgresJdbcTemplate(DataSource postgresDatasource) {
         return new JdbcTemplate(postgresDatasource);
     }

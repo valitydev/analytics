@@ -10,6 +10,7 @@ import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
+import dev.vality.mg.event.sink.service.ConsumerGroupIdService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -18,11 +19,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -34,12 +39,27 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = AnalyticsApplication.class,
-        properties = {"kafka.state.cache.size=0"})
+@ImportAutoConfiguration(exclude = {
+        KafkaAutoConfiguration.class
+})
+@SpringBootTest(
+        classes = {
+                AnalyticsApplication.class,
+                DominantListenerTest.TestConfig.class
+        },
+        properties = {
+                "kafka.state.cache.size=0",
+                "management.server.port=0",
+                "server.port=0",
+                "spring.kafka.listener.auto-startup=false",
+                "spring.main.allow-bean-definition-overriding=true"
+        }
+)
 @ContextConfiguration(initializers = {DominantListenerTest.Initializer.class})
 public class DominantListenerTest extends KafkaAbstractTest {
 
@@ -47,14 +67,21 @@ public class DominantListenerTest extends KafkaAbstractTest {
     @SuppressWarnings("rawtypes")
     public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
             .withStartupTimeout(Duration.ofMinutes(5));
+
+    static {
+        postgres.start();
+    }
+
     @Autowired
     private DominantService dominantService;
     @Autowired
     private CategoryDao categoryDao;
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-    @MockBean
+    @Autowired
     private RepositorySrv.Iface dominantClient;
+    @Autowired
+    private ConsumerGroupIdService consumerGroupIdService;
 
     @Before
     public void setUp() throws Exception {
@@ -143,16 +170,34 @@ public class DominantListenerTest extends KafkaAbstractTest {
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword(),
-                    "spring.flyway.enabled=true",
-                    "service.dominant.scheduler.enabled=false")
+                            "postgres.db.url=" + postgres.getJdbcUrl(),
+                            "postgres.db.user=" + postgres.getUsername(),
+                            "postgres.db.password=" + postgres.getPassword(),
+                            "spring.flyway.url=" + postgres.getJdbcUrl(),
+                            "spring.flyway.user=" + postgres.getUsername(),
+                            "spring.flyway.password=" + postgres.getPassword(),
+                            "spring.flyway.enabled=true",
+                            "service.dominant.scheduler.enabled=false")
                     .applyTo(configurableApplicationContext.getEnvironment());
             postgres.start();
+        }
+    }
+
+    @TestConfiguration
+    public static class TestConfig {
+        @Bean
+        public RepositorySrv.Iface dominantClient() {
+            return mock(RepositorySrv.Iface.class);
+        }
+
+        @Bean
+        public ConsumerGroupIdService consumerGroupIdService() {
+            return mock(ConsumerGroupIdService.class);
+        }
+
+        @Bean
+        public KafkaProperties kafkaProperties() {
+            return new KafkaProperties();
         }
     }
 

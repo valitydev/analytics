@@ -2,7 +2,6 @@ package dev.vality.analytics.config;
 
 import dev.vality.analytics.config.properties.ClickHouseDbProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,7 +31,6 @@ public class ClickHouseConfig {
     }
 
     @Bean
-    @Autowired
     public JdbcTemplate clickHouseJdbcTemplate(DataSource clickHouseDataSource) {
         return new JdbcTemplate(clickHouseDataSource);
     }
