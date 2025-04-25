@@ -8,7 +8,7 @@ public class SubErrorGenerator {
     public static final String EMPTY_ERROR_CODE = "empty_error_code";
 
     public static SubError generateError(String name) {
-        if (!StringUtils.isEmpty(name)) {
+        if (StringUtils.hasText(name)) {
             String[] split = name.split(":");
             int i = 0;
             return createSubError(split, i);

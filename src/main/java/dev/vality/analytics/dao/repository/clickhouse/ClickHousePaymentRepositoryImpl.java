@@ -56,7 +56,7 @@ public class ClickHousePaymentRepositoryImpl implements ClickHousePaymentReposit
     private final SplitStatusRowsMapper splitStatusRowsMapper;
 
     @Override
-    @Retryable(value = ClickHouseException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = ClickHouseException.class, backoff = @Backoff(delay = 5000))
     public void insertBatch(List<PaymentRow> paymentRows) {
         if (paymentRows != null && !paymentRows.isEmpty()) {
             log.info("Batch start insert paymentRows: {} firstElement: {}", paymentRows.size(),

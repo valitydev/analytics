@@ -1,6 +1,9 @@
 package dev.vality.analytics.dao.repository.postgres;
 
-import dev.vality.analytics.dao.model.*;
+import dev.vality.analytics.dao.model.AdjustmentRow;
+import dev.vality.analytics.dao.model.ChargebackRow;
+import dev.vality.analytics.dao.model.PaymentRow;
+import dev.vality.analytics.dao.model.RefundRow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +29,7 @@ public class PostgresBalanceChangesRepository {
 
     private final JdbcTemplate postgresJdbcTemplate;
 
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertPayments(List<PaymentRow> paymentRows) {
         if (CollectionUtils.isEmpty(paymentRows)) {
             return;
@@ -45,7 +48,7 @@ public class PostgresBalanceChangesRepository {
                 paymentRows.get(0).getInvoiceId());
     }
 
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertAdjustments(List<AdjustmentRow> adjustmentRows) {
         if (CollectionUtils.isEmpty(adjustmentRows)) {
             return;
@@ -64,7 +67,7 @@ public class PostgresBalanceChangesRepository {
                 adjustmentRows.get(0).getInvoiceId());
     }
 
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertChargebacks(List<ChargebackRow> chargebackRows) {
         if (CollectionUtils.isEmpty(chargebackRows)) {
             return;
@@ -83,7 +86,7 @@ public class PostgresBalanceChangesRepository {
                 chargebackRows.get(0).getInvoiceId());
     }
 
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertRefunds(List<RefundRow> refundRows) {
         if (CollectionUtils.isEmpty(refundRows)) {
             return;

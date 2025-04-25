@@ -4,28 +4,32 @@ import dev.vality.analytics.config.ClickHouseConfig;
 import dev.vality.analytics.config.properties.ClickHouseDbProperties;
 import dev.vality.clickhouse.initializer.ChInitializer;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
+@Testcontainers
 @ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
         classes = {JdbcTemplateAutoConfiguration.class, ClickHouseDbProperties.class, ClickHouseConfig.class})
 public class ClickHouseAbstractTest {
 
-    @ClassRule
+    @Container
     public static ClickHouseContainer clickHouseContainer =
-            new ClickHouseContainer("yandex/clickhouse-server:21.3.20");
+            new ClickHouseContainer("clickhouse/clickhouse-server:22.3")
+                    .withCommand("--config-file=/etc/clickhouse-server/config.xml")
+                    .withCreateContainerCmdModifier(cmd -> cmd.withPlatform("linux/arm64"));
 
-    @Before
+    @BeforeEach
     public void init() throws SQLException {
         ChInitializer.initAllScripts(clickHouseContainer, List.of(
                 "sql/V1__db_init.sql",
@@ -45,5 +49,4 @@ public class ClickHouseAbstractTest {
                     .applyTo(configurableApplicationContext.getEnvironment());
         }
     }
-
 }

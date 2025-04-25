@@ -12,20 +12,17 @@ import dev.vality.damsel.analytics.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
         classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
@@ -260,7 +257,7 @@ public class AnalyticsHandlerTest extends ClickHouseAbstractTest {
                 .setTimeFilter(timeFilterDefault));
         List<CurrencyGroupedAmount> groupsAmount = paymentsAmount.getGroupsAmount();
 
-        Assert.assertTrue(groupsAmount.isEmpty());
+        assertTrue(groupsAmount.isEmpty());
     }
 
     @Test

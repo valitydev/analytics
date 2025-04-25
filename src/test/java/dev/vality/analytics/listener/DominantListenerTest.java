@@ -12,51 +12,69 @@ import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {DominantListenerTest.Initializer.class})
+@Import(DominantListenerTest.TestConfig.class)
+@Testcontainers
 public class DominantListenerTest extends KafkaAbstractTest {
 
-    @ClassRule
+    @Container
     @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(
+            DockerImageName.parse(Version.POSTGRES_VERSION).asCompatibleSubstituteFor("postgres"))
             .withStartupTimeout(Duration.ofMinutes(5));
+
     @Autowired
     private DominantService dominantService;
+
     @Autowired
     private CategoryDao categoryDao;
+
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-    @MockBean
+
+    @Autowired
     private RepositorySrv.Iface dominantClient;
 
-    @Before
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public RepositorySrv.Iface dominantClient() {
+            return Mockito.mock(RepositorySrv.Iface.class);
+        }
+    }
+
+    @BeforeEach
     public void setUp() throws Exception {
         postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.category");
     }
@@ -77,10 +95,10 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 1L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(categoryName, category.getName());
-        Assert.assertEquals(categoryDescription, category.getDescription());
-        Assert.assertEquals(categoryType.name(), category.getType());
+        assertEquals(categoryId, category.getCategoryId());
+        assertEquals(categoryName, category.getName());
+        assertEquals(categoryDescription, category.getDescription());
+        assertEquals(categoryType.name(), category.getType());
     }
 
     @Test
@@ -107,9 +125,9 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 2L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(updatedCategoryName, category.getName());
-        Assert.assertEquals(updatedCategoryDescription, category.getDescription());
+        assertEquals(categoryId, category.getCategoryId());
+        assertEquals(updatedCategoryName, category.getName());
+        assertEquals(updatedCategoryDescription, category.getDescription());
     }
 
     @Test
@@ -132,11 +150,11 @@ public class DominantListenerTest extends KafkaAbstractTest {
 
         dev.vality.analytics.domain.db.tables.pojos.Category category = categoryDao.getCategory(64, 2L);
 
-        Assert.assertEquals(categoryId, category.getCategoryId());
-        Assert.assertEquals(categoryName, category.getName());
-        Assert.assertEquals(categoryDescription, category.getDescription());
-        Assert.assertEquals(categoryType.name(), category.getType());
-        Assert.assertTrue(category.getDeleted());
+        assertEquals(categoryId, category.getCategoryId());
+        assertEquals(categoryName, category.getName());
+        assertEquals(categoryDescription, category.getDescription());
+        assertEquals(categoryType.name(), category.getType());
+        assertTrue(category.getDeleted());
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -155,5 +173,4 @@ public class DominantListenerTest extends KafkaAbstractTest {
             postgres.start();
         }
     }
-
 }

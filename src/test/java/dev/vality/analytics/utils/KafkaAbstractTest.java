@@ -14,7 +14,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jetbrains.annotations.NotNull;
-import org.junit.ClassRule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
@@ -22,6 +21,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -30,6 +31,7 @@ import java.util.Properties;
 
 @Slf4j
 @DirtiesContext
+@Testcontainers
 @ContextConfiguration(initializers = KafkaAbstractTest.Initializer.class)
 public abstract class KafkaAbstractTest {
 
@@ -37,9 +39,11 @@ public abstract class KafkaAbstractTest {
     public static final String RATE_TOPIC = "mg-events-rates";
     private static final String CONFLUENT_PLATFORM_VERSION = "5.0.1";
     private static final String AGGR = "aggr";
-    @ClassRule
-    public static KafkaContainer kafka = new KafkaContainer(DockerImageName
-            .parse("confluentinc/cp-kafka:" + CONFLUENT_PLATFORM_VERSION))
+
+    @Container
+    public static KafkaContainer kafka = new KafkaContainer(
+            DockerImageName.parse("confluentinc/cp-kafka:" + CONFLUENT_PLATFORM_VERSION)
+                    .asCompatibleSubstituteFor("confluentinc/cp-kafka"))
             .withEmbeddedZookeeper();
 
     @Value("${kafka.topic.event.sink.initial}")
@@ -108,5 +112,4 @@ public abstract class KafkaAbstractTest {
             return consumer;
         }
     }
-
 }

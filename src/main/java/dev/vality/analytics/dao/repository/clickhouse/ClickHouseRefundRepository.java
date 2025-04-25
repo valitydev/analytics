@@ -28,7 +28,7 @@ public class ClickHouseRefundRepository {
     private final JdbcTemplate clickHouseJdbcTemplate;
     private final CommonRowsMapper<NumberModel> costCommonRowsMapper;
 
-    @Retryable(value = ClickHouseException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = ClickHouseException.class, backoff = @Backoff(delay = 5000))
     public void insertBatch(List<RefundRow> refundRows) {
         if (refundRows != null && !refundRows.isEmpty()) {
             clickHouseJdbcTemplate.batchUpdate(ClickHouseRefundBatchPreparedStatementSetter.INSERT,

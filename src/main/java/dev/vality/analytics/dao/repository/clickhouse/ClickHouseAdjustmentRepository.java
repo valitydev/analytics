@@ -18,7 +18,7 @@ public class ClickHouseAdjustmentRepository {
 
     private final JdbcTemplate clickHouseJdbcTemplate;
 
-    @Retryable(value = ClickHouseException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = ClickHouseException.class, backoff = @Backoff(delay = 5000))
     public void insertBatch(List<AdjustmentRow> adjustmentRows) {
         if (adjustmentRows != null && !adjustmentRows.isEmpty()) {
             log.info("Batch start insert adjustmentRows: {} firstElement: {}", adjustmentRows.size(),

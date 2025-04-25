@@ -12,21 +12,22 @@ import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.clickhouse.ClickHouseDataSource;
 import ru.yandex.clickhouse.settings.ClickHouseProperties;
 
@@ -39,14 +40,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = InvoiceListenerTest.Initializer.class)
+@Import(InvoiceListenerTest.TestConfig.class)
+@Testcontainers
 public class InvoiceListenerTest extends KafkaAbstractTest {
 
     private static final long MESSAGE_TIMEOUT = 4_000L;
@@ -57,20 +59,27 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
             "group by shopId, currency, status " +
             "having shopId = '";
 
-    @ClassRule
-    public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
-    @MockBean
+    @Container
+    public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer("clickhouse/clickhouse-server:22.3")
+            .withCommand("--config-file=/etc/clickhouse-server/config.xml")
+            .withCreateContainerCmdModifier(cmd -> cmd.withPlatform("linux/arm64"));
+
+    @Autowired
     private ColumbusServiceSrv.Iface iface;
-    @MockBean
+
+    @Autowired
     private InvoicingSrv.Iface invoicingClient;
-    @MockBean
+
+    @Autowired
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
+
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;
+
     @Autowired
     private EventRangeFactory eventRangeFactory;
 
-    @Before
+    @BeforeEach
     public void init() throws SQLException {
         ChInitializer.initAllScripts(clickHouseContainer, List.of(
                 "sql/V1__db_init.sql",
@@ -252,6 +261,24 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
                             "clickhouse.db.password=" + clickHouseContainer.getPassword(),
                             "spring.flyway.enabled=false")
                     .applyTo(configurableApplicationContext.getEnvironment());
+        }
+    }
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public ColumbusServiceSrv.Iface iface() {
+            return Mockito.mock(ColumbusServiceSrv.Iface.class);
+        }
+
+        @Bean
+        public InvoicingSrv.Iface invoicingClient() {
+            return Mockito.mock(InvoicingSrv.Iface.class);
+        }
+
+        @Bean
+        public PostgresBalanceChangesRepository postgresBalanceChangesRepository() {
+            return Mockito.mock(PostgresBalanceChangesRepository.class);
         }
     }
 }

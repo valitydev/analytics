@@ -17,10 +17,8 @@ import dev.vality.damsel.domain.RussianLegalEntity;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -28,8 +26,10 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -38,29 +38,34 @@ import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {PartyListenerTest.Initializer.class})
+@Testcontainers
 public class PartyListenerTest extends KafkaAbstractTest {
 
-    @ClassRule
+    @Container
     @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(
+            DockerImageName.parse(Version.POSTGRES_VERSION).asCompatibleSubstituteFor("postgres"))
             .withStartupTimeout(Duration.ofMinutes(5));
+
     @Autowired
     private PartyDao partyDao;
+
     @Autowired
     private ShopDao shopDao;
+
     @Autowired
     private ContractorDao contractorDao;
+
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
 
-    @Before
+    @BeforeEach
     public void clean() {
         clearDb();
     }

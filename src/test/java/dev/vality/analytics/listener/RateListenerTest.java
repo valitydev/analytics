@@ -6,9 +6,7 @@ import dev.vality.analytics.utils.RateSinkEventTestUtils;
 import dev.vality.analytics.utils.Version;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,8 +15,10 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.List;
@@ -26,20 +26,23 @@ import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {AnalyticsApplication.class}, properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {RateListenerTest.Initializer.class})
+@Testcontainers
 public class RateListenerTest extends KafkaAbstractTest {
 
-    @ClassRule
+    @Container
     @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(
+            DockerImageName.parse(Version.POSTGRES_VERSION).asCompatibleSubstituteFor("postgres"))
             .withStartupTimeout(Duration.ofMinutes(5));
+
     @Value("${kafka.topic.rate.initial}")
     public String rateTopic;
+
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
 
@@ -78,5 +81,4 @@ public class RateListenerTest extends KafkaAbstractTest {
             postgres.start();
         }
     }
-
 }

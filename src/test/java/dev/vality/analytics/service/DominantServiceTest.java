@@ -9,46 +9,53 @@ import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = AnalyticsApplication.class,
         properties = {"kafka.state.cache.size=0"})
 @ContextConfiguration(initializers = {DominantServiceTest.Initializer.class})
+@Import(DominantServiceTest.TestConfig.class)
+@Testcontainers
 public class DominantServiceTest extends KafkaAbstractTest {
 
-    @ClassRule
+    @Container
     @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(
+            DockerImageName.parse(Version.POSTGRES_VERSION).asCompatibleSubstituteFor("postgres"))
             .withStartupTimeout(Duration.ofMinutes(5));
-    @MockBean
+
+    @Autowired
     private RepositorySrv.Iface dominantClient;
+
     @Autowired
     private DominantService dominantService;
+
     @Autowired
     private DominantDao dominantDao;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Commit firstCommit = TestData.buildInsertCategoryCommit(64, "testName", "testDescription", CategoryType.test);
         Commit secondCommit =
@@ -63,7 +70,15 @@ public class DominantServiceTest extends KafkaAbstractTest {
     @Test
     public void testDominantVersion() {
         dominantService.pullDominantRange(10);
-        Assert.assertEquals(2, (long) dominantDao.getLastVersion());
+        assertEquals(2, (long) dominantDao.getLastVersion());
+    }
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public RepositorySrv.Iface dominantClient() {
+            return mock(RepositorySrv.Iface.class);
+        }
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -81,5 +96,4 @@ public class DominantServiceTest extends KafkaAbstractTest {
             postgres.start();
         }
     }
-
 }
