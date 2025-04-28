@@ -2,8 +2,8 @@ package dev.vality.analytics.computer;
 
 import dev.vality.analytics.domain.CashFlowResult;
 import dev.vality.analytics.utils.BuildUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.is;
@@ -13,7 +13,7 @@ public class ReversedCashFlowComputerTest {
 
     private ReversedCashFlowComputer reversedCashFlowComputer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         reversedCashFlowComputer = new ReversedCashFlowComputer();
     }

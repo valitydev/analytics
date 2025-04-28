@@ -13,8 +13,8 @@ import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.SplitUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -182,7 +182,7 @@ public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
                 Instant.ofEpochMilli(1579666000698L).atZone(ZoneOffset.UTC).toLocalDateTime(),
                 SplitUnit.YEAR);
 
-        Assert.assertTrue(costs.isEmpty());
+        Assertions.assertTrue(costs.isEmpty());
     }
 
     @NotNull
@@ -292,7 +292,7 @@ public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
                 Instant.ofEpochMilli(1575554400000L).atZone(ZoneOffset.UTC).toLocalDateTime(),
                 Instant.ofEpochMilli(1575556887697L).atZone(ZoneOffset.UTC).toLocalDateTime());
 
-        Assert.assertTrue(toolDistribution.isEmpty());
+        Assertions.assertTrue(toolDistribution.isEmpty());
     }
 
     @Test

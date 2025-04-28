@@ -4,8 +4,8 @@ import dev.vality.analytics.config.ClickHouseConfig;
 import dev.vality.analytics.config.properties.ClickHouseDbProperties;
 import dev.vality.clickhouse.initializer.ChInitializer;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
@@ -25,7 +25,7 @@ public class ClickHouseAbstractTest {
     public static ClickHouseContainer clickHouseContainer =
             new ClickHouseContainer("yandex/clickhouse-server:21.3.20");
 
-    @Before
+    @BeforeEach
     public void init() throws SQLException {
         ChInitializer.initAllScripts(clickHouseContainer, List.of(
                 "sql/V1__db_init.sql",

@@ -12,9 +12,9 @@ import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
     @Autowired
     private EventRangeFactory eventRangeFactory;
 
-    @Before
+    @BeforeEach
     public void init() throws SQLException {
         ChInitializer.initAllScripts(clickHouseContainer, List.of(
                 "sql/V1__db_init.sql",

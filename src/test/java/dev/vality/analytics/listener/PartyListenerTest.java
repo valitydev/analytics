@@ -17,9 +17,9 @@ import dev.vality.damsel.domain.RussianLegalEntity;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,7 +60,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
 
-    @Before
+    @BeforeEach
     public void clean() {
         clearDb();
     }

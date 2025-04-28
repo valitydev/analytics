@@ -9,10 +9,10 @@ import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,7 +48,7 @@ public class DominantServiceTest extends KafkaAbstractTest {
     @Autowired
     private DominantDao dominantDao;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Commit firstCommit = TestData.buildInsertCategoryCommit(64, "testName", "testDescription", CategoryType.test);
         Commit secondCommit =
@@ -63,7 +63,7 @@ public class DominantServiceTest extends KafkaAbstractTest {
     @Test
     public void testDominantVersion() {
         dominantService.pullDominantRange(10);
-        Assert.assertEquals(2, (long) dominantDao.getLastVersion());
+        Assertions.assertEquals(2, (long) dominantDao.getLastVersion());
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

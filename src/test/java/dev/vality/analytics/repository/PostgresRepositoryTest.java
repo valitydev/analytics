@@ -12,9 +12,9 @@ import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
 import dev.vality.analytics.utils.Version;
 import io.github.benas.randombeans.api.EnhancedRandom;
-import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,7 +81,7 @@ public class PostgresRepositoryTest {
         Party party = EnhancedRandom.random(Party.class);
         partyDao.saveParty(party);
         Party savedParty = partyDao.getPartyById(party.getPartyId());
-        Assert.assertEquals(party, savedParty);
+        Assertions.assertEquals(party, savedParty);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class PostgresRepositoryTest {
         Shop shop = EnhancedRandom.random(Shop.class);
         shopDao.saveShop(shop);
         Shop savedShop = shopDao.getShopByPartyIdAndShopId(shop.getPartyId(), shop.getShopId());
-        Assert.assertEquals(shop, savedShop);
+        Assertions.assertEquals(shop, savedShop);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class PostgresRepositoryTest {
         secondParty.setPartyId(firstParty.getPartyId());
         partyDao.saveParty(secondParty);
         Party savedParty = partyDao.getPartyById(secondParty.getPartyId());
-        Assert.assertEquals(secondParty, savedParty);
+        Assertions.assertEquals(secondParty, savedParty);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class PostgresRepositoryTest {
         secondShop.setShopId(firstShop.getShopId());
         shopDao.saveShop(secondShop);
         Shop savedShop = shopDao.getShopByPartyIdAndShopId(secondShop.getPartyId(), secondShop.getShopId());
-        Assert.assertEquals(secondShop, savedShop);
+        Assertions.assertEquals(secondShop, savedShop);
     }
 
     private PaymentRow payment() {
