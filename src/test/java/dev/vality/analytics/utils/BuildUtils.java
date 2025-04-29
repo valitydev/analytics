@@ -10,7 +10,7 @@ import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@SuppressWarnings("LineLength")
 public class BuildUtils {
 
     public static dev.vality.damsel.payment_processing.Invoice buildInvoice(

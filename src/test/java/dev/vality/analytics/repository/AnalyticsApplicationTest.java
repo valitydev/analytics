@@ -1,9 +1,14 @@
 package dev.vality.analytics.repository;
 
-import lombok.extern.slf4j.Slf4j;
+import dev.vality.analytics.config.ClickHouseConfig;
+import dev.vality.analytics.config.ClickhouseTest;
+import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -11,8 +16,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Slf4j
-public class AnalyticsApplicationTest extends ClickHouseAbstractTest {
+@DefaultSpringBootTest
+@ContextConfiguration(classes = {JdbcTemplateAutoConfiguration.class, ClickHouseConfig.class})
+@EnableConfigurationProperties
+@ClickhouseTest
+public class AnalyticsApplicationTest {
 
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;

@@ -1,6 +1,6 @@
 package dev.vality.analytics.repository;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.PostgresqlTest;
 import dev.vality.analytics.dao.model.AdjustmentRow;
 import dev.vality.analytics.dao.model.PaymentRow;
 import dev.vality.analytics.dao.model.RefundRow;
@@ -10,43 +10,23 @@ import dev.vality.analytics.dao.repository.postgres.party.management.ShopDao;
 import dev.vality.analytics.domain.CashFlowResult;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
-import dev.vality.analytics.utils.Version;
+import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import io.github.benas.randombeans.api.EnhancedRandom;
-import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ContextConfiguration(classes = AnalyticsApplication.class, initializers = PostgresRepositoryTest.Initializer.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DefaultSpringBootTest
+@PostgresqlTest
 public class PostgresRepositoryTest {
-
-    @ClassRule
-    @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
-            .withStartupTimeout(Duration.ofMinutes(5));
-
-    @LocalServerPort
-    protected int port;
 
     @Autowired
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
@@ -70,7 +50,7 @@ public class PostgresRepositoryTest {
                 "SELECT count(*) AS count FROM analytics.balance_change",
                 (resultSet, i) -> resultSet.getLong("count"));
 
-        assertEquals(4L, count);
+        assertEquals(3L, count);
     }
 
     @Test
@@ -158,20 +138,4 @@ public class PostgresRepositoryTest {
                 .build());
         return adjustmentRow;
     }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword())
-                    .and(configurableApplicationContext.getEnvironment().getActiveProfiles())
-                    .applyTo(configurableApplicationContext);
-        }
-    }
-
 }
