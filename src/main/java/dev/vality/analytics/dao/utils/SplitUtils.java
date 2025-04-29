@@ -4,7 +4,6 @@ import dev.vality.damsel.analytics.SplitUnit;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import static java.time.ZoneOffset.UTC;
@@ -21,10 +20,10 @@ public class SplitUtils {
     public static Long generateOffset(Map row, SplitUnit splitUnit) {
         switch (splitUnit) {
             case MINUTE -> {
-                Integer hour = (Integer) row.get(HOUR);
-                Integer minutes = (Integer) row.get(MINUTES);
-                Date date = (Date) row.get(DAY);
-                LocalDateTime localDateTime = date.toLocalDate()
+                var hour = (Short) row.get(HOUR);
+                var minutes = (Short) row.get(MINUTES);
+                var date = (Date) row.get(DAY);
+                var localDateTime = date.toLocalDate()
                         .atStartOfDay()
                         .plusHours(hour)
                         .plusMinutes(minutes);
@@ -33,9 +32,9 @@ public class SplitUtils {
                         .toInstant().toEpochMilli();
             }
             case HOUR -> {
-                Integer hour = (Integer) row.get(HOUR);
-                Date date = (Date) row.get(DAY);
-                LocalDateTime localDateTime = date.toLocalDate()
+                var hour = (Short) row.get(HOUR);
+                var date = (Date) row.get(DAY);
+                var localDateTime = date.toLocalDate()
                         .atStartOfDay()
                         .plusHours(hour);
                 return localDateTime
@@ -43,29 +42,29 @@ public class SplitUtils {
                         .toInstant().toEpochMilli();
             }
             case DAY -> {
-                Date date = (Date) row.get(DAY);
+                var date = (Date) row.get(DAY);
                 return date.toLocalDate()
                         .atStartOfDay()
                         .atZone(UTC)
                         .toInstant().toEpochMilli();
             }
             case WEEK -> {
-                Date date = (Date) row.get(WEEK);
+                var date = (Date) row.get(WEEK);
                 return date.toLocalDate()
                         .atStartOfDay()
                         .atZone(UTC)
                         .toInstant().toEpochMilli();
             }
             case MONTH -> {
-                Integer date = (Integer) row.get(YEAR);
-                Integer months = (Integer) row.get(MONTHS);
+                var date = (Integer) row.get(YEAR);
+                var months = (Short) row.get(MONTHS);
                 return LocalDate.of(date, months, 1)
                         .atStartOfDay()
                         .atZone(UTC)
                         .toInstant().toEpochMilli();
             }
             case YEAR -> {
-                Integer date = (Integer) row.get(YEAR);
+                var date = (Integer) row.get(YEAR);
                 return LocalDate.of(date, 1, 1)
                         .atStartOfDay()
                         .atZone(UTC)
@@ -84,7 +83,6 @@ public class SplitUtils {
             case WEEK -> "toStartOfWeek(timestamp, 1) as week";
             case MONTH -> "toYear(timestamp) as year, toMonth(timestamp) as months";
             case YEAR -> "toYear(timestamp) as year";
-            default -> throw new RuntimeException();
         };
     }
 

@@ -1,70 +1,56 @@
 package dev.vality.analytics.config;
 
-import dev.vality.analytics.config.properties.PostgresDbProperties;
-import lombok.RequiredArgsConstructor;
-import org.jooq.impl.DataSourceConnectionProvider;
-import org.jooq.impl.DefaultConfiguration;
-import org.postgresql.ds.PGSimpleDataSource;
+import com.zaxxer.hikari.HikariDataSource;
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
-import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
 @Configuration
-@RequiredArgsConstructor
+@SuppressWarnings({"LineLength"})
 public class PostgresConfig {
 
-    private final PostgresDbProperties postgresDbProperties;
-
     @Bean
-    public PGSimpleDataSource postgresDatasource() {
-        PGSimpleDataSource dataSource = new PGSimpleDataSource();
-        dataSource.setUrl(postgresDbProperties.getUrl());
-        dataSource.setUser(postgresDbProperties.getUser());
-        dataSource.setPassword(postgresDbProperties.getPassword());
-        dataSource.setCurrentSchema(postgresDbProperties.getSchema());
-        return dataSource;
+    @Primary
+    @ConfigurationProperties(prefix = "postgres.db")
+    public DataSourceProperties dataSourceProperties() {
+        return new DataSourceProperties();
     }
 
     @Bean
-    public DataSourceConnectionProvider dataSourceConnectionProvider(
-            TransactionAwareDataSourceProxy transactionAwareDataSourceProxy) {
-        return new DataSourceConnectionProvider(transactionAwareDataSourceProxy);
+    @Primary
+    @ConfigurationProperties(prefix = "postgres.db")
+    public HikariDataSource dataSource(DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Bean
-    public TransactionAwareDataSourceProxy transactionAwareDataSource(DataSource postgresDatasource) {
-        return new TransactionAwareDataSourceProxy(postgresDatasource);
-    }
-
-    @Bean
-    public DataSourceConnectionProvider connectionProvider(
-            TransactionAwareDataSourceProxy transactionAwareDataSourceProxy) {
-        return new DataSourceConnectionProvider(transactionAwareDataSourceProxy);
-    }
-
-    @Bean
-    public DefaultConfiguration configuration(DataSourceConnectionProvider dataSourceConnectionProvider) {
-        DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(dataSourceConnectionProvider);
-
-        return jooqConfiguration;
-    }
-
-    @Bean
-    public DataSourceInitializer dataSourceInitializer(PGSimpleDataSource dataSource) {
-        DataSourceInitializer initializer = new DataSourceInitializer();
-        initializer.setDataSource(dataSource);
-        return initializer;
+    @Primary
+    public PlatformTransactionManager transactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean
     @Autowired
-    public JdbcTemplate postgresJdbcTemplate(DataSource postgresDatasource) {
-        return new JdbcTemplate(postgresDatasource);
+    public JdbcTemplate postgresJdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public Flyway flyway(DataSource dataSource) {
+        final var flyway = Flyway.configure().dataSource(dataSource).load();
+        flyway.migrate();
+        return flyway;
     }
 }

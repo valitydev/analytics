@@ -1,16 +1,15 @@
 server:
-  port: '@server.port@'
+  port: ${server.port}
+  error:
+    include-stacktrace: ALWAYS
+
 management:
-  security:
-    flag: false
   server:
-    port: '@management.port@'
+    port: ${management.port}
   metrics:
     export:
       prometheus:
-        enabled: false
-    tags:
-      application: analytics
+        enabled: true
   endpoint:
     health:
       show-details: always
@@ -25,14 +24,12 @@ management:
 
 spring:
   application:
-    name: '@project.name@'
+    name: ${project.name}
   output:
     ansi:
       enabled: always
-  flyway:
-    url: "jdbc:postgresql://localhost:5432/analytics"
-    user: "user"
-    password: "password"
+  main:
+    allow-bean-definition-overriding: true
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -40,22 +37,34 @@ spring:
         session.timeout.ms: 60000
         max.poll.interval.ms: 60000
 
-info:
-  version: '@project.version@'
-  stage: dev
-
 clickhouse.db:
-  url: "jdbc:clickhouse://localhost:8123/default"
-  user: "user"
-  password: "password"
-  connection.timeout: 50000
+  type: com.zaxxer.hikari.HikariDataSource
+  driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+  url: jdbc:clickhouse://localhost:8123/default
+  username: user
+  password: password
+  connection-timeout: 50000
   compress: false
+  hikari:
+    maximum-pool-size: 5
+    minimum-idle: 0
+    idle-timeout: 30000
+    max-lifetime: 180000
+    connection-timeout: 10000
+    leak-detection-threshold: 5000
 
 postgres.db:
-  url: "jdbc:postgresql://localhost:5432/analytics"
-  user: "user"
-  password: "password"
-  schema: "analytics"
+  type: com.zaxxer.hikari.HikariDataSource
+  driver-class-name: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5432/p2p_db
+  username: postgres
+  password: postgres
+  hikari:
+    maximum-pool-size: 3
+    data-source-properties.prepareThreshold: 0
+    leak-detection-threshold: 5300
+    max-lifetime: 300000
+    idle-timeout: 30000
 
 kafka:
   max.poll.records: 100
@@ -110,3 +119,11 @@ cache:
     size: 10000
 
 caffeine.cache-expiration-seconds: 60
+
+testcontainers:
+  postgresql:
+    tag: '17'
+  kafka:
+    tag: '3.8'
+  clickhouse:
+    tag: '23.10.3'
