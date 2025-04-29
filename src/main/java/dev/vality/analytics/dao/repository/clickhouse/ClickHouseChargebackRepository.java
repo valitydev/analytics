@@ -18,7 +18,7 @@ public class ClickHouseChargebackRepository {
 
     private final JdbcTemplate clickHouseJdbcTemplate;
 
-    @Retryable(value = SQLException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertBatch(List<ChargebackRow> chargebackRows) {
         if (chargebackRows != null && !chargebackRows.isEmpty()) {
             log.info("Batch start insert chargebackRows: {} firstElement: {}", chargebackRows.size(),

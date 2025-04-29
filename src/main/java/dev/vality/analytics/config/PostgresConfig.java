@@ -2,7 +2,6 @@ package dev.vality.analytics.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +41,6 @@ public class PostgresConfig {
     }
 
     @Bean
-    @Autowired
     public JdbcTemplate postgresJdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }

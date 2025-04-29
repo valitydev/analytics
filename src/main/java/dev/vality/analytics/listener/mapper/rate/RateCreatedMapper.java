@@ -8,9 +8,9 @@ import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.xrates.base.Rational;
 import dev.vality.xrates.base.TimestampInterval;
 import dev.vality.xrates.rate.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
