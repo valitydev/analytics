@@ -13,8 +13,8 @@ import static dev.vality.analytics.domain.db.Tables.COUNTRY;
 @Component
 public class CountryDao extends AbstractGenericDao {
 
-    public CountryDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public CountryDao(DataSource dataSource) {
+        super(dataSource);
     }
 
     public void saveCountry(Country country) {

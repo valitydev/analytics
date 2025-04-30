@@ -1,6 +1,6 @@
 package dev.vality.analytics.listener;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.SpringBootITest;
 import dev.vality.analytics.dao.repository.postgres.party.management.ContractorDao;
 import dev.vality.analytics.dao.repository.postgres.party.management.PartyDao;
 import dev.vality.analytics.dao.repository.postgres.party.management.ShopDao;
@@ -9,28 +9,19 @@ import dev.vality.analytics.domain.db.enums.Suspension;
 import dev.vality.analytics.domain.db.tables.pojos.Contractor;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
-import dev.vality.analytics.utils.KafkaAbstractTest;
 import dev.vality.analytics.utils.PartyFlowGenerator;
-import dev.vality.analytics.utils.Version;
 import dev.vality.damsel.domain.PartyContractor;
 import dev.vality.damsel.domain.RussianLegalEntity;
 import dev.vality.machinegun.eventsink.SinkEvent;
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.junit.ClassRule;
-import org.junit.jupiter.api.BeforeEach;
+import dev.vality.testcontainers.annotations.kafka.config.KafkaProducer;
+import jakarta.validation.constraints.NotNull;
+import org.apache.thrift.TBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,16 +29,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
-@SpringBootTest(classes = AnalyticsApplication.class,
-        properties = {"kafka.state.cache.size=0"})
-@ContextConfiguration(initializers = {PartyListenerTest.Initializer.class})
-public class PartyListenerTest extends KafkaAbstractTest {
+@SpringBootITest
+public class PartyListenerTest {
 
-    @ClassRule
-    @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
-            .withStartupTimeout(Duration.ofMinutes(5));
+    @Value("${kafka.topic.party.initial}")
+    public String partyTopic;
     @Autowired
     private PartyDao partyDao;
     @Autowired
@@ -56,11 +42,8 @@ public class PartyListenerTest extends KafkaAbstractTest {
     private ContractorDao contractorDao;
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-
-    @BeforeEach
-    public void clean() {
-        clearDb();
-    }
+    @Autowired
+    private KafkaProducer<TBase<?, ?>> testThriftKafkaProducer;
 
     @Test
     // This flow show forward case: party events - contractor - contract - shop
@@ -69,7 +52,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
         String shopId = UUID.randomUUID().toString();
         List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyFlow(partyId, shopId);
 
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(partyTopic, event));
 
         await().atMost(60, SECONDS).until(() -> {
             Integer partyCount = postgresJdbcTemplate.queryForObject("SELECT count(*) FROM analytics.contractor" +
@@ -87,7 +70,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
         String partyId = UUID.randomUUID().toString();
         List<SinkEvent> sinkEvents = PartyFlowGenerator.generatePartyContractorFlow(partyId);
 
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(partyTopic, event));
 
         await().atMost(60, SECONDS).until(() -> {
             Party party = partyDao.getPartyById(partyId);
@@ -125,7 +108,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
         String partyId = UUID.randomUUID().toString();
         String shopId = UUID.randomUUID().toString();
         List<SinkEvent> sinkEvents = PartyFlowGenerator.generateShopFlow(partyId, shopId);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(partyTopic, event));
         await().atMost(60, SECONDS).until(() -> {
             Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
                     "SELECT count(*) FROM analytics.shop " +
@@ -180,7 +163,7 @@ public class PartyListenerTest extends KafkaAbstractTest {
                 partyContractor.getContractor().getLegalEntity().getRussianLegalEntity();
         List<SinkEvent> sinkEvents =
                 PartyFlowGenerator.generatePartyFlowWithCount(count, lastPartyId, lastShopId, partyContractor);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.partyTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(partyTopic, event));
         await().atMost(60, SECONDS).until(() -> {
             Integer lastShopCount = postgresJdbcTemplate.queryForObject(String.format(
                     "SELECT count(*) FROM analytics.contractor WHERE contractor_id = '%s'",
@@ -195,13 +178,6 @@ public class PartyListenerTest extends KafkaAbstractTest {
         checkContractorFields(lastPartyId, russianLegalEntity);
 
         checkShopFields(russianLegalEntity, lastPartyId, lastShopId);
-    }
-
-    private void clearDb() {
-        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.contractor;");
-        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.party;");
-        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.shop;");
-        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.contract;");
     }
 
     private void checkContractorFields(String partyId, RussianLegalEntity russianLegalEntity) {
@@ -251,21 +227,5 @@ public class PartyListenerTest extends KafkaAbstractTest {
                 contractorForUpdate.getRussianLegalEntityRepresentativeFullName());
         assertEquals(russianLegalEntity.getRepresentativePosition(),
                 contractorForUpdate.getRussianLegalEntityRepresentativePosition());
-    }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword(),
-                    "spring.flyway.enabled=true")
-                    .applyTo(configurableApplicationContext.getEnvironment());
-            postgres.start();
-        }
     }
 }

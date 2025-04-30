@@ -1,32 +1,21 @@
 package dev.vality.analytics.listener;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.PostgresqlTest;
 import dev.vality.analytics.dao.repository.postgres.party.management.CategoryDao;
 import dev.vality.analytics.service.DominantService;
-import dev.vality.analytics.utils.KafkaAbstractTest;
 import dev.vality.analytics.utils.TestData;
-import dev.vality.analytics.utils.Version;
 import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
-import lombok.extern.slf4j.Slf4j;
+import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import org.apache.thrift.TException;
-import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,29 +23,18 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-@Slf4j
-@SpringBootTest(classes = AnalyticsApplication.class,
-        properties = {"kafka.state.cache.size=0"})
-@ContextConfiguration(initializers = {DominantListenerTest.Initializer.class})
-public class DominantListenerTest extends KafkaAbstractTest {
+@DefaultSpringBootTest
+@PostgresqlTest
+public class DominantListenerTest {
 
-    @ClassRule
-    @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
-            .withStartupTimeout(Duration.ofMinutes(5));
     @Autowired
     private DominantService dominantService;
     @Autowired
     private CategoryDao categoryDao;
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-    @MockBean
+    @MockitoBean
     private RepositorySrv.Iface dominantClient;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        postgresJdbcTemplate.execute("TRUNCATE TABLE analytics.category");
-    }
 
     @Test
     public void testDominantProcessCommitsInsert() throws TException {
@@ -135,22 +113,4 @@ public class DominantListenerTest extends KafkaAbstractTest {
         Assertions.assertEquals(categoryType.name(), category.getType());
         Assertions.assertTrue(category.getDeleted());
     }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword(),
-                    "spring.flyway.enabled=true",
-                    "service.dominant.scheduler.enabled=false")
-                    .applyTo(configurableApplicationContext.getEnvironment());
-            postgres.start();
-        }
-    }
-
 }

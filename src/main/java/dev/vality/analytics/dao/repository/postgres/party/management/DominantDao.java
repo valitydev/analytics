@@ -13,8 +13,8 @@ import static dev.vality.analytics.domain.db.Tables.DOMINANT;
 @Component
 public class DominantDao extends AbstractGenericDao {
 
-    public DominantDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public DominantDao(DataSource dataSource) {
+        super(dataSource);
     }
 
     public void updateVersion(long version, long oldVersion) {

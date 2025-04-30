@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
                 "kafka.state.cache.size=0"},
         topicsKeys = {
                 "kafka.topic.event.sink.initial",
-                "kafka.topic.party.initial"})
+                "kafka.topic.party.initial",
+                "kafka.topic.rate.initial"})
 public @interface KafkaTest {
 }

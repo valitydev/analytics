@@ -18,8 +18,8 @@ public class RateDao extends AbstractGenericDao {
 
     private final RowMapper<Rate> rateRowMapper;
 
-    public RateDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public RateDao(DataSource dataSource) {
+        super(dataSource);
         this.rateRowMapper = new RecordRowMapper<>(RATE, Rate.class);
     }
 

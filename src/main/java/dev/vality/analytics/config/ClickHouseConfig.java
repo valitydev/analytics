@@ -1,6 +1,7 @@
 package dev.vality.analytics.config;
 
 import dev.vality.analytics.config.properties.ClickHouseDbProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,15 +12,15 @@ import javax.sql.DataSource;
 @Configuration
 public class ClickHouseConfig {
 
-    @Bean
+    @Bean(name = "clickHouseDataSourceProperties")
     @ConfigurationProperties(prefix = "clickhouse.db")
     public ClickHouseDbProperties clickHouseDataSourceProperties() {
         return new ClickHouseDbProperties();
     }
 
-    @Bean
+    @Bean(name = "clickHouseDataSource")
     @ConfigurationProperties(prefix = "clickhouse.db.hikari")
-    public DataSource clickHouseDataSource(ClickHouseDbProperties clickHouseDataSourceProperties) {
+    public DataSource clickHouseDataSource(@Qualifier("clickHouseDataSourceProperties") ClickHouseDbProperties clickHouseDataSourceProperties) {
         clickHouseDataSourceProperties.setUrl(buildClickHouseJdbcUrl(clickHouseDataSourceProperties));
         return clickHouseDataSourceProperties
                 .initializeDataSourceBuilder()
@@ -27,8 +28,8 @@ public class ClickHouseConfig {
                 .build();
     }
 
-    @Bean
-    public JdbcTemplate clickHouseJdbcTemplate(DataSource clickHouseDataSource) {
+    @Bean(name = "clickHouseJdbcTemplate")
+    public JdbcTemplate clickHouseJdbcTemplate(@Qualifier("clickHouseDataSource") DataSource clickHouseDataSource) {
         return new JdbcTemplate(clickHouseDataSource);
     }
 

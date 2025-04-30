@@ -6,7 +6,7 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
-    <!--    <logger name="dev.vality" level="ALL"/>-->
-    <!--    <logger name="org.apache.kafka.clients" level="OFF"/>-->
+    <logger name="dev.vality" level="INFO"/>
+    <logger name="org.apache.kafka" level="OFF"/>
 
 </configuration>

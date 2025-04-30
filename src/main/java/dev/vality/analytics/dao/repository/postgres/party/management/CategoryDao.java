@@ -17,8 +17,8 @@ public class CategoryDao extends AbstractGenericDao {
 
     private final RowMapper<Category> categoryRowMapper;
 
-    public CategoryDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public CategoryDao(DataSource dataSource) {
+        super(dataSource);
         this.categoryRowMapper = new RecordRowMapper<>(CATEGORY, Category.class);
     }
 
