@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @ClickhouseTestcontainerSingleton(
-        dbNameShouldBeDropped = "default",
+        dbNameShouldBeDropped = "analytic",
         migrations = {
                 "sql/V1__db_init.sql",
                 "sql/V2__add_fields.sql",
