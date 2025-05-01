@@ -20,7 +20,8 @@ public class ClickHouseConfig {
 
     @Bean(name = "clickHouseDataSource")
     @ConfigurationProperties(prefix = "clickhouse.db.hikari")
-    public DataSource clickHouseDataSource(@Qualifier("clickHouseDataSourceProperties") ClickHouseDbProperties clickHouseDataSourceProperties) {
+    public DataSource clickHouseDataSource(
+            @Qualifier("clickHouseDataSourceProperties") ClickHouseDbProperties clickHouseDataSourceProperties) {
         clickHouseDataSourceProperties.setUrl(buildClickHouseJdbcUrl(clickHouseDataSourceProperties));
         return clickHouseDataSourceProperties
                 .initializeDataSourceBuilder()

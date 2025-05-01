@@ -124,6 +124,11 @@ testcontainers:
   postgresql:
     tag: '17'
   kafka:
-    tag: '3.8'
+    bitnami:
+      tag: '3.8'
+    apache:
+      tag: '3.8.0'
+    confluent:
+      tag: '7.8.0'
   clickhouse:
     tag: '23.10.3'
