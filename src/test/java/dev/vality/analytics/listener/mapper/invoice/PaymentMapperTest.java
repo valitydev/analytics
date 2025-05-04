@@ -17,15 +17,16 @@ import org.apache.thrift.TException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-
+@ExtendWith(MockitoExtension.class)
 public class PaymentMapperTest {
 
     public static final long AMOUNT = 123L;
@@ -41,7 +42,6 @@ public class PaymentMapperTest {
 
     @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
         HgClientService hgClientService = new HgClientService(invoicingClient, eventRangeFactory);
         paymentMapper = new PaymentMapper(hgClientService, paymentRowFactory);
     }

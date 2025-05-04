@@ -11,7 +11,6 @@ import dev.vality.analytics.domain.CashFlowResult;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
 import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
-import io.github.benas.randombeans.api.EnhancedRandom;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static dev.vality.testcontainers.annotations.util.RandomBeans.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DefaultSpringBootTest
@@ -55,7 +55,7 @@ public class PostgresRepositoryTest {
 
     @Test
     public void testPartySave() {
-        Party party = EnhancedRandom.random(Party.class);
+        Party party = random(Party.class);
         partyDao.saveParty(party);
         Party savedParty = partyDao.getPartyById(party.getPartyId());
         Assertions.assertEquals(party, savedParty);
@@ -63,7 +63,7 @@ public class PostgresRepositoryTest {
 
     @Test
     public void testShopSave() {
-        Shop shop = EnhancedRandom.random(Shop.class);
+        Shop shop = random(Shop.class);
         shopDao.saveShop(shop);
         Shop savedShop = shopDao.getShopByPartyIdAndShopId(shop.getPartyId(), shop.getShopId());
         Assertions.assertEquals(shop, savedShop);
@@ -71,9 +71,9 @@ public class PostgresRepositoryTest {
 
     @Test
     public void testDuplicatePartySave() {
-        Party firstParty = EnhancedRandom.random(Party.class);
+        Party firstParty = random(Party.class);
         partyDao.saveParty(firstParty);
-        Party secondParty = EnhancedRandom.random(Party.class);
+        Party secondParty = random(Party.class);
         secondParty.setPartyId(firstParty.getPartyId());
         partyDao.saveParty(secondParty);
         Party savedParty = partyDao.getPartyById(secondParty.getPartyId());
@@ -82,9 +82,9 @@ public class PostgresRepositoryTest {
 
     @Test
     public void testDuplicateShopSave() {
-        Shop firstShop = EnhancedRandom.random(Shop.class);
+        Shop firstShop = random(Shop.class);
         shopDao.saveShop(firstShop);
-        Shop secondShop = EnhancedRandom.random(Shop.class);
+        Shop secondShop = random(Shop.class);
         secondShop.setPartyId(firstShop.getPartyId());
         secondShop.setShopId(firstShop.getShopId());
         shopDao.saveShop(secondShop);

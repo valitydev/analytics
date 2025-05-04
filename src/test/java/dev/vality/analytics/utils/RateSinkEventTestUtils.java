@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import static io.github.benas.randombeans.api.EnhancedRandom.randomListOf;
+import static dev.vality.testcontainers.annotations.util.RandomBeans.randomListOf;
 
 public class RateSinkEventTestUtils {
 
