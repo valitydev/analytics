@@ -1,6 +1,7 @@
 package dev.vality.analytics.config;
 
-import dev.vality.testcontainers.annotations.KafkaSpringBootTest;
+
+import dev.vality.testcontainers.annotations.KafkaConfig;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,6 +13,6 @@ import java.lang.annotation.Target;
 @ClickhouseTest
 @PostgresqlTest
 @KafkaTest
-@KafkaSpringBootTest
+@KafkaConfig
 public @interface SpringBootITest {
 }

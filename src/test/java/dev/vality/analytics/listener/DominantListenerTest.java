@@ -8,11 +8,11 @@ import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
-@DefaultSpringBootTest
+@SpringBootTest
 @PostgresqlTest
 public class DominantListenerTest {
 

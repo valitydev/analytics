@@ -6,11 +6,11 @@ import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-@DefaultSpringBootTest
+@SpringBootTest
 @PostgresqlTest
 public class DominantServiceTest {
 

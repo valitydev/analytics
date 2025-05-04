@@ -13,13 +13,13 @@ import dev.vality.analytics.dao.model.SplitStatusNumberModel;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHousePaymentRepositoryImpl;
 import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.SplitUnit;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.Instant;
@@ -30,7 +30,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DefaultSpringBootTest
+@SpringBootTest
 @ContextConfiguration(
         classes = {
                 RawToNumModelConverter.class, RawToSplitNumberConverter.class,

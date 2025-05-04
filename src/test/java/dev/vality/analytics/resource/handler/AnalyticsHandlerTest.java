@@ -10,7 +10,6 @@ import dev.vality.analytics.dao.repository.clickhouse.ClickHousePaymentRepositor
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseRefundRepository;
 import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.*;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import jakarta.validation.constraints.NotNull;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.Assertions;
@@ -18,13 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DefaultSpringBootTest
+@SpringBootTest
 @ContextConfiguration(classes = {
         RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
         SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,

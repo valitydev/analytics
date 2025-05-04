@@ -10,10 +10,10 @@ import dev.vality.analytics.dao.repository.postgres.party.management.ShopDao;
 import dev.vality.analytics.domain.CashFlowResult;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
@@ -24,7 +24,7 @@ import java.util.List;
 import static dev.vality.testcontainers.annotations.util.RandomBeans.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DefaultSpringBootTest
+@SpringBootTest
 @PostgresqlTest
 public class PostgresRepositoryTest {
 
