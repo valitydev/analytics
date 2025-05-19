@@ -57,8 +57,8 @@ public class BuildUtils {
             InvoiceStatus invoiceStatus,
             MockTBaseProcessor thriftBaseProcessor) throws IOException {
         return thriftBaseProcessor.process(
-                new Invoice(),
-                new TBaseHandler<>(Invoice.class))
+                        new Invoice(),
+                        new TBaseHandler<>(Invoice.class))
                 .setId(invoiceId)
                 .setShopId(shopId)
                 .setOwnerId(partyId)
@@ -346,8 +346,8 @@ public class BuildUtils {
     private static InvoicePaymentRefund buildRefund(String refundId, MockTBaseProcessor thriftBaseProcessor)
             throws IOException {
         return thriftBaseProcessor.process(
-                new InvoicePaymentRefund(),
-                new TBaseHandler<>(InvoicePaymentRefund.class))
+                        new InvoicePaymentRefund(),
+                        new TBaseHandler<>(InvoicePaymentRefund.class))
                 .setReason("keksik")
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setId(refundId);
@@ -356,8 +356,8 @@ public class BuildUtils {
     private static InvoicePaymentAdjustment buildAdjustment(String adjustmentId, MockTBaseProcessor thriftBaseProcessor)
             throws IOException {
         return thriftBaseProcessor.process(
-                new InvoicePaymentAdjustment(),
-                new TBaseHandler<>(InvoicePaymentAdjustment.class))
+                        new InvoicePaymentAdjustment(),
+                        new TBaseHandler<>(InvoicePaymentAdjustment.class))
                 .setReason("keksik")
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setNewCashFlow(createCashFlow(23L, 100L))

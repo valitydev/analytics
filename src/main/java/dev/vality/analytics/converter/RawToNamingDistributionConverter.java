@@ -17,7 +17,7 @@ public class RawToNamingDistributionConverter implements Converter<Map, NamingDi
     @Override
     public NamingDistribution convert(Map row) {
         NamingDistribution namingDistribution = new NamingDistribution();
-        double percent = new BigDecimal((Double) row.get(PERCENT))
+        double percent = BigDecimal.valueOf((Double) row.get(PERCENT))
                 .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();
         namingDistribution.setPercent(percent);
