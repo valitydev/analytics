@@ -10,14 +10,16 @@ import dev.vality.damsel.domain_config.InsertOp;
 import dev.vality.damsel.domain_config.Operation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class CountryDominantHandlerTest {
 
     @Mock
@@ -29,7 +31,6 @@ class CountryDominantHandlerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         countryObject = TestData.buildCountryObject();
         countryHandler = new CountryDominantHandler(countryDao);
     }

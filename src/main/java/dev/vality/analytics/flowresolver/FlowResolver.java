@@ -40,7 +40,7 @@ public class FlowResolver {
 
             String flowValue = initNewFlowValue(payload, paymentUniqId);
             String result = flows.get(flowValue);
-            if (StringUtils.isEmpty(result)) {
+            if (!StringUtils.hasText(result)) {
                 flows.put(flowValue, flowValue);
             }
 
@@ -54,7 +54,7 @@ public class FlowResolver {
         log.info("statesMap id: {} key: {}", paymentUniqId, key);
 
         String oldState = statesMap.get(paymentUniqId);
-        if (!StringUtils.isEmpty(oldState)) { // check flow is exist
+        if (StringUtils.hasText(oldState)) { // check flow is exist
             if (Pattern.compile(key + "$").matcher(oldState).find()) { //check last state is equals current
                 return oldState;
             }

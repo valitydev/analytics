@@ -19,8 +19,8 @@ public class ShopDao extends AbstractGenericDao {
 
     private final RowMapper<Shop> shopRowMapper;
 
-    public ShopDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public ShopDao(DataSource dataSource) {
+        super(dataSource);
         this.shopRowMapper = new RecordRowMapper<>(SHOP, Shop.class);
     }
 

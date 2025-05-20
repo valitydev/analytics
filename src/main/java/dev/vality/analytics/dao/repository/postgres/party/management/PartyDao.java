@@ -19,8 +19,8 @@ public class PartyDao extends AbstractGenericDao {
 
     private final RowMapper<Party> partyRowMapper;
 
-    public PartyDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public PartyDao(DataSource dataSource) {
+        super(dataSource);
         this.partyRowMapper = new RecordRowMapper<>(PARTY, Party.class);
     }
 

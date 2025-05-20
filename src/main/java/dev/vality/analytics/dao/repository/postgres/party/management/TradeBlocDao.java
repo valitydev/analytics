@@ -13,8 +13,8 @@ import static dev.vality.analytics.domain.db.Tables.TRADE_BLOC;
 @Component
 public class TradeBlocDao extends AbstractGenericDao {
 
-    public TradeBlocDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public TradeBlocDao(DataSource dataSource) {
+        super(dataSource);
     }
 
     public void saveTradeBloc(TradeBloc tradeBloc) {

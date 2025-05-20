@@ -7,8 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import ru.yandex.clickhouse.except.ClickHouseException;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -18,7 +18,7 @@ public class ClickHouseChargebackRepository {
 
     private final JdbcTemplate clickHouseJdbcTemplate;
 
-    @Retryable(value = ClickHouseException.class, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = SQLException.class, backoff = @Backoff(delay = 5000))
     public void insertBatch(List<ChargebackRow> chargebackRows) {
         if (chargebackRows != null && !chargebackRows.isEmpty()) {
             log.info("Batch start insert chargebackRows: {} firstElement: {}", chargebackRows.size(),

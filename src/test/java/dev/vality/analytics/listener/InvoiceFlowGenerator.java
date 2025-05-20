@@ -14,7 +14,7 @@ import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import dev.vality.machinegun.msgpack.Value;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -136,7 +136,8 @@ public class InvoiceFlowGenerator {
                                         .setReason("refund reason")
                                         .setCash(createCash())
                                         .setStatus(
-                                                InvoicePaymentRefundStatus.pending(new InvoicePaymentRefundPending()))
+                                                InvoicePaymentRefundStatus.pending(
+                                                        new InvoicePaymentRefundPending()))
                                 )
                                 .setCashFlow(new ArrayList<>())
                         )
@@ -193,7 +194,8 @@ public class InvoiceFlowGenerator {
                 .setPayload(InvoicePaymentChargebackChangePayload.invoice_payment_chargeback_status_changed(
                         new InvoicePaymentChargebackStatusChanged()
                                 .setStatus(
-                                        InvoicePaymentChargebackStatus.accepted(new InvoicePaymentChargebackAccepted()))
+                                        InvoicePaymentChargebackStatus.accepted(
+                                                new InvoicePaymentChargebackAccepted()))
                         )
                 );
 

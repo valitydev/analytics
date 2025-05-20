@@ -1,44 +1,46 @@
 package dev.vality.analytics.resource.handler;
 
+import dev.vality.analytics.config.ClickHouseConfig;
+import dev.vality.analytics.config.ClickhouseTest;
 import dev.vality.analytics.config.RawMapperConfig;
 import dev.vality.analytics.converter.*;
 import dev.vality.analytics.dao.mapper.SplitRowsMapper;
 import dev.vality.analytics.dao.mapper.SplitStatusRowsMapper;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHousePaymentRepositoryImpl;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseRefundRepository;
-import dev.vality.analytics.repository.ClickHouseAbstractTest;
 import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.*;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.constraints.NotNull;
 import org.apache.thrift.TException;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-@Slf4j
-@RunWith(SpringRunner.class)
-@ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
-        classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
-                SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
-                RawToShopAmountModelConverter.class,
-                RawMapperConfig.class, ClickHousePaymentRepositoryImpl.class, ClickHouseRefundRepository.class,
-                AnalyticsHandler.class,
-                DaoErrorReasonDistributionsToResponseConverter.class,
-                DaoErrorCodeDistributionsToResponseConverter.class,
-                DaoNamingDistributionsToResponseConverter.class,
-                CostToAmountResponseConverter.class, CountModelCountResponseConverter.class,
-                GroupedCurAmountToResponseConverter.class, GroupedCurCountToResponseConverter.class,
-                ShopAmountToResponseConverter.class})
-public class AnalyticsHandlerTest extends ClickHouseAbstractTest {
+@SpringBootTest
+@ContextConfiguration(classes = {
+        RawToNumModelConverter.class, RawToSplitNumberConverter.class, RawToSplitStatusConverter.class,
+        SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
+        RawToShopAmountModelConverter.class,
+        RawMapperConfig.class, ClickHousePaymentRepositoryImpl.class, ClickHouseRefundRepository.class,
+        AnalyticsHandler.class,
+        DaoErrorReasonDistributionsToResponseConverter.class,
+        DaoErrorCodeDistributionsToResponseConverter.class,
+        DaoNamingDistributionsToResponseConverter.class,
+        CostToAmountResponseConverter.class, CountModelCountResponseConverter.class,
+        GroupedCurAmountToResponseConverter.class, GroupedCurCountToResponseConverter.class,
+        ShopAmountToResponseConverter.class, JdbcTemplateAutoConfiguration.class, ClickHouseConfig.class
+})
+@EnableConfigurationProperties
+@ClickhouseTest
+public class AnalyticsHandlerTest {
 
     public static final String RUB = "RUB";
 
@@ -260,7 +262,7 @@ public class AnalyticsHandlerTest extends ClickHouseAbstractTest {
                 .setTimeFilter(timeFilterDefault));
         List<CurrencyGroupedAmount> groupsAmount = paymentsAmount.getGroupsAmount();
 
-        Assert.assertTrue(groupsAmount.isEmpty());
+        Assertions.assertTrue(groupsAmount.isEmpty());
     }
 
     @Test

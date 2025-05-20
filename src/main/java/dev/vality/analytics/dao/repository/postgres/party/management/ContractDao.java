@@ -17,8 +17,8 @@ public class ContractDao extends AbstractGenericDao {
 
     private final RowMapper<Contract> contractRefRowMapper;
 
-    public ContractDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public ContractDao(DataSource dataSource) {
+        super(dataSource);
         this.contractRefRowMapper = new RecordRowMapper<>(CONTRACT, Contract.class);
     }
 

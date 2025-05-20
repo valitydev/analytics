@@ -10,7 +10,7 @@ import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@SuppressWarnings("LineLength")
 public class BuildUtils {
 
     public static dev.vality.damsel.payment_processing.Invoice buildInvoice(
@@ -56,8 +57,8 @@ public class BuildUtils {
             InvoiceStatus invoiceStatus,
             MockTBaseProcessor thriftBaseProcessor) throws IOException {
         return thriftBaseProcessor.process(
-                new Invoice(),
-                new TBaseHandler<>(Invoice.class))
+                        new Invoice(),
+                        new TBaseHandler<>(Invoice.class))
                 .setId(invoiceId)
                 .setShopId(shopId)
                 .setOwnerId(partyId)
@@ -345,8 +346,8 @@ public class BuildUtils {
     private static InvoicePaymentRefund buildRefund(String refundId, MockTBaseProcessor thriftBaseProcessor)
             throws IOException {
         return thriftBaseProcessor.process(
-                new InvoicePaymentRefund(),
-                new TBaseHandler<>(InvoicePaymentRefund.class))
+                        new InvoicePaymentRefund(),
+                        new TBaseHandler<>(InvoicePaymentRefund.class))
                 .setReason("keksik")
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setId(refundId);
@@ -355,8 +356,8 @@ public class BuildUtils {
     private static InvoicePaymentAdjustment buildAdjustment(String adjustmentId, MockTBaseProcessor thriftBaseProcessor)
             throws IOException {
         return thriftBaseProcessor.process(
-                new InvoicePaymentAdjustment(),
-                new TBaseHandler<>(InvoicePaymentAdjustment.class))
+                        new InvoicePaymentAdjustment(),
+                        new TBaseHandler<>(InvoicePaymentAdjustment.class))
                 .setReason("keksik")
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setNewCashFlow(createCashFlow(23L, 100L))

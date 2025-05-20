@@ -20,8 +20,8 @@ public class ContractorDao extends AbstractGenericDao {
 
     private final RowMapper<Contractor> currentContractorRowMapper;
 
-    public ContractorDao(DataSource postgresDatasource) {
-        super(postgresDatasource);
+    public ContractorDao(DataSource dataSource) {
+        super(dataSource);
         this.currentContractorRowMapper = new RecordRowMapper<>(CONTRACTOR, Contractor.class);
     }
 

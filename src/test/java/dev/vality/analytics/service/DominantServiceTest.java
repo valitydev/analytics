@@ -1,54 +1,35 @@
 package dev.vality.analytics.service;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.PostgresqlTest;
 import dev.vality.analytics.dao.repository.postgres.party.management.DominantDao;
-import dev.vality.analytics.utils.KafkaAbstractTest;
 import dev.vality.analytics.utils.TestData;
-import dev.vality.analytics.utils.Version;
 import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain_config.Commit;
 import dev.vality.damsel.domain_config.RepositorySrv;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-@Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = AnalyticsApplication.class,
-        properties = {"kafka.state.cache.size=0"})
-@ContextConfiguration(initializers = {DominantServiceTest.Initializer.class})
-public class DominantServiceTest extends KafkaAbstractTest {
+@SpringBootTest
+@PostgresqlTest
+public class DominantServiceTest {
 
-    @ClassRule
-    @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
-            .withStartupTimeout(Duration.ofMinutes(5));
-    @MockBean
+    @MockitoBean
     private RepositorySrv.Iface dominantClient;
     @Autowired
     private DominantService dominantService;
     @Autowired
     private DominantDao dominantDao;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Commit firstCommit = TestData.buildInsertCategoryCommit(64, "testName", "testDescription", CategoryType.test);
         Commit secondCommit =
@@ -63,23 +44,6 @@ public class DominantServiceTest extends KafkaAbstractTest {
     @Test
     public void testDominantVersion() {
         dominantService.pullDominantRange(10);
-        Assert.assertEquals(2, (long) dominantDao.getLastVersion());
+        Assertions.assertEquals(2, (long) dominantDao.getLastVersion());
     }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword(),
-                    "spring.flyway.enabled=true")
-                    .applyTo(configurableApplicationContext.getEnvironment());
-            postgres.start();
-        }
-    }
-
 }

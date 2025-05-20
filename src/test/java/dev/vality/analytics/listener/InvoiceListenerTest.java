@@ -1,53 +1,35 @@
 package dev.vality.analytics.listener;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.SpringBootITest;
 import dev.vality.analytics.dao.repository.postgres.PostgresBalanceChangesRepository;
 import dev.vality.analytics.utils.BuildUtils;
 import dev.vality.analytics.utils.EventRangeFactory;
-import dev.vality.analytics.utils.KafkaAbstractTest;
-import dev.vality.clickhouse.initializer.ChInitializer;
 import dev.vality.columbus.ColumbusServiceSrv;
 import dev.vality.damsel.domain.*;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
-import lombok.extern.slf4j.Slf4j;
+import dev.vality.testcontainers.annotations.kafka.config.KafkaProducer;
+import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.testcontainers.containers.ClickHouseContainer;
-import ru.yandex.clickhouse.ClickHouseDataSource;
-import ru.yandex.clickhouse.settings.ClickHouseProperties;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = AnalyticsApplication.class,
-        properties = {"kafka.state.cache.size=0"})
-@ContextConfiguration(initializers = InvoiceListenerTest.Initializer.class)
-public class InvoiceListenerTest extends KafkaAbstractTest {
+@SpringBootITest
+public class InvoiceListenerTest {
 
     private static final long MESSAGE_TIMEOUT = 4_000L;
     private static final String SOURCE_ID = "sourceID";
@@ -57,33 +39,21 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
             "group by shopId, currency, status " +
             "having shopId = '";
 
-    @ClassRule
-    public static ClickHouseContainer clickHouseContainer = new ClickHouseContainer();
-    @MockBean
+    @Value("${kafka.topic.event.sink.initial}")
+    public String eventSinkTopic;
+
+    @MockitoBean
     private ColumbusServiceSrv.Iface iface;
-    @MockBean
+    @MockitoBean
     private InvoicingSrv.Iface invoicingClient;
-    @MockBean
+    @MockitoBean
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
     @Autowired
     private JdbcTemplate clickHouseJdbcTemplate;
     @Autowired
     private EventRangeFactory eventRangeFactory;
-
-    @Before
-    public void init() throws SQLException {
-        ChInitializer.initAllScripts(clickHouseContainer, List.of(
-                "sql/V1__db_init.sql",
-                "sql/V2__add_fields.sql",
-                "sql/V3__add_provider_field.sql"
-        ));
-    }
-
-    private Connection getSystemConn() throws SQLException {
-        ClickHouseProperties properties = new ClickHouseProperties();
-        ClickHouseDataSource dataSource = new ClickHouseDataSource(clickHouseContainer.getJdbcUrl(), properties);
-        return dataSource.getConnection();
-    }
+    @Autowired
+    private KafkaProducer<TBase<?, ?>> testThriftKafkaProducer;
 
     @Test
     public void testEventSink() throws InterruptedException, IOException, TException {
@@ -91,10 +61,10 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
 
         mockPayment(SOURCE_ID);
 
-        sinkEvents.forEach(event -> produceMessageToTopic(this.eventSinkTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(eventSinkTopic, event));
 
         sinkEvents = InvoiceFlowGenerator.generateSuccessNotFullFlow("sourceID_2");
-        sinkEvents.forEach(event -> produceMessageToTopic(this.eventSinkTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(eventSinkTopic, event));
 
         AtomicLong count = new AtomicLong();
 
@@ -140,7 +110,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
 
         // test refund flow
         sinkEvents = InvoiceFlowGenerator.generateRefundedFlow(sourceIDRefundFirst);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.eventSinkTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(eventSinkTopic, event));
 
         //check sum for succeeded refund
         await().atMost(60, TimeUnit.SECONDS).until(() -> {
@@ -169,7 +139,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
         mockAdjustment(sourceAdjustment, 7, FIRST);
 
         sinkEvents = InvoiceFlowGenerator.generateSuccessAdjustment(sourceAdjustment);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.eventSinkTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(eventSinkTopic, event));
 
         //check sum for succeeded refund
         await().atMost(60, TimeUnit.SECONDS).until(() -> {
@@ -190,7 +160,7 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
         mockPayment(sourceChargeback);
         mockChargeback(sourceChargeback, 7, FIRST);
         sinkEvents = InvoiceFlowGenerator.generateChargebackFlow(sourceChargeback);
-        sinkEvents.forEach(event -> produceMessageToTopic(this.eventSinkTopic, event));
+        sinkEvents.forEach(event -> testThriftKafkaProducer.send(eventSinkTopic, event));
 
 
         //check sum for succeeded chargeback
@@ -240,18 +210,5 @@ public class InvoiceListenerTest extends KafkaAbstractTest {
                         sourceId, "1", "1", chargebackId, "1",
                         InvoiceStatus.paid(new InvoicePaid()),
                         InvoicePaymentStatus.charged_back(new InvoicePaymentChargedBack())));
-    }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            log.info("clickhouse.db.url={}", clickHouseContainer.getJdbcUrl());
-            TestPropertyValues.of(
-                            "clickhouse.db.url=" + clickHouseContainer.getJdbcUrl(),
-                            "clickhouse.db.user=" + clickHouseContainer.getUsername(),
-                            "clickhouse.db.password=" + clickHouseContainer.getPassword(),
-                            "spring.flyway.enabled=false")
-                    .applyTo(configurableApplicationContext.getEnvironment());
-        }
     }
 }

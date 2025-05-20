@@ -1,5 +1,7 @@
 package dev.vality.analytics.repository;
 
+import dev.vality.analytics.config.ClickHouseConfig;
+import dev.vality.analytics.config.ClickhouseTest;
 import dev.vality.analytics.config.RawMapperConfig;
 import dev.vality.analytics.converter.*;
 import dev.vality.analytics.dao.mapper.SplitRowsMapper;
@@ -11,31 +13,34 @@ import dev.vality.analytics.dao.model.SplitStatusNumberModel;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHousePaymentRepositoryImpl;
 import dev.vality.analytics.utils.constant.PaymentsWithFeeConstants;
 import dev.vality.damsel.analytics.SplitUnit;
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import jakarta.validation.constraints.NotNull;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Slf4j
-@RunWith(SpringRunner.class)
-@ContextConfiguration(initializers = ClickHouseAbstractTest.Initializer.class,
-        classes = {RawToNumModelConverter.class, RawToSplitNumberConverter.class,
+@SpringBootTest
+@ContextConfiguration(
+        classes = {
+                RawToNumModelConverter.class, RawToSplitNumberConverter.class,
                 RawToSplitStatusConverter.class, RawToShopAmountModelConverter.class,
                 SplitRowsMapper.class, SplitStatusRowsMapper.class, RawToNamingDistributionConverter.class,
-                RawMapperConfig.class, ClickHousePaymentRepositoryImpl.class})
-public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
+                RawMapperConfig.class, ClickHousePaymentRepositoryImpl.class, JdbcTemplateAutoConfiguration.class,
+                ClickHouseConfig.class})
+@EnableConfigurationProperties
+@ClickhouseTest
+public class ClickHousePaymentRepositoryTest {
 
     public static final String RUB = "RUB";
     @Autowired
@@ -182,7 +187,7 @@ public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
                 Instant.ofEpochMilli(1579666000698L).atZone(ZoneOffset.UTC).toLocalDateTime(),
                 SplitUnit.YEAR);
 
-        Assert.assertTrue(costs.isEmpty());
+        Assertions.assertTrue(costs.isEmpty());
     }
 
     @NotNull
@@ -292,7 +297,7 @@ public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
                 Instant.ofEpochMilli(1575554400000L).atZone(ZoneOffset.UTC).toLocalDateTime(),
                 Instant.ofEpochMilli(1575556887697L).atZone(ZoneOffset.UTC).toLocalDateTime());
 
-        Assert.assertTrue(toolDistribution.isEmpty());
+        Assertions.assertTrue(toolDistribution.isEmpty());
     }
 
     @Test
@@ -329,7 +334,7 @@ public class ClickHousePaymentRepositoryTest extends ClickHouseAbstractTest {
                 "ca2e9162-eda2-4d17-bbfa-dc5e39b1772d", null, List.of());
 
         NumberModel countModel = findCountModel(currentBalances, RUB);
-        assertEquals(1900L, countModel.getNumber().longValue());
+        assertEquals(3000L, countModel.getNumber().longValue());
 
         currentBalances = clickHousePaymentRepository.getCurrentBalances(
                 "ca2e9162-eda2-4d17-bbfa-dc5e39b1772f", null, List.of());

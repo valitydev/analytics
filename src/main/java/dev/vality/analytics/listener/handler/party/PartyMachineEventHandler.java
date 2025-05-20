@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -38,7 +39,7 @@ public class PartyMachineEventHandler {
             ack.acknowledge();
         } catch (Exception e) {
             log.error("Exception during PartyListener process", e);
-            ack.nack(throttlingTimeout);
+            ack.nack(Duration.ofMillis(throttlingTimeout));
             throw e;
         }
     }

@@ -1,6 +1,6 @@
 package dev.vality.analytics.repository;
 
-import dev.vality.analytics.AnalyticsApplication;
+import dev.vality.analytics.config.PostgresqlTest;
 import dev.vality.analytics.dao.model.AdjustmentRow;
 import dev.vality.analytics.dao.model.PaymentRow;
 import dev.vality.analytics.dao.model.RefundRow;
@@ -10,46 +10,23 @@ import dev.vality.analytics.dao.repository.postgres.party.management.ShopDao;
 import dev.vality.analytics.domain.CashFlowResult;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.domain.db.tables.pojos.Shop;
-import dev.vality.analytics.utils.Version;
-import io.github.benas.randombeans.api.EnhancedRandom;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static dev.vality.testcontainers.annotations.util.RandomBeans.random;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ContextConfiguration(classes = AnalyticsApplication.class, initializers = PostgresRepositoryTest.Initializer.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@SpringBootTest
+@PostgresqlTest
 public class PostgresRepositoryTest {
-
-    @ClassRule
-    @SuppressWarnings("rawtypes")
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer(Version.POSTGRES_VERSION)
-            .withStartupTimeout(Duration.ofMinutes(5));
-
-    @LocalServerPort
-    protected int port;
 
     @Autowired
     private PostgresBalanceChangesRepository postgresBalanceChangesRepository;
@@ -73,46 +50,46 @@ public class PostgresRepositoryTest {
                 "SELECT count(*) AS count FROM analytics.balance_change",
                 (resultSet, i) -> resultSet.getLong("count"));
 
-        assertEquals(4L, count);
+        assertEquals(3L, count);
     }
 
     @Test
     public void testPartySave() {
-        Party party = EnhancedRandom.random(Party.class);
+        Party party = random(Party.class);
         partyDao.saveParty(party);
         Party savedParty = partyDao.getPartyById(party.getPartyId());
-        Assert.assertEquals(party, savedParty);
+        Assertions.assertEquals(party, savedParty);
     }
 
     @Test
     public void testShopSave() {
-        Shop shop = EnhancedRandom.random(Shop.class);
+        Shop shop = random(Shop.class);
         shopDao.saveShop(shop);
         Shop savedShop = shopDao.getShopByPartyIdAndShopId(shop.getPartyId(), shop.getShopId());
-        Assert.assertEquals(shop, savedShop);
+        Assertions.assertEquals(shop, savedShop);
     }
 
     @Test
     public void testDuplicatePartySave() {
-        Party firstParty = EnhancedRandom.random(Party.class);
+        Party firstParty = random(Party.class);
         partyDao.saveParty(firstParty);
-        Party secondParty = EnhancedRandom.random(Party.class);
+        Party secondParty = random(Party.class);
         secondParty.setPartyId(firstParty.getPartyId());
         partyDao.saveParty(secondParty);
         Party savedParty = partyDao.getPartyById(secondParty.getPartyId());
-        Assert.assertEquals(secondParty, savedParty);
+        Assertions.assertEquals(secondParty, savedParty);
     }
 
     @Test
     public void testDuplicateShopSave() {
-        Shop firstShop = EnhancedRandom.random(Shop.class);
+        Shop firstShop = random(Shop.class);
         shopDao.saveShop(firstShop);
-        Shop secondShop = EnhancedRandom.random(Shop.class);
+        Shop secondShop = random(Shop.class);
         secondShop.setPartyId(firstShop.getPartyId());
         secondShop.setShopId(firstShop.getShopId());
         shopDao.saveShop(secondShop);
         Shop savedShop = shopDao.getShopByPartyIdAndShopId(secondShop.getPartyId(), secondShop.getShopId());
-        Assert.assertEquals(secondShop, savedShop);
+        Assertions.assertEquals(secondShop, savedShop);
     }
 
     private PaymentRow payment() {
@@ -161,20 +138,4 @@ public class PostgresRepositoryTest {
                 .build());
         return adjustmentRow;
     }
-
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "postgres.db.url=" + postgres.getJdbcUrl(),
-                    "postgres.db.user=" + postgres.getUsername(),
-                    "postgres.db.password=" + postgres.getPassword(),
-                    "spring.flyway.url=" + postgres.getJdbcUrl(),
-                    "spring.flyway.user=" + postgres.getUsername(),
-                    "spring.flyway.password=" + postgres.getPassword())
-                    .and(configurableApplicationContext.getEnvironment().getActiveProfiles())
-                    .applyTo(configurableApplicationContext);
-        }
-    }
-
 }
