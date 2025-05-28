@@ -3,6 +3,7 @@ package dev.vality.analytics.config;
 import com.zaxxer.hikari.HikariDataSource;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -47,8 +48,9 @@ public class PostgresConfig {
     }
 
     @Bean
-    public Flyway flyway(@Qualifier("dataSource") DataSource dataSource) {
-        final var flyway = Flyway.configure().dataSource(dataSource).load();
+    public Flyway flyway(@Qualifier("dataSource") DataSource dataSource,
+                         @Value("${postgres.db.schema}") String schema) {
+        final var flyway = Flyway.configure().dataSource(dataSource).schemas(schema).load();
         flyway.migrate();
         return flyway;
     }
