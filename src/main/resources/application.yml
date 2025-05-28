@@ -40,7 +40,7 @@ spring:
 clickhouse.db:
   type: com.zaxxer.hikari.HikariDataSource
   driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
-  url: jdbc:clickhouse://localhost:8123/default
+  url: jdbc:clickhouse://localhost:8123/analytic
   username: user
   password: password
   connection-timeout: 50000
@@ -54,9 +54,10 @@ clickhouse.db:
     leak-detection-threshold: 5000
 
 postgres.db:
+  schema: analytics
   type: com.zaxxer.hikari.HikariDataSource
   driver-class-name: org.postgresql.Driver
-  url: jdbc:postgresql://localhost:5432/p2p_db
+  url: jdbc:postgresql://localhost:5432/analytics
   username: postgres
   password: postgres
   hikari:
