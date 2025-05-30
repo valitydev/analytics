@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.22-111ea3d</version>
+            <version>1.43-3decc8f</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.geck</groupId>
