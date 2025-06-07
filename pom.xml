@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -20,7 +20,7 @@
         <server.port>8022</server.port>
         <management.port>8023</management.port>
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
-        <shedlock.version>4.33.0</shedlock.version>
+        <shedlock.version>6.9.0</shedlock.version>
         <db.port>5432</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
