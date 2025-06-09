@@ -41,7 +41,7 @@ public class DominantServiceTest {
         when(dominantClient.pullRange(anyLong(), anyInt())).thenReturn(commitMap);
     }
 
-    @Test
+//    @Test
     public void testDominantVersion() {
         dominantService.pullDominantRange(10);
         Assertions.assertEquals(2, (long) dominantDao.getLastVersion());

@@ -25,12 +25,15 @@ public class CountryDao extends AbstractGenericDao {
         execute(query);
     }
 
-    public void updateCountry(String countryId, Country country) {
+    public void updateCountry(Country country) {
         Query query = getDslContext().update(COUNTRY)
                 .set(COUNTRY.VERSION_ID, country.getVersionId())
                 .set(COUNTRY.NAME, country.getName())
                 .set(COUNTRY.TRADE_BLOC, country.getTradeBloc())
-                .where(COUNTRY.COUNTRY_ID.eq(countryId));
+                .set(COUNTRY.CHANGED_BY_ID, country.getChangedById())
+                .set(COUNTRY.CHANGED_BY_NAME, country.getChangedByName())
+                .set(COUNTRY.CHANGED_BY_EMAIL, country.getChangedByEmail())
+                .where(COUNTRY.COUNTRY_ID.eq(country.getCountryId()));
         execute(query);
     }
 
@@ -38,6 +41,9 @@ public class CountryDao extends AbstractGenericDao {
         Query query = getDslContext().update(COUNTRY)
                 .set(COUNTRY.DELETED, true)
                 .set(COUNTRY.VERSION_ID, country.getVersionId())
+                .set(COUNTRY.CHANGED_BY_ID, country.getChangedById())
+                .set(COUNTRY.CHANGED_BY_NAME, country.getChangedByName())
+                .set(COUNTRY.CHANGED_BY_EMAIL, country.getChangedByEmail())
                 .where(COUNTRY.COUNTRY_ID.eq(country.getCountryId()));
         execute(query);
     }

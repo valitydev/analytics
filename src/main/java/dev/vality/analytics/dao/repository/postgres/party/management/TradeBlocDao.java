@@ -25,12 +25,15 @@ public class TradeBlocDao extends AbstractGenericDao {
         execute(query);
     }
 
-    public void updateTradeBloc(String tradeBlocId, TradeBloc tradeBloc) {
+    public void updateTradeBloc(TradeBloc tradeBloc) {
         Query query = getDslContext().update(TRADE_BLOC)
                 .set(TRADE_BLOC.VERSION_ID, tradeBloc.getVersionId())
                 .set(TRADE_BLOC.NAME, tradeBloc.getName())
                 .set(TRADE_BLOC.DESCRIPTION, tradeBloc.getDescription())
-                .where(TRADE_BLOC.TRADE_BLOC_ID.eq(tradeBlocId));
+                .set(TRADE_BLOC.CHANGED_BY_ID, tradeBloc.getChangedById())
+                .set(TRADE_BLOC.CHANGED_BY_NAME, tradeBloc.getChangedByName())
+                .set(TRADE_BLOC.CHANGED_BY_EMAIL, tradeBloc.getChangedByEmail())
+                .where(TRADE_BLOC.TRADE_BLOC_ID.eq(tradeBloc.getTradeBlocId()));
         execute(query);
     }
 
@@ -38,6 +41,9 @@ public class TradeBlocDao extends AbstractGenericDao {
         Query query = getDslContext().update(TRADE_BLOC)
                 .set(TRADE_BLOC.DELETED, true)
                 .set(TRADE_BLOC.VERSION_ID, tradeBloc.getVersionId())
+                .set(TRADE_BLOC.CHANGED_BY_ID, tradeBloc.getChangedById())
+                .set(TRADE_BLOC.CHANGED_BY_NAME, tradeBloc.getChangedByName())
+                .set(TRADE_BLOC.CHANGED_BY_EMAIL, tradeBloc.getChangedByEmail())
                 .where(TRADE_BLOC.TRADE_BLOC_ID.eq(tradeBloc.getTradeBlocId()));
         execute(query);
     }

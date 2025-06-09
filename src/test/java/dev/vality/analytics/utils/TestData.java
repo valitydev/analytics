@@ -1,7 +1,23 @@
 package dev.vality.analytics.utils;
 
-import dev.vality.damsel.domain.*;
-import dev.vality.damsel.domain_config.*;
+import dev.vality.damsel.domain.Category;
+import dev.vality.damsel.domain.CategoryObject;
+import dev.vality.damsel.domain.CategoryRef;
+import dev.vality.damsel.domain.CategoryType;
+import dev.vality.damsel.domain.Country;
+import dev.vality.damsel.domain.CountryCode;
+import dev.vality.damsel.domain.CountryObject;
+import dev.vality.damsel.domain.CountryRef;
+import dev.vality.damsel.domain.DomainObject;
+import dev.vality.damsel.domain.TradeBloc;
+import dev.vality.damsel.domain.TradeBlocObject;
+import dev.vality.damsel.domain.TradeBlocRef;
+import dev.vality.damsel.domain_config.Commit;
+import dev.vality.damsel.domain_config.InsertOp;
+import dev.vality.damsel.domain_config.Operation;
+import dev.vality.damsel.domain_config.RemoveOp;
+import dev.vality.damsel.domain_config.UpdateOp;
+import dev.vality.damsel.domain_config_v2.Author;
 
 import java.util.List;
 import java.util.Set;
@@ -83,6 +99,14 @@ public class TestData {
         tradeBlocObject.setData(tradeBloc);
         tradeBlocObject.setRef(new TradeBlocRef().setId(randomString()));
         return tradeBlocObject;
+    }
+
+    public static Author buildAuthor() {
+        Author author = new Author();
+        author.setEmail(randomString());
+        author.setName(randomString());
+        author.setName(randomString());
+        return author;
     }
 
     public static String randomString() {
