@@ -6,7 +6,6 @@ import dev.vality.analytics.dao.repository.postgres.party.management.CategoryDao
 import dev.vality.analytics.utils.DominantSinkEventTestUtils;
 import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CategoryType;
-import dev.vality.damsel.domain_config.RepositorySrv;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import dev.vality.testcontainers.annotations.KafkaConfig;
 import dev.vality.testcontainers.annotations.kafka.config.KafkaProducer;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -53,8 +51,7 @@ public class DominantListenerTest {
 
         await().atMost(60, SECONDS).until(() -> {
             Long version = postgresJdbcTemplate.query(
-                    "SELECT version_id FROM analytics.category WHERE category_id = ?",
-                    new Object[]{categoryId},
+                    "SELECT version_id FROM analytics.category",
                     rs -> rs.next() ? rs.getLong("version_id") : null
             );
             return version != null && version == 1;
@@ -93,8 +90,7 @@ public class DominantListenerTest {
 
         await().atMost(60, SECONDS).until(() -> {
             Long version = postgresJdbcTemplate.query(
-                    "SELECT version_id FROM analytics.category WHERE category_id = ?",
-                    new Object[]{categoryId},
+                    "SELECT version_id FROM analytics.category",
                     rs -> rs.next() ? rs.getLong("version_id") : null
             );
             return version != null && version == 2;
@@ -128,8 +124,7 @@ public class DominantListenerTest {
 
         await().atMost(60, SECONDS).until(() -> {
             Long version = postgresJdbcTemplate.query(
-                    "SELECT version_id FROM analytics.category WHERE category_id = ?",
-                    new Object[]{categoryId},
+                    "SELECT version_id FROM analytics.category",
                     rs -> rs.next() ? rs.getLong("version_id") : null
             );
             return version != null && version == 2;
