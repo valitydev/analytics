@@ -20,7 +20,7 @@ public class TradeBlocSaveOrUpdateHandler extends AbstractDominantHandler.SaveOr
 
     @Override
     public void handle(FinalOperation operation, Author changedBy, long versionId) {
-        TradeBlocObject tradeBlocObject = extract(operation).getTradeBloc();
+        var tradeBlocObject = extract(operation).getTradeBloc();
         if (operation.isSetInsert()) {
             log.info("Save trade bloc operation. id='{}' version='{}'", tradeBlocObject.getRef().getId(), versionId);
             tradeBlocDao.saveTradeBloc(convertToDatabaseObject(tradeBlocObject, changedBy, versionId));
