@@ -38,8 +38,6 @@ public class DominantListenerTest {
     private CategoryDao categoryDao;
     @Autowired
     private JdbcTemplate postgresJdbcTemplate;
-    @MockitoBean
-    private RepositorySrv.Iface dominantClient;
 
     @Test
     public void testDominantProcessCommitsInsert() {
