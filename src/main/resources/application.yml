@@ -6,10 +6,6 @@ server:
 management:
   server:
     port: ${management.port}
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   endpoint:
     health:
       show-details: always
@@ -21,6 +17,10 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 spring:
   application:
@@ -80,6 +80,9 @@ kafka:
     party:
       initial: mg-events-party
       max.poll.records: 50
+    dominant:
+      initial: mg-events-dominant
+      max.poll.records: 50
     rate:
       initial: mg-events-rates
       groupId: analytics-rate-group
@@ -93,6 +96,8 @@ kafka:
     event.sink:
       enabled: true
     party:
+      enabled: true
+    dominant:
       enabled: true
     rate:
       enabled: true

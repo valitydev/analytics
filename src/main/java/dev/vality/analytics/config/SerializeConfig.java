@@ -1,5 +1,6 @@
 package dev.vality.analytics.config;
 
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.damsel.payment_processing.PartyEventData;
 import dev.vality.geck.serializer.Geck;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
@@ -33,6 +34,16 @@ public class SerializeConfig {
                 return Geck.msgPackToTBase(bytes, Change.class);
             }
         };
+    }
+
+    @Bean
+    public MachineEventParser<HistoricalCommit> historicalCommitMachineEventParser() {
+        return new MachineEventParser<>(new AbstractThriftBinaryDeserializer<>() {
+            @Override
+            public HistoricalCommit deserialize(byte[] bytes) {
+                return Geck.msgPackToTBase(bytes, HistoricalCommit.class);
+            }
+        });
     }
 
 }

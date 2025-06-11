@@ -6,78 +6,85 @@ import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CountryObject;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain.TradeBlocRef;
-import dev.vality.damsel.domain_config.InsertOp;
-import dev.vality.damsel.domain_config.Operation;
+import dev.vality.damsel.domain_config_v2.Author;
+import dev.vality.damsel.domain_config_v2.FinalInsertOp;
+import dev.vality.damsel.domain_config_v2.FinalOperation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class CountryDominantHandlerTest {
+class CountrySaveOrUpdateHandlerTest {
 
     @Mock
     private CountryDao countryDao;
 
-    private CountryDominantHandler countryHandler;
+    private CountrySaveOrUpdateHandler saveOrUpdateHandler;
 
     private CountryObject countryObject;
+    private Author author;
 
     @BeforeEach
     void setUp() {
         countryObject = TestData.buildCountryObject();
-        countryHandler = new CountryDominantHandler(countryDao);
+        author = TestData.buildAuthor();
+        saveOrUpdateHandler = new CountrySaveOrUpdateHandler(countryDao);
     }
 
     @Test
     void shouldHandleInsertOp() {
-        Operation operation = new Operation();
-        InsertOp insertOp = new InsertOp();
+        var operation = new FinalOperation();
+        var insertOp = new FinalInsertOp();
         DomainObject domainObject = new DomainObject();
         domainObject.setCountry(countryObject);
         insertOp.setObject(domainObject);
         operation.setInsert(insertOp);
         long versionId = 1L;
 
-        countryHandler.handle(operation, versionId);
+        saveOrUpdateHandler.handle(operation, author, versionId);
 
         verify(countryDao, times(1)).saveCountry(any(Country.class));
     }
 
     @Test
     void successCheckHandle() {
-        Operation operation = new Operation();
-        InsertOp insertOp = new InsertOp();
+        var operation = new FinalOperation();
+        var insertOp = new FinalInsertOp();
         DomainObject domainObject = new DomainObject();
         domainObject.setCountry(countryObject);
         insertOp.setObject(domainObject);
         operation.setInsert(insertOp);
 
-        assertTrue(countryHandler.isHandle(operation));
+        assertTrue(saveOrUpdateHandler.isHandle(operation));
     }
 
     @Test
     void notSuccessCheckHandle() {
-        Operation operation = new Operation();
-        InsertOp insertOp = new InsertOp();
+        var operation = new FinalOperation();
+        var insertOp = new FinalInsertOp();
         DomainObject domainObject = new DomainObject();
         insertOp.setObject(domainObject);
         operation.setInsert(insertOp);
 
-        assertFalse(countryHandler.isHandle(operation));
+        assertFalse(saveOrUpdateHandler.isHandle(operation));
     }
 
     @Test
     void shouldConvertToDatabaseObject() {
         long versionId = 1L;
 
-        Country country = countryHandler.convertToDatabaseObject(versionId, countryObject);
+        Country country = saveOrUpdateHandler.convertToDatabaseObject(countryObject, author, versionId);
 
         assertNotNull(country);
         assertEquals(countryObject.getData().getName(), country.getName());

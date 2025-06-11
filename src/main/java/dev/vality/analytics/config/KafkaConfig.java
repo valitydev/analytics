@@ -31,6 +31,7 @@ public class KafkaConfig {
     public static final Double KAFKA_RETRY_BACKOFF_MULTIPLIER = 1.5;
     private static final String RESULT_ANALYTICS = "result-analytics";
     private static final String PARTY_RESULT_ANALYTICS = "party-result-analytics";
+    private static final String DOMINANT_ANALYTICS = "dominant-analytics";
     private final ConsumerGroupIdService consumerGroupIdService;
     private final KafkaProperties kafkaProperties;
 
@@ -44,6 +45,8 @@ public class KafkaConfig {
     private String maxPollRecords;
     @Value("${kafka.topic.party.max.poll.records}")
     private String maxPollRecordsPartyListener;
+    @Value("${kafka.topic.dominant.max.poll.records}")
+    private String maxPollRecordsDominantListener;
     @Value("${kafka.topic.rate.max.poll.records}")
     private String maxPollRecordsRatesListener;
     @Value("${kafka.consumer.concurrency}")
@@ -67,6 +70,17 @@ public class KafkaConfig {
         String consumerGroup = consumerGroupIdService.generateGroupId(PARTY_RESULT_ANALYTICS);
         initDefaultListenerProperties(factory, consumerGroup,
                 new MachineEventDeserializer(), maxPollRecordsPartyListener);
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MachineEvent> dominantListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        String consumerGroup = consumerGroupIdService.generateGroupId(DOMINANT_ANALYTICS);
+        initDefaultListenerProperties(factory, consumerGroup,
+                new MachineEventDeserializer(), maxPollRecordsDominantListener);
 
         return factory;
     }
