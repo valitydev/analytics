@@ -21,7 +21,8 @@ public class CountryDao extends AbstractGenericDao {
         CountryRecord countryRecord = getDslContext().newRecord(COUNTRY, country);
         Query query = getDslContext()
                 .insertInto(COUNTRY)
-                .set(countryRecord);
+                .set(countryRecord)
+                .onConflictDoNothing();
         execute(query);
     }
 

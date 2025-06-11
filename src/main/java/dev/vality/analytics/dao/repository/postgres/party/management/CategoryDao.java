@@ -26,7 +26,8 @@ public class CategoryDao extends AbstractGenericDao {
         CategoryRecord categoryRecord = getDslContext().newRecord(CATEGORY, category);
         Query query = getDslContext()
                 .insertInto(CATEGORY)
-                .set(categoryRecord);
+                .set(categoryRecord)
+                .onConflictDoNothing();
         execute(query);
     }
 

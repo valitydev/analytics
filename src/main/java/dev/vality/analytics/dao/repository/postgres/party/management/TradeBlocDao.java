@@ -21,7 +21,8 @@ public class TradeBlocDao extends AbstractGenericDao {
         TradeBlocRecord tradeBlocRecord = getDslContext().newRecord(TRADE_BLOC, tradeBloc);
         Query query = getDslContext()
                 .insertInto(TRADE_BLOC)
-                .set(tradeBlocRecord);
+                .set(tradeBlocRecord)
+                .onConflictDoNothing();
         execute(query);
     }
 
