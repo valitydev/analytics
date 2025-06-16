@@ -26,17 +26,21 @@ public class CategoryDao extends AbstractGenericDao {
         CategoryRecord categoryRecord = getDslContext().newRecord(CATEGORY, category);
         Query query = getDslContext()
                 .insertInto(CATEGORY)
-                .set(categoryRecord);
+                .set(categoryRecord)
+                .onConflictDoNothing();
         execute(query);
     }
 
-    public void updateCategory(int categoryId, Category category) {
+    public void updateCategory(Category category) {
         Query query = getDslContext().update(CATEGORY)
                 .set(CATEGORY.VERSION_ID, category.getVersionId())
                 .set(CATEGORY.NAME, category.getName())
                 .set(CATEGORY.DESCRIPTION, category.getDescription())
                 .set(CATEGORY.TYPE, category.getType())
-                .where(CATEGORY.CATEGORY_ID.eq(categoryId));
+                .set(CATEGORY.CHANGED_BY_ID, category.getChangedById())
+                .set(CATEGORY.CHANGED_BY_NAME, category.getChangedByName())
+                .set(CATEGORY.CHANGED_BY_EMAIL, category.getChangedByEmail())
+                .where(CATEGORY.CATEGORY_ID.eq(category.getCategoryId()));
         execute(query);
     }
 
@@ -44,6 +48,9 @@ public class CategoryDao extends AbstractGenericDao {
         Query query = getDslContext().update(CATEGORY)
                 .set(CATEGORY.DELETED, true)
                 .set(CATEGORY.VERSION_ID, category.getVersionId())
+                .set(CATEGORY.CHANGED_BY_ID, category.getChangedById())
+                .set(CATEGORY.CHANGED_BY_NAME, category.getChangedByName())
+                .set(CATEGORY.CHANGED_BY_EMAIL, category.getChangedByEmail())
                 .where(CATEGORY.CATEGORY_ID.eq(category.getCategoryId()));
         execute(query);
     }
