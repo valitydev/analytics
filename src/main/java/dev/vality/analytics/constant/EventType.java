@@ -25,13 +25,9 @@ public enum EventType {
     INVOICE_PAYMENT_RISK_SCORE_CHANGED("invoice_payment_change.payload.invoice_payment_risk_score_changed",
             new IsNullCondition().not()),
     RATE_CREATED("created", new IsNullCondition().not()),
-    PARTY_CREATED("party_created", new IsNullCondition().not()),
-    PARTY_BLOCKING("party_blocking", new IsNullCondition().not()),
     REVISION_CHANGED("revision_changed", new IsNullCondition().not()),
-    PARTY_SUSPENSION("party_suspension", new IsNullCondition().not()),
     SHOP_BLOCKING("shop_blocking", new IsNullCondition().not()),
-    SHOP_SUSPENSION("shop_suspension", new IsNullCondition().not()),
-    PARTY_CLAIM_CREATED("claim_created", new IsNullCondition().not());
+    SHOP_SUSPENSION("shop_suspension", new IsNullCondition().not());
 
     Filter filter;
 

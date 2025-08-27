@@ -21,7 +21,10 @@ public class CountryRemoveHandler extends AbstractDominantHandler.RemoveHandler 
     @Override
     public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var countryRef = extract(operation).getCountry();
-        log.info("Remove country operation. id='{}' version='{}'", countryRef.getId().name(), historicalCommit.getVersion());
+        log.info(
+                "Remove country operation. id='{}' version='{}'",
+                countryRef.getId().name(), historicalCommit.getVersion()
+        );
         countryDao.removeCountry(convertToDatabaseObject(countryRef, historicalCommit));
     }
 

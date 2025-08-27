@@ -22,10 +22,16 @@ public class TradeBlocSaveOrUpdateHandler extends AbstractDominantHandler.SaveOr
     public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var tradeBlocObject = extract(operation).getTradeBloc();
         if (operation.isSetInsert()) {
-            log.info("Save trade bloc operation. id='{}' version='{}'", tradeBlocObject.getRef().getId(), historicalCommit.getVersion());
+            log.info(
+                    "Save trade bloc operation. id='{}' version='{}'",
+                    tradeBlocObject.getRef().getId(), historicalCommit.getVersion()
+            );
             tradeBlocDao.saveTradeBloc(convertToDatabaseObject(tradeBlocObject, historicalCommit));
         } else if (operation.isSetUpdate()) {
-            log.info("Update trade bloc operation. id='{}' version='{}'", tradeBlocObject.getRef().getId(), historicalCommit.getVersion());
+            log.info(
+                    "Update trade bloc operation. id='{}' version='{}'",
+                    tradeBlocObject.getRef().getId(), historicalCommit.getVersion()
+            );
             tradeBlocDao.updateTradeBloc(convertToDatabaseObject(tradeBlocObject, historicalCommit));
         }
     }

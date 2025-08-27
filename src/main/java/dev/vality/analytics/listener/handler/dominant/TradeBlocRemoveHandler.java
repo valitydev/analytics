@@ -21,7 +21,10 @@ public class TradeBlocRemoveHandler extends AbstractDominantHandler.RemoveHandle
     @Override
     public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var tradeBlocRef = extract(operation).getTradeBloc();
-        log.info("Remove trade bloc operation. id='{}' version='{}'", tradeBlocRef.getId(), historicalCommit.getVersion());
+        log.info(
+                "Remove trade bloc operation. id='{}' version='{}'",
+                tradeBlocRef.getId(), historicalCommit.getVersion()
+        );
         tradeBlocDao.removeTradeBloc(convertToDatabaseObject(tradeBlocRef, historicalCommit));
     }
 

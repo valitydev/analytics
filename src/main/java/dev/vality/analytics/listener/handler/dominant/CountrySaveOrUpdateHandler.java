@@ -23,7 +23,10 @@ public class CountrySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUp
     public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var countryObject = extract(operation).getCountry();
         if (operation.isSetInsert()) {
-            log.info("Save country operation. id='{}' version='{}'", countryObject.getRef().getId().name(), historicalCommit.getVersion());
+            log.info(
+                    "Save country operation. id='{}' version='{}'",
+                    countryObject.getRef().getId().name(), historicalCommit.getVersion()
+            );
             countryDao.saveCountry(convertToDatabaseObject(countryObject, historicalCommit));
         } else if (operation.isSetUpdate()) {
             log.info(

@@ -76,7 +76,9 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
             }
             if (blocking.isSetUnblocked()) {
                 party.setUnblockedReason(partyConfig.getBlock().getUnblocked().getReason());
-                party.setUnblockedSince(TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getUnblocked().getSince()));
+                party.setUnblockedSince(
+                        TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getUnblocked().getSince())
+                );
             }
         }
 
