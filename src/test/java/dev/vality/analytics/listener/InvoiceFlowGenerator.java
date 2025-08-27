@@ -2,12 +2,12 @@ package dev.vality.analytics.listener;
 
 
 import dev.vality.damsel.base.Content;
+import dev.vality.damsel.domain.*;
 import dev.vality.damsel.domain.InvoicePaymentChargeback;
 import dev.vality.damsel.domain.InvoicePaymentChargebackPending;
 import dev.vality.damsel.domain.InvoicePaymentPending;
 import dev.vality.damsel.domain.InvoicePaymentRefund;
 import dev.vality.damsel.domain.InvoicePaymentRefundPending;
-import dev.vality.damsel.domain.*;
 import dev.vality.damsel.payment_processing.*;
 import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
@@ -129,17 +129,17 @@ public class InvoiceFlowGenerator {
         InvoicePaymentRefundChange invoicePaymentRefundCreated = new InvoicePaymentRefundChange()
                 .setId(refundId)
                 .setPayload(InvoicePaymentRefundChangePayload.invoice_payment_refund_created(
-                        new InvoicePaymentRefundCreated()
-                                .setRefund(new InvoicePaymentRefund()
-                                        .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
-                                        .setId(REFUND_ID)
-                                        .setReason("refund reason")
-                                        .setCash(createCash())
-                                        .setStatus(
-                                                InvoicePaymentRefundStatus.pending(
-                                                        new InvoicePaymentRefundPending()))
-                                )
-                                .setCashFlow(new ArrayList<>())
+                                new InvoicePaymentRefundCreated()
+                                        .setRefund(new InvoicePaymentRefund()
+                                                .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
+                                                .setId(REFUND_ID)
+                                                .setReason("refund reason")
+                                                .setCash(createCash())
+                                                .setStatus(
+                                                        InvoicePaymentRefundStatus.pending(
+                                                                new InvoicePaymentRefundPending()))
+                                        )
+                                        .setCashFlow(new ArrayList<>())
                         )
                 );
 
@@ -158,9 +158,9 @@ public class InvoiceFlowGenerator {
         InvoicePaymentChargebackChange invoicePaymentRefundCreated = new InvoicePaymentChargebackChange()
                 .setId(id)
                 .setPayload(InvoicePaymentChargebackChangePayload.invoice_payment_chargeback_created(
-                        new InvoicePaymentChargebackCreated()
-                                .setChargeback(createChargeback(REFUND_ID)
-                                )
+                                new InvoicePaymentChargebackCreated()
+                                        .setChargeback(createChargeback(REFUND_ID)
+                                        )
                         )
                 );
 
@@ -192,10 +192,10 @@ public class InvoiceFlowGenerator {
         InvoicePaymentChargebackChange invoicePaymentChargebackChange = new InvoicePaymentChargebackChange()
                 .setId(id)
                 .setPayload(InvoicePaymentChargebackChangePayload.invoice_payment_chargeback_status_changed(
-                        new InvoicePaymentChargebackStatusChanged()
-                                .setStatus(
-                                        InvoicePaymentChargebackStatus.accepted(
-                                                new InvoicePaymentChargebackAccepted()))
+                                new InvoicePaymentChargebackStatusChanged()
+                                        .setStatus(
+                                                InvoicePaymentChargebackStatus.accepted(
+                                                        new InvoicePaymentChargebackAccepted()))
                         )
                 );
 
@@ -283,8 +283,8 @@ public class InvoiceFlowGenerator {
         return new InvoiceCreated()
                 .setInvoice(new dev.vality.damsel.domain.Invoice()
                         .setId(sourceId)
-                        .setOwnerId(PARTY_ID)
-                        .setShopId(SHOP_ID)
+                        .setPartyRef(new PartyConfigRef(PARTY_ID))
+                        .setShopRef(new ShopConfigRef(SHOP_ID))
                         .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                         .setStatus(InvoiceStatus.unpaid(new InvoiceUnpaid()))
                         .setDue("2016-08-10T16:07:23Z")
@@ -383,8 +383,8 @@ public class InvoiceFlowGenerator {
                                 .setId(PAYMENT_ID)
                                 .setStatus(invoicePaymentStatus)
                                 .setPayer(createCustomerPayer())
-                                .setOwnerId(PARTY_ID)
-                                .setShopId(SHOP_ID)
+                                .setPartyRef(new PartyConfigRef(PARTY_ID))
+                                .setShopRef(new ShopConfigRef(SHOP_ID))
                                 .setFlow(createFlow())));
         InvoiceChange invoiceChange = new InvoiceChange();
         invoiceChange.setInvoicePaymentChange(new InvoicePaymentChange()
@@ -424,8 +424,7 @@ public class InvoiceFlowGenerator {
     }
 
     private static Payer createCustomerPayer() {
-        Payer customer =
-                Payer.customer(new CustomerPayer("custId", "1", "rec_paym_tool", createBankCard(), new ContactInfo()));
+        Payer customer = new Payer();
         customer.setPaymentResource(
                 new PaymentResourcePayer()
                         .setResource(new DisposablePaymentResource()

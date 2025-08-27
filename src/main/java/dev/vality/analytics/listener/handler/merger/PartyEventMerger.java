@@ -38,9 +38,6 @@ public class PartyEventMerger {
         targetParty.setSuspension(party.getSuspension() != null ? party.getSuspension() : targetParty.getSuspension());
         targetParty.setSuspensionActiveSince(party.getSuspensionActiveSince() != null
                 ? party.getSuspensionActiveSince() : targetParty.getSuspensionActiveSince());
-        targetParty.setRevisionId(party.getRevisionId() != null ? party.getRevisionId() : targetParty.getRevisionId());
-        targetParty.setRevisionChangedAt(party.getRevisionChangedAt() != null
-                ? party.getRevisionChangedAt() : targetParty.getRevisionChangedAt());
         targetParty.setSuspensionSuspendedSince(party.getSuspensionSuspendedSince() != null
                 ? party.getSuspensionSuspendedSince() : targetParty.getSuspensionSuspendedSince());
         return targetParty;
