@@ -1,9 +1,10 @@
 package dev.vality.analytics.listener.handler.merger;
 
+import org.springframework.stereotype.Component;
+
 import dev.vality.analytics.dao.repository.postgres.party.management.PartyDao;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +37,12 @@ public class PartyEventMerger {
         targetParty.setRevisionId(party.getRevisionId() != null ? party.getRevisionId() : targetParty.getRevisionId());
         targetParty.setRevisionChangedAt(party.getRevisionChangedAt() != null
                 ? party.getRevisionChangedAt() : targetParty.getRevisionChangedAt());
+        targetParty.setSuspensionSuspendedSince(party.getSuspensionSuspendedSince() != null
+                ? party.getSuspensionSuspendedSince() : targetParty.getSuspensionSuspendedSince());
+        targetParty.setVersionId(party.getVersionId());
+        targetParty.setChangedById(party.getChangedById());
+        targetParty.setChangedByEmail(party.getChangedByEmail());
+        targetParty.setChangedByName(party.getChangedByName());
         return targetParty;
     }
 
