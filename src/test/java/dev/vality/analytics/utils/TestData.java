@@ -16,6 +16,7 @@ import dev.vality.damsel.domain.TradeBlocRef;
 import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalInsertOp;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.damsel.domain_config_v2.RemoveOp;
 import dev.vality.damsel.domain_config_v2.UpdateOp;
 
@@ -103,8 +104,16 @@ public class TestData {
         Author author = new Author();
         author.setEmail(randomString());
         author.setName(randomString());
-        author.setName(randomString());
+        author.setId(randomString());
         return author;
+    }
+
+    public static HistoricalCommit buildHistoricalCommit() {
+        HistoricalCommit historicalCommit = new HistoricalCommit();
+        historicalCommit.setVersion(1L);
+        historicalCommit.setCreatedAt("2016-03-22T06:12:27Z");
+        historicalCommit.setChangedBy(buildAuthor());
+        return historicalCommit;
     }
 
     public static String randomString() {

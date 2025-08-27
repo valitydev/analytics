@@ -5,9 +5,9 @@ import dev.vality.analytics.domain.db.tables.pojos.TradeBloc;
 import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain.TradeBlocObject;
-import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalInsertOp;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,12 +31,12 @@ class TradeBlocSaveOrUpdateHandlerTest {
     private TradeBlocSaveOrUpdateHandler tradeBlocSaveOrUpdateHandler;
 
     private TradeBlocObject tradeBlocObject;
-    private Author author;
+    private HistoricalCommit historicalCommit;
 
     @BeforeEach
     void setUp() {
         tradeBlocObject = TestData.buildTradeBlocObject();
-        author = TestData.buildAuthor();
+        historicalCommit = TestData.buildHistoricalCommit();
         tradeBlocSaveOrUpdateHandler = new TradeBlocSaveOrUpdateHandler(tradeBlocDao);
     }
 
@@ -48,9 +48,8 @@ class TradeBlocSaveOrUpdateHandlerTest {
         domainObject.setTradeBloc(tradeBlocObject);
         insertOp.setObject(domainObject);
         operation.setInsert(insertOp);
-        long versionId = 1L;
 
-        tradeBlocSaveOrUpdateHandler.handle(operation, author, versionId);
+        tradeBlocSaveOrUpdateHandler.handle(operation, historicalCommit);
 
         verify(tradeBlocDao, times(1)).saveTradeBloc(any(TradeBloc.class));
     }
@@ -80,14 +79,12 @@ class TradeBlocSaveOrUpdateHandlerTest {
 
     @Test
     void shouldConvertToDatabaseObject() {
-        long versionId = 1L;
-
-        TradeBloc tradeBloc = tradeBlocSaveOrUpdateHandler.convertToDatabaseObject(tradeBlocObject, author, versionId);
+        TradeBloc tradeBloc = tradeBlocSaveOrUpdateHandler.convertToDatabaseObject(tradeBlocObject, historicalCommit);
 
         assertNotNull(tradeBloc);
         assertEquals(tradeBlocObject.getData().getName(), tradeBloc.getName());
         assertEquals(tradeBlocObject.getData().getDescription(), tradeBloc.getDescription());
-        assertEquals(versionId, tradeBloc.getVersionId());
+        assertEquals(historicalCommit.getVersion(), tradeBloc.getVersionId());
         assertEquals(tradeBlocObject.getRef().getId(), tradeBloc.getTradeBlocId());
 
     }
