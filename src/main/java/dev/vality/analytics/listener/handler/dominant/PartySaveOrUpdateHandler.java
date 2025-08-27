@@ -39,8 +39,9 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
                     "Save partyConfigObject operation. id='{}' version='{}'",
                     partyConfigObject.getRef().getId(), historicalCommit.getVersion()
             );
-            var insertParty = convertToInsertObject(partyConfigObject, historicalCommit);
-            partyDao.saveParty(insertParty);
+            mergedParty.setCreatedAt(TypeUtil.stringToLocalDateTime(historicalCommit.getCreatedAt()));
+            mergedParty.setDeleted(false);
+            partyDao.saveParty(mergedParty);
         } else if (operation.isSetUpdate()) {
             log.info(
                     "Update partyConfigObject operation. id='{}' version='{}'",
@@ -53,32 +54,6 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
     @Override
     public boolean isHandle(FinalOperation change) {
         return matches(change, DomainObject::isSetPartyConfig);
-    }
-
-    private Party convertToInsertObject(PartyConfigObject partyConfigObject, HistoricalCommit historicalCommit) {
-        var partyConfig = partyConfigObject.getData();
-        var partyCreatedAt = TypeUtil.stringToLocalDateTime(historicalCommit.getCreatedAt());
-
-        Party party = new Party();
-        party.setVersionId(historicalCommit.getVersion());
-        party.setEventId(historicalCommit.getVersion());
-        party.setPartyId(partyConfigObject.getRef().getId());
-        party.setEventTime(partyCreatedAt);
-        party.setCreatedAt(partyCreatedAt);
-        party.setEmail(partyConfig.getContactInfo().getRegistrationEmail());
-        party.setBlocking(Blocking.unblocked);
-        party.setBlockedSince(partyCreatedAt);
-        party.setSuspension(Suspension.active);
-        party.setUnblockedSince(partyCreatedAt);
-        party.setSuspensionActiveSince(partyCreatedAt);
-
-        var changedBy = historicalCommit.getChangedBy();
-        party.setChangedById(changedBy.getId());
-        party.setChangedByName(changedBy.getName());
-        party.setChangedByEmail(changedBy.getEmail());
-        party.setDeleted(false);
-
-        return party;
     }
 
     private Party convertToDatabaseObject(PartyConfigObject partyConfigObject, HistoricalCommit historicalCommit) {
