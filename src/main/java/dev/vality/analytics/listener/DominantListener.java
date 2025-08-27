@@ -1,18 +1,19 @@
 package dev.vality.analytics.listener;
 
-import dev.vality.analytics.listener.handler.dominant.common.DominantHandler;
-import dev.vality.damsel.domain_config_v2.HistoricalCommit;
-import dev.vality.machinegun.eventsink.MachineEvent;
-import dev.vality.sink.common.parser.impl.MachineEventParser;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import dev.vality.analytics.listener.handler.dominant.common.DominantHandler;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
+import dev.vality.machinegun.eventsink.MachineEvent;
+import dev.vality.sink.common.parser.impl.MachineEventParser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -41,7 +42,7 @@ public class DominantListener {
                 dominantHandlers.stream()
                         .filter(handler -> handler.isHandle(op))
                         .forEach(handler ->
-                                handler.handle(op, commit.getChangedBy(), commit.getVersion())
+                                handler.handle(op, commit)
                         )
         );
     }

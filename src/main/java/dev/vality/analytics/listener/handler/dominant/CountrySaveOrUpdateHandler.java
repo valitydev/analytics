@@ -6,8 +6,8 @@ import dev.vality.analytics.listener.handler.dominant.common.AbstractDominantHan
 import dev.vality.damsel.domain.CountryObject;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain.TradeBlocRef;
-import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,17 +20,17 @@ public class CountrySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUp
     private final CountryDao countryDao;
 
     @Override
-    public void handle(FinalOperation operation, Author changedBy, long versionId) {
+    public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var countryObject = extract(operation).getCountry();
         if (operation.isSetInsert()) {
-            log.info("Save country operation. id='{}' version='{}'", countryObject.getRef().getId().name(), versionId);
-            countryDao.saveCountry(convertToDatabaseObject(countryObject, changedBy, versionId));
+            log.info("Save country operation. id='{}' version='{}'", countryObject.getRef().getId().name(), historicalCommit.getVersion());
+            countryDao.saveCountry(convertToDatabaseObject(countryObject, historicalCommit));
         } else if (operation.isSetUpdate()) {
             log.info(
                     "Update country operation. id='{}' version='{}'",
-                    countryObject.getRef().getId().name(), versionId
+                    countryObject.getRef().getId().name(), historicalCommit.getVersion()
             );
-            countryDao.updateCountry(convertToDatabaseObject(countryObject, changedBy, versionId));
+            countryDao.updateCountry(convertToDatabaseObject(countryObject, historicalCommit));
         }
     }
 
@@ -39,9 +39,9 @@ public class CountrySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUp
         return matches(change, DomainObject::isSetCountry);
     }
 
-    protected Country convertToDatabaseObject(CountryObject countryObject, Author changedBy, long versionId) {
+    protected Country convertToDatabaseObject(CountryObject countryObject, HistoricalCommit historicalCommit) {
         Country country = new Country();
-        country.setVersionId(versionId);
+        country.setVersionId(historicalCommit.getVersion());
         country.setCountryId(countryObject.getRef().getId().name());
         dev.vality.damsel.domain.Country data = countryObject.getData();
         country.setName(data.getName());
@@ -50,6 +50,7 @@ public class CountrySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUp
                 .map(TradeBlocRef::getId)
                 .toArray(String[]::new) : new String[0];
         country.setTradeBloc(tradeBlocs);
+        var changedBy = historicalCommit.getChangedBy();
         country.setChangedById(changedBy.getId());
         country.setChangedByName(changedBy.getName());
         country.setChangedByEmail(changedBy.getEmail());
