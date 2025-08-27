@@ -20,6 +20,10 @@ public class PartyEventMerger {
         targetParty.setPartyId(partyId);
         targetParty.setEventId(party.getEventId());
         targetParty.setEventTime(party.getEventTime());
+        targetParty.setVersionId(party.getVersionId());
+        targetParty.setChangedById(party.getChangedById());
+        targetParty.setChangedByEmail(party.getChangedByEmail());
+        targetParty.setChangedByName(party.getChangedByName());
         targetParty.setCreatedAt(party.getCreatedAt() != null ? party.getCreatedAt() : targetParty.getCreatedAt());
         targetParty.setEmail(party.getEmail() != null ? party.getEmail() : targetParty.getEmail());
         targetParty.setBlocking(party.getBlocking() != null ? party.getBlocking() : targetParty.getBlocking());
@@ -39,10 +43,6 @@ public class PartyEventMerger {
                 ? party.getRevisionChangedAt() : targetParty.getRevisionChangedAt());
         targetParty.setSuspensionSuspendedSince(party.getSuspensionSuspendedSince() != null
                 ? party.getSuspensionSuspendedSince() : targetParty.getSuspensionSuspendedSince());
-        targetParty.setVersionId(party.getVersionId());
-        targetParty.setChangedById(party.getChangedById());
-        targetParty.setChangedByEmail(party.getChangedByEmail());
-        targetParty.setChangedByName(party.getChangedByName());
         return targetParty;
     }
 

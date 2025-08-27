@@ -1,11 +1,8 @@
 package dev.vality.analytics.listener.handler.dominant;
 
-import java.time.LocalDateTime;
-
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import dev.vality.analytics.dao.repository.postgres.party.management.PartyDao;
+import dev.vality.analytics.domain.db.enums.Blocking;
+import dev.vality.analytics.domain.db.enums.Suspension;
 import dev.vality.analytics.domain.db.tables.pojos.Party;
 import dev.vality.analytics.listener.handler.dominant.common.AbstractDominantHandler;
 import dev.vality.analytics.listener.handler.merger.PartyEventMerger;
@@ -13,9 +10,14 @@ import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain.PartyConfigObject;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
 import dev.vality.damsel.domain_config_v2.HistoricalCommit;
+import dev.vality.geck.common.util.TBaseUtil;
 import dev.vality.geck.common.util.TypeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Component
@@ -29,14 +31,21 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
     @Transactional
     public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var partyConfigObject = extract(operation).getPartyConfig();
-        var newPartyData = convertToDatabaseObject(partyConfigObject, historicalCommit, operation);
+        var newPartyData = convertToDatabaseObject(partyConfigObject, historicalCommit);
         var mergedParty = partyEventMerger.mergeParty(partyConfigObject.getRef().getId(), newPartyData);
-        
+
         if (operation.isSetInsert()) {
-            log.info("Save partyConfigObject operation. id='{}' version='{}'", partyConfigObject.getRef().getId(), historicalCommit.getVersion());
-            partyDao.saveParty(mergedParty);
+            log.info(
+                    "Save partyConfigObject operation. id='{}' version='{}'",
+                    partyConfigObject.getRef().getId(), historicalCommit.getVersion()
+            );
+            var insertParty = convertToInsertObject(partyConfigObject, historicalCommit);
+            partyDao.saveParty(insertParty);
         } else if (operation.isSetUpdate()) {
-            log.info("Update partyConfigObject operation. id='{}' version='{}'", partyConfigObject.getRef().getId(), historicalCommit.getVersion());
+            log.info(
+                    "Update partyConfigObject operation. id='{}' version='{}'",
+                    partyConfigObject.getRef().getId(), historicalCommit.getVersion()
+            );
             partyDao.saveParty(mergedParty);
         }
     }
@@ -46,34 +55,75 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
         return matches(change, DomainObject::isSetPartyConfig);
     }
 
-    private Party convertToDatabaseObject(PartyConfigObject partyConfigObject, HistoricalCommit historicalCommit, FinalOperation operation) {
-        var changedBy = historicalCommit.getChangedBy();
+    private Party convertToInsertObject(PartyConfigObject partyConfigObject, HistoricalCommit historicalCommit) {
         var partyConfig = partyConfigObject.getData();
-        // Используем время создания из HistoricalCommit
-        LocalDateTime partyCreatedAt = TypeUtil.stringToLocalDateTime(historicalCommit.getCreatedAt());
-        var party = new Party();
-        // Основные поля события
+        var partyCreatedAt = TypeUtil.stringToLocalDateTime(historicalCommit.getCreatedAt());
+
+        Party party = new Party();
         party.setVersionId(historicalCommit.getVersion());
         party.setEventId(historicalCommit.getVersion());
         party.setPartyId(partyConfigObject.getRef().getId());
         party.setEventTime(partyCreatedAt);
-        
-        // Поля из PartyConfig (конфигурационные данные)
-        party.setEmail(partyConfig.getContactInfo().getRegistrationEmail());
         party.setCreatedAt(partyCreatedAt);
-        party.setRevisionId(String.valueOf(historicalCommit.getVersion()));
-        party.setRevisionChangedAt(partyCreatedAt);
-        
-        // Метаданные изменения
+        party.setEmail(partyConfig.getContactInfo().getRegistrationEmail());
+        party.setBlocking(Blocking.unblocked);
+        party.setBlockedSince(partyCreatedAt);
+        party.setSuspension(Suspension.active);
+        party.setUnblockedSince(partyCreatedAt);
+        party.setSuspensionActiveSince(partyCreatedAt);
+
+        var changedBy = historicalCommit.getChangedBy();
         party.setChangedById(changedBy.getId());
         party.setChangedByName(changedBy.getName());
         party.setChangedByEmail(changedBy.getEmail());
         party.setDeleted(false);
-        
-        // Состояние blocking/suspension управляется отдельными обработчиками
-        // Только для новых party устанавливаем начальные значения
-        // Для update эти поля НЕ устанавливаем - merger сохранит существующие значения
-        
+
+        return party;
+    }
+
+    private Party convertToDatabaseObject(PartyConfigObject partyConfigObject, HistoricalCommit historicalCommit) {
+        var partyConfig = partyConfigObject.getData();
+        LocalDateTime eventTime = TypeUtil.stringToLocalDateTime(historicalCommit.getCreatedAt());
+
+        Party party = new Party();
+        party.setPartyId(partyConfigObject.getRef().getId());
+        party.setVersionId(historicalCommit.getVersion());
+        party.setEventId(historicalCommit.getVersion());
+        party.setEventTime(eventTime);
+        party.setEmail(partyConfig.getContactInfo().getRegistrationEmail());
+
+        if (partyConfig.isSetBlock()) {
+            var blocking = partyConfig.getBlock();
+            party.setBlocking(TBaseUtil.unionFieldToEnum(blocking, Blocking.class));
+            if (blocking.isSetBlocked()) {
+                party.setBlockedReason(partyConfig.getBlock().getBlocked().getReason());
+                party.setBlockedSince(TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getBlocked().getSince()));
+            }
+            if (blocking.isSetUnblocked()) {
+                party.setUnblockedReason(partyConfig.getBlock().getUnblocked().getReason());
+                party.setUnblockedSince(TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getUnblocked().getSince()));
+            }
+        }
+
+        if (partyConfig.isSetSuspension()) {
+            var partySuspension = partyConfig.getSuspension();
+            party.setSuspension(TBaseUtil.unionFieldToEnum(partySuspension, Suspension.class));
+            if (partySuspension.isSetActive()) {
+                party.setSuspensionActiveSince(TypeUtil.stringToLocalDateTime(partySuspension.getActive().getSince()));
+            }
+            if (partySuspension.isSetSuspended()) {
+                party.setSuspensionSuspendedSince(
+                        TypeUtil.stringToLocalDateTime(partySuspension.getSuspended().getSince())
+                );
+            }
+        }
+
+        // Метаданные изменения
+        var changedBy = historicalCommit.getChangedBy();
+        party.setChangedById(changedBy.getId());
+        party.setChangedByName(changedBy.getName());
+        party.setChangedByEmail(changedBy.getEmail());
+
         return party;
     }
 }
