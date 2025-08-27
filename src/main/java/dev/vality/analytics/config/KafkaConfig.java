@@ -1,7 +1,9 @@
 package dev.vality.analytics.config;
 
+import dev.vality.analytics.serde.HistoricalCommitDeserializer;
 import dev.vality.analytics.serde.MachineEventDeserializer;
 import dev.vality.analytics.service.ConsumerGroupIdService;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import jakarta.validation.constraints.NotNull;
@@ -75,13 +77,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, MachineEvent> dominantListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, HistoricalCommit> dominantListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, HistoricalCommit> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         String consumerGroup = consumerGroupIdService.generateGroupId(DOMINANT_ANALYTICS);
         initDefaultListenerProperties(factory, consumerGroup,
-                new MachineEventDeserializer(), maxPollRecordsDominantListener);
-
+                new HistoricalCommitDeserializer(), maxPollRecordsDominantListener);
         return factory;
     }
 
