@@ -24,10 +24,7 @@ public enum EventType {
                     ".payload.session_transaction_bound", new IsNullCondition().not()),
     INVOICE_PAYMENT_RISK_SCORE_CHANGED("invoice_payment_change.payload.invoice_payment_risk_score_changed",
             new IsNullCondition().not()),
-    RATE_CREATED("created", new IsNullCondition().not()),
-    REVISION_CHANGED("revision_changed", new IsNullCondition().not()),
-    SHOP_BLOCKING("shop_blocking", new IsNullCondition().not()),
-    SHOP_SUSPENSION("shop_suspension", new IsNullCondition().not());
+    RATE_CREATED("created", new IsNullCondition().not());
 
     Filter filter;
 
