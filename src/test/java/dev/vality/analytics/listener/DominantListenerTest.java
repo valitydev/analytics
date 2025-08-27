@@ -3,10 +3,10 @@ package dev.vality.analytics.listener;
 import dev.vality.analytics.config.KafkaTest;
 import dev.vality.analytics.config.PostgresqlTest;
 import dev.vality.analytics.dao.repository.postgres.party.management.CategoryDao;
-import dev.vality.analytics.utils.DominantSinkEventTestUtils;
+import dev.vality.analytics.utils.DominantEventTestUtils;
 import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CategoryType;
-import dev.vality.machinegun.eventsink.SinkEvent;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.testcontainers.annotations.KafkaConfig;
 import dev.vality.testcontainers.annotations.kafka.config.KafkaProducer;
 import org.apache.thrift.TBase;
@@ -46,7 +46,7 @@ public class DominantListenerTest {
 
 
         var data = TestData.buildInsertCategoryOperation(categoryId, categoryName, categoryDescription, categoryType);
-        final List<SinkEvent> sinkEvents = List.of(DominantSinkEventTestUtils.create(data, 1L));
+        final List<HistoricalCommit> sinkEvents = List.of(DominantEventTestUtils.create(data, 1L));
         sinkEvents.forEach(event -> testThriftKafkaProducer.send(dominantTopic, event));
 
         await().atMost(60, SECONDS).until(() -> {
@@ -63,9 +63,9 @@ public class DominantListenerTest {
         Assertions.assertEquals(categoryName, category.getName());
         Assertions.assertEquals(categoryDescription, category.getDescription());
         Assertions.assertEquals(categoryType.name(), category.getType());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
     }
 
     @Test
@@ -81,9 +81,9 @@ public class DominantListenerTest {
         var updatedData = TestData.buildUpdateCategoryOperation(
                 categoryId, updatedCategoryName, updatedCategoryDescription, categoryType
         );
-        final List<SinkEvent> sinkEvents = List.of(
-                DominantSinkEventTestUtils.create(data, 1L),
-                DominantSinkEventTestUtils.create(updatedData, 2L)
+        final List<HistoricalCommit> sinkEvents = List.of(
+                DominantEventTestUtils.create(data, 1L),
+                DominantEventTestUtils.create(updatedData, 2L)
         );
 
         sinkEvents.forEach(event -> testThriftKafkaProducer.send(dominantTopic, event));
@@ -101,9 +101,9 @@ public class DominantListenerTest {
         Assertions.assertEquals(categoryId, category.getCategoryId());
         Assertions.assertEquals(updatedCategoryName, category.getName());
         Assertions.assertEquals(updatedCategoryDescription, category.getDescription());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
     }
 
     @Test
@@ -115,9 +115,9 @@ public class DominantListenerTest {
 
         var data = TestData.buildInsertCategoryOperation(categoryId, categoryName, categoryDescription, categoryType);
         var removedData = TestData.buildRemoveCategoryOperation(categoryId);
-        final List<SinkEvent> sinkEvents = List.of(
-                DominantSinkEventTestUtils.create(data, 1L),
-                DominantSinkEventTestUtils.create(removedData, 2L)
+        final List<HistoricalCommit> sinkEvents = List.of(
+                DominantEventTestUtils.create(data, 1L),
+                DominantEventTestUtils.create(removedData, 2L)
         );
 
         sinkEvents.forEach(event -> testThriftKafkaProducer.send(dominantTopic, event));
@@ -137,8 +137,8 @@ public class DominantListenerTest {
         Assertions.assertEquals(categoryDescription, category.getDescription());
         Assertions.assertEquals(categoryType.name(), category.getType());
         Assertions.assertTrue(category.getDeleted());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
-        Assertions.assertEquals(DominantSinkEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getName(), category.getChangedByName());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getEmail(), category.getChangedByEmail());
+        Assertions.assertEquals(DominantEventTestUtils.CHANGED_BY.getId(), category.getChangedById());
     }
 }
