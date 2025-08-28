@@ -73,8 +73,7 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
             if (blocking.isSetBlocked()) {
                 party.setBlockedReason(partyConfig.getBlock().getBlocked().getReason());
                 party.setBlockedSince(TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getBlocked().getSince()));
-            }
-            if (blocking.isSetUnblocked()) {
+            } else if (blocking.isSetUnblocked()) {
                 party.setUnblockedReason(partyConfig.getBlock().getUnblocked().getReason());
                 party.setUnblockedSince(
                         TypeUtil.stringToLocalDateTime(partyConfig.getBlock().getUnblocked().getSince())
@@ -87,8 +86,7 @@ public class PartySaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpda
             party.setSuspension(TBaseUtil.unionFieldToEnum(partySuspension, Suspension.class));
             if (partySuspension.isSetActive()) {
                 party.setSuspensionActiveSince(TypeUtil.stringToLocalDateTime(partySuspension.getActive().getSince()));
-            }
-            if (partySuspension.isSetSuspended()) {
+            } else if (partySuspension.isSetSuspended()) {
                 party.setSuspensionSuspendedSince(
                         TypeUtil.stringToLocalDateTime(partySuspension.getSuspended().getSince())
                 );

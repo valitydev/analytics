@@ -95,8 +95,7 @@ public class ShopSaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpdat
             if (blocking.isSetBlocked()) {
                 shop.setBlockedReason(blocking.getBlocked().getReason());
                 shop.setBlockedSince(TypeUtil.stringToLocalDateTime(blocking.getBlocked().getSince()));
-            }
-            if (blocking.isSetUnblocked()) {
+            } else if (blocking.isSetUnblocked()) {
                 shop.setUnblockedReason(blocking.getUnblocked().getReason());
                 shop.setUnblockedSince(TypeUtil.stringToLocalDateTime(blocking.getUnblocked().getSince()));
             }
@@ -107,8 +106,7 @@ public class ShopSaveOrUpdateHandler extends AbstractDominantHandler.SaveOrUpdat
             if (suspension.isSetActive()) {
                 shop.setSuspension(Suspension.active);
                 shop.setSuspensionActiveSince(TypeUtil.stringToLocalDateTime(suspension.getActive().getSince()));
-            }
-            if (suspension.isSetSuspended()) {
+            } else if (suspension.isSetSuspended()) {
                 shop.setSuspension(Suspension.suspended);
                 shop.setSuspensionSuspendedSince(TypeUtil.stringToLocalDateTime(suspension.getSuspended().getSince()));
             }
