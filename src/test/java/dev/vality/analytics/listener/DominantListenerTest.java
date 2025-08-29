@@ -7,7 +7,6 @@ import dev.vality.analytics.utils.DominantEventTestUtils;
 import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CategoryType;
 import dev.vality.damsel.domain_config_v2.HistoricalCommit;
-import dev.vality.testcontainers.annotations.KafkaConfig;
 import dev.vality.testcontainers.annotations.kafka.config.KafkaProducer;
 import org.apache.thrift.TBase;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +22,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 @KafkaTest
-@KafkaConfig
 @SpringBootTest
 @PostgresqlTest
 public class DominantListenerTest {
