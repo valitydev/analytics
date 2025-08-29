@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>analytics</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>Analytics</name>
@@ -128,7 +128,7 @@
         <dependency>
             <groupId>com.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.8.5</version>
+            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
@@ -218,12 +218,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
                         <artifactId>maven-filtering</artifactId>
-                        <version>3.3.2</version>
+                        <version>3.4.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
