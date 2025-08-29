@@ -1,5 +1,6 @@
 package dev.vality.analytics.config;
 
+import dev.vality.testcontainers.annotations.KafkaTestConfig;
 import dev.vality.testcontainers.annotations.kafka.KafkaTestcontainerSingleton;
 
 import java.lang.annotation.ElementType;
@@ -18,5 +19,6 @@ import java.lang.annotation.Target;
                 "kafka.topic.rate.initial",
                 "kafka.topic.dominant.initial"
         })
+@KafkaTestConfig
 public @interface KafkaTest {
 }

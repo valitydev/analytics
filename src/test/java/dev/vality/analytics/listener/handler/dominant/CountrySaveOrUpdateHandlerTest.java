@@ -6,9 +6,9 @@ import dev.vality.analytics.utils.TestData;
 import dev.vality.damsel.domain.CountryObject;
 import dev.vality.damsel.domain.DomainObject;
 import dev.vality.damsel.domain.TradeBlocRef;
-import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalInsertOp;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,12 +33,12 @@ class CountrySaveOrUpdateHandlerTest {
     private CountrySaveOrUpdateHandler saveOrUpdateHandler;
 
     private CountryObject countryObject;
-    private Author author;
+    private HistoricalCommit historicalCommit;
 
     @BeforeEach
     void setUp() {
         countryObject = TestData.buildCountryObject();
-        author = TestData.buildAuthor();
+        historicalCommit = TestData.buildHistoricalCommit();
         saveOrUpdateHandler = new CountrySaveOrUpdateHandler(countryDao);
     }
 
@@ -50,9 +50,8 @@ class CountrySaveOrUpdateHandlerTest {
         domainObject.setCountry(countryObject);
         insertOp.setObject(domainObject);
         operation.setInsert(insertOp);
-        long versionId = 1L;
 
-        saveOrUpdateHandler.handle(operation, author, versionId);
+        saveOrUpdateHandler.handle(operation, historicalCommit);
 
         verify(countryDao, times(1)).saveCountry(any(Country.class));
     }
@@ -82,13 +81,11 @@ class CountrySaveOrUpdateHandlerTest {
 
     @Test
     void shouldConvertToDatabaseObject() {
-        long versionId = 1L;
-
-        Country country = saveOrUpdateHandler.convertToDatabaseObject(countryObject, author, versionId);
+        Country country = saveOrUpdateHandler.convertToDatabaseObject(countryObject, historicalCommit);
 
         assertNotNull(country);
         assertEquals(countryObject.getData().getName(), country.getName());
-        assertEquals(versionId, country.getVersionId());
+        assertEquals(historicalCommit.getVersion(), country.getVersionId());
         assertEquals(countryObject.getRef().getId().name(), country.getCountryId());
         assertArrayEquals(
                 countryObject.getData().getTradeBlocs().stream().map(TradeBlocRef::getId).toArray(String[]::new),

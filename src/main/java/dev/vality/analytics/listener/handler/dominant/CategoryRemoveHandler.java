@@ -5,8 +5,8 @@ import dev.vality.analytics.domain.db.tables.pojos.Category;
 import dev.vality.analytics.listener.handler.dominant.common.AbstractDominantHandler;
 import dev.vality.damsel.domain.CategoryRef;
 import dev.vality.damsel.domain.Reference;
-import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,10 +21,10 @@ public class CategoryRemoveHandler extends AbstractDominantHandler.RemoveHandler
 
     @Override
     @Transactional
-    public void handle(FinalOperation operation, Author changedBy, long versionId) {
+    public void handle(FinalOperation operation, HistoricalCommit historicalCommit) {
         var categoryRef = extract(operation).getCategory();
-        log.info("Remove category operation. id='{}' version='{}'", categoryRef.getId(), versionId);
-        categoryDao.removeCategory(convertToDatabaseObject(categoryRef, changedBy, versionId));
+        log.info("Remove category operation. id='{}' version='{}'", categoryRef.getId(), historicalCommit.getVersion());
+        categoryDao.removeCategory(convertToDatabaseObject(categoryRef, historicalCommit));
     }
 
     @Override
@@ -32,9 +32,10 @@ public class CategoryRemoveHandler extends AbstractDominantHandler.RemoveHandler
         return matches(change, Reference::isSetCategory);
     }
 
-    private Category convertToDatabaseObject(CategoryRef categoryRef, Author changedBy, long versionId) {
+    private Category convertToDatabaseObject(CategoryRef categoryRef, HistoricalCommit historicalCommit) {
+        var changedBy = historicalCommit.getChangedBy();
         var category = new Category();
-        category.setVersionId(versionId);
+        category.setVersionId(historicalCommit.getVersion());
         category.setCategoryId(categoryRef.getId());
         category.setChangedById(changedBy.getId());
         category.setChangedByName(changedBy.getName());

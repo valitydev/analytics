@@ -3,7 +3,18 @@ package dev.vality.analytics.listener.mapper.factory;
 import dev.vality.analytics.constant.ClickHouseUtilsValue;
 import dev.vality.analytics.dao.model.InvoiceBaseRow;
 import dev.vality.analytics.service.GeoProvider;
-import dev.vality.damsel.domain.*;
+import dev.vality.damsel.domain.BankCard;
+import dev.vality.damsel.domain.BankCardTokenServiceRef;
+import dev.vality.damsel.domain.ClientInfo;
+import dev.vality.damsel.domain.ContactInfo;
+import dev.vality.damsel.domain.DisposablePaymentResource;
+import dev.vality.damsel.domain.Invoice;
+import dev.vality.damsel.domain.MobileOperatorRef;
+import dev.vality.damsel.domain.Payer;
+import dev.vality.damsel.domain.PaymentServiceRef;
+import dev.vality.damsel.domain.PaymentSystemRef;
+import dev.vality.damsel.domain.PaymentTool;
+import dev.vality.damsel.domain.RecurrentPayer;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.machinegun.eventsink.MachineEvent;
@@ -24,8 +35,8 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
         row.setEventTime(TypeUtil.stringToLocalDateTime(machineEvent.getCreatedAt()));
         var payment = invoicePayment.getPayment();
 
-        row.setPartyId(invoice.getOwnerId());
-        row.setShopId(invoice.getShopId());
+        row.setPartyId(invoice.getPartyRef().getId());
+        row.setShopId(invoice.getShopRef().getId());
         row.setInvoiceId(machineEvent.getSourceId());
         row.setPaymentId(payment.getId());
         row.setSequenceId((machineEvent.getEventId()));
@@ -49,11 +60,6 @@ public abstract class InvoiceBaseRowFactory<T extends InvoiceBaseRow> implements
             }
             initCardData(row, paymentTool);
             initContactInfo(row, payer.getPaymentResource().getContactInfo());
-        } else if (payer.isSetCustomer()) {
-            CustomerPayer customer = payer.getCustomer();
-            PaymentTool paymentTool = customer.getPaymentTool();
-            initContactInfo(row, customer.getContactInfo());
-            initCardData(row, paymentTool);
         } else if (payer.isSetRecurrent()) {
             RecurrentPayer recurrent = payer.getRecurrent();
             PaymentTool paymentTool = recurrent.getPaymentTool();

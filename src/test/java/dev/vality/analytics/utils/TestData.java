@@ -1,21 +1,10 @@
 package dev.vality.analytics.utils;
 
-import dev.vality.damsel.domain.Category;
-import dev.vality.damsel.domain.CategoryObject;
-import dev.vality.damsel.domain.CategoryRef;
-import dev.vality.damsel.domain.CategoryType;
-import dev.vality.damsel.domain.Country;
-import dev.vality.damsel.domain.CountryCode;
-import dev.vality.damsel.domain.CountryObject;
-import dev.vality.damsel.domain.CountryRef;
-import dev.vality.damsel.domain.DomainObject;
-import dev.vality.damsel.domain.Reference;
-import dev.vality.damsel.domain.TradeBloc;
-import dev.vality.damsel.domain.TradeBlocObject;
-import dev.vality.damsel.domain.TradeBlocRef;
+import dev.vality.damsel.domain.*;
 import dev.vality.damsel.domain_config_v2.Author;
 import dev.vality.damsel.domain_config_v2.FinalInsertOp;
 import dev.vality.damsel.domain_config_v2.FinalOperation;
+import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.damsel.domain_config_v2.RemoveOp;
 import dev.vality.damsel.domain_config_v2.UpdateOp;
 
@@ -103,8 +92,47 @@ public class TestData {
         Author author = new Author();
         author.setEmail(randomString());
         author.setName(randomString());
-        author.setName(randomString());
+        author.setId(randomString());
         return author;
+    }
+
+    public static HistoricalCommit buildHistoricalCommit() {
+        HistoricalCommit historicalCommit = new HistoricalCommit();
+        historicalCommit.setVersion(1L);
+        historicalCommit.setCreatedAt("2016-03-22T06:12:27Z");
+        historicalCommit.setChangedBy(buildAuthor());
+        return historicalCommit;
+    }
+
+    public static PartyConfigObject buildPartyConfigObject() {
+        PartyConfig partyConfig = new PartyConfig();
+        PartyContactInfo contactInfo = new PartyContactInfo();
+        contactInfo.setRegistrationEmail(randomString() + "@example.com");
+        partyConfig.setContactInfo(contactInfo);
+
+        PartyConfigObject partyConfigObject = new PartyConfigObject();
+        partyConfigObject.setData(partyConfig);
+        PartyConfigRef partyConfigRef = new PartyConfigRef();
+        partyConfigRef.setId(randomString());
+        partyConfigObject.setRef(partyConfigRef);
+        return partyConfigObject;
+    }
+
+    public static ShopConfigObject buildShopConfigObject() {
+        ShopConfig shopConfig = new ShopConfig();
+        shopConfig.setName(randomString());
+        shopConfig.setDescription(randomString());
+
+        PartyConfigRef partyConfigRef = new PartyConfigRef();
+        partyConfigRef.setId(randomString());
+        shopConfig.setPartyRef(partyConfigRef);
+
+        ShopConfigObject shopConfigObject = new ShopConfigObject();
+        shopConfigObject.setData(shopConfig);
+        ShopConfigRef shopConfigRef = new ShopConfigRef();
+        shopConfigRef.setId(randomString());
+        shopConfigObject.setRef(shopConfigRef);
+        return shopConfigObject;
     }
 
     public static String randomString() {
