@@ -28,19 +28,9 @@ public class RateDao extends AbstractGenericDao {
                 .map(rate -> getDslContext().newRecord(RATE, rate))
                 .map(rateRecord -> getDslContext()
                         .insertInto(RATE).set(rateRecord)
-                        .onConflict(RATE.SOURCE_ID, RATE.SOURCE_SYMBOLIC_CODE, RATE.DESTINATION_SYMBOLIC_CODE,
-                                RATE.LOWER_BOUND_INCLUSIVE, RATE.UPPER_BOUND_EXCLUSIVE)
+                        .onConflict(RATE.SOURCE_SYMBOLIC_CODE, RATE.DESTINATION_SYMBOLIC_CODE, RATE.EVENT_TIME)
                         .doNothing())
                 .collect(Collectors.toList());
         batchExecute(queries);
     }
-
-    public Rate getRate(String sourceId, String sourceCode, String destinationCode) {
-        Query query = getDslContext().selectFrom(RATE)
-                .where(RATE.SOURCE_ID.eq(sourceId))
-                .and(RATE.SOURCE_SYMBOLIC_CODE.eq(sourceCode)
-                        .and(RATE.DESTINATION_SYMBOLIC_CODE.eq(destinationCode)));
-        return fetchOne(query, rateRowMapper);
-    }
-
 }

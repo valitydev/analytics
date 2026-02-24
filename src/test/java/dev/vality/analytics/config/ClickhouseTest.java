@@ -12,9 +12,7 @@ import java.lang.annotation.Target;
 @ClickhouseTestcontainerSingleton(
         dbNameShouldBeDropped = "analytic",
         migrations = {
-                "sql/V1__db_init.sql",
-                "sql/V2__add_fields.sql",
-                "sql/V3__add_provider_field.sql",
+                "db/migration-clickhouse/V1__create_tables.sql",
                 "sql/test.data/inserts_event_sink.sql"})
 public @interface ClickhouseTest {
 }

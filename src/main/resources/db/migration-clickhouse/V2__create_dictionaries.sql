@@ -1,4 +1,19 @@
-CREATE DICTIONARY party_dictionary (
+CREATE NAMED COLLECTION IF NOT EXISTS pg_analytics AS
+    host = 'localhost',
+    port = 5432,
+    user = 'postgres',
+    password = 'postgres',
+    database = 'analytics',
+    schema = 'analytics';
+
+DROP DICTIONARY IF EXISTS analytic.party_dictionary;
+DROP DICTIONARY IF EXISTS analytic.shop_dictionary;
+DROP DICTIONARY IF EXISTS analytic.category_dictionary;
+DROP DICTIONARY IF EXISTS analytic.country_dictionary;
+DROP DICTIONARY IF EXISTS analytic.trade_bloc_dictionary;
+DROP DICTIONARY IF EXISTS analytic.rate_dictionary;
+
+CREATE DICTIONARY IF NOT EXISTS analytic.party_dictionary (
     id 				 UInt64,
     event_id         String,
     event_time		 String,
@@ -17,11 +32,16 @@ CREATE DICTIONARY party_dictionary (
     revision_changed_at  String
 )
 PRIMARY KEY id
-SOURCE(ODBC(connection_string 'DSN=myconnection;UID=user;PWD=password;HOST=host;PORT=5432;DATABASE=analytics' table 'analytics.party'))
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'party'
+       ))
 LAYOUT(HASHED())
-LIFETIME(MIN 300 MAX 360)
+LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY shop_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.shop_dictionary (
 	id 				 UInt64,
 	event_id         String,
     event_time		 String,
@@ -70,6 +90,7 @@ CREATE DICTIONARY shop_dictionary (
     international_actual_address String,
     international_legal_entity_registered_address String,
     international_legal_entity_registered_number String,
+    international_legal_entity_country_code String,
 
     private_entity_type String,
     russian_private_entity_first_name String,
@@ -81,11 +102,16 @@ CREATE DICTIONARY shop_dictionary (
     contractor_identification_level String
 )
 PRIMARY KEY id
-SOURCE(ODBC(connection_string 'DSN=myconnection;UID=user;PWD=password;HOST=host;PORT=5432;DATABASE=analytics' table 'analytics.shop'))
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'shop'
+       ))
 LAYOUT(HASHED())
-LIFETIME(MIN 300 MAX 360)
+LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY category_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.category_dictionary (
     id 				 UInt64,
     version_id       UInt64,
     category_id      UInt32,
@@ -95,6 +121,68 @@ CREATE DICTIONARY category_dictionary (
     deleted          String
 )
 PRIMARY KEY id
-SOURCE(ODBC(connection_string 'DSN=myconnection;UID=user;PWD=password;HOST=host;PORT=5432;DATABASE=analytics' table 'analytics.category'))
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'category'
+       ))
 LAYOUT(HASHED())
-LIFETIME(MIN 300 MAX 360)
+LIFETIME(MIN 300 MAX 360);
+
+CREATE DICTIONARY IF NOT EXISTS analytic.country_dictionary (
+    id 				 UInt64,
+    version_id       UInt64,
+    country_id       UInt32,
+    name             String,
+    trade_bloc       Array(String),
+    deleted          String
+)
+PRIMARY KEY id
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'country'
+       ))
+LAYOUT(HASHED())
+LIFETIME(MIN 300 MAX 360);
+
+CREATE DICTIONARY IF NOT EXISTS analytic.trade_bloc_dictionary (
+    id 				 UInt64,
+    version_id       UInt64,
+    trade_bloc_id    UInt32,
+    name             String,
+    description      String,
+    deleted          String
+)
+PRIMARY KEY id
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'trade_bloc'
+       ))
+LAYOUT(HASHED())
+LIFETIME(MIN 300 MAX 360);
+
+CREATE DICTIONARY IF NOT EXISTS analytic.rate_dictionary (
+    id 				            UInt64,
+    event_id 		            String,
+    event_time		            String,
+    source_symbolic_code		String,
+    source_exponent		        UInt32,
+    destination_symbolic_code   String,
+    destination_exponent        UInt32,
+    exchange_rate_rational_p    UInt64,
+    exchange_rate_rational_q    UInt64
+)
+PRIMARY KEY id
+SOURCE(POSTGRESQL(
+        NAME pg_analytics
+        DB 'analytics'
+        SCHEMA 'analytics'
+        TABLE 'rate'
+       ))
+LAYOUT(HASHED())
+LIFETIME(MIN 300 MAX 360);

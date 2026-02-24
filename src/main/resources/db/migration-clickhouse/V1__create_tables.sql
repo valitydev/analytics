@@ -1,8 +1,6 @@
 CREATE DATABASE IF NOT EXISTS analytic;
 
-DROP TABLE IF EXISTS analytic.events_sink;
-
-create table analytic.events_sink
+CREATE TABLE IF NOT EXISTS analytic.events_sink
 (
     timestamp             Date,
     eventTime             UInt64,
@@ -51,9 +49,7 @@ create table analytic.events_sink
 PARTITION BY toYYYYMM (timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, paymentTool, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, sequenceId);
 
-DROP TABLE IF EXISTS analytic.events_sink_refund;
-
-create table analytic.events_sink_refund
+CREATE TABLE IF NOT EXISTS analytic.events_sink_refund
 (
     timestamp             Date,
     eventTime             UInt64,
@@ -102,9 +98,7 @@ create table analytic.events_sink_refund
 PARTITION BY toYYYYMM (timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, refundId, sequenceId);
 
-DROP TABLE IF EXISTS analytic.events_sink_adjustment;
-
-create table analytic.events_sink_adjustment
+CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment
 (
     timestamp             Date,
     eventTime             UInt64,
@@ -161,9 +155,7 @@ create table analytic.events_sink_adjustment
 PARTITION BY toYYYYMM (timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, adjustmentId, sequenceId);
 
-DROP TABLE IF EXISTS analytic.events_sink_chargeback;
-
-create table analytic.events_sink_chargeback
+CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback
 (
     timestamp             Date,
     eventTime             UInt64,
@@ -214,3 +206,34 @@ create table analytic.events_sink_chargeback
 PARTITION BY toYYYYMM (timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, category, status, stage, currency, providerName, fingerprint, cardToken,
 invoiceId, paymentId, chargebackId, sequenceId);
+
+ALTER TABLE analytic.events_sink ADD COLUMN IF NOT EXISTS cardHolderName String DEFAULT 'UNKNOWN';
+
+ALTER TABLE analytic.events_sink ADD COLUMN IF NOT EXISTS bankCardTokenProvider String;
+ALTER TABLE analytic.events_sink ADD COLUMN IF NOT EXISTS riskScore String;
+ALTER TABLE analytic.events_sink ADD COLUMN IF NOT EXISTS rrn String;
+ALTER TABLE analytic.events_sink ADD COLUMN IF NOT EXISTS paymentTerminal String;
+
+CREATE TABLE IF NOT EXISTS analytic.events_sink_payout
+(
+    payoutId                                  String,
+    status                                    Enum8('unpaid' = 1, 'paid' = 2, 'cancelled' = 3, 'confirmed' = 4),
+    payoutToolId                              String,
+    statusCancelledDetails                    String,
+    isCancelledAfterBeingPaid                 UInt8,
+
+    timestamp                                 Date,
+    eventTime                                 UInt64,
+    eventTimeHour                             UInt64,
+    payoutTime                                UInt64,
+
+    shopId                                    String,
+    partyId                                   String,
+
+    amount                                    UInt64,
+    fee                                       UInt64,
+    currency                                  String
+) ENGINE = ReplacingMergeTree()
+PARTITION BY toYYYYMM (timestamp)
+ORDER BY (eventTimeHour, partyId, shopId, status, payoutId, currency);
+

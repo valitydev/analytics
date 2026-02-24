@@ -2,6 +2,8 @@ package dev.vality.analytics.config;
 
 import dev.vality.analytics.serde.HistoricalCommitDeserializer;
 import dev.vality.analytics.serde.MachineEventDeserializer;
+import dev.vality.analytics.serde.CurrencyEventKafkaDeserializer;
+import dev.vality.exrates.events.CurrencyEvent;
 import dev.vality.analytics.service.ConsumerGroupIdService;
 import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory;
@@ -87,10 +89,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, MachineEvent> rateContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, CurrencyEvent> rateContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CurrencyEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        initDefaultListenerProperties(factory, rateGroupId, new MachineEventDeserializer(),
+        initDefaultListenerProperties(factory, rateGroupId, new CurrencyEventKafkaDeserializer(),
                 maxPollRecordsRatesListener);
         return factory;
     }
