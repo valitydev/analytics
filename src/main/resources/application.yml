@@ -53,6 +53,14 @@ clickhouse.db:
     connection-timeout: 10000
     leak-detection-threshold: 5000
 
+clickhouse.flyway:
+  schema-mode: non-sharded
+  sharded:
+    # Required only when clickhouse.flyway.schema-mode=sharded
+    cluster:
+    shard:
+    replica:
+
 postgres.db:
   schema: analytics
   type: com.zaxxer.hikari.HikariDataSource
