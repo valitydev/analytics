@@ -21,6 +21,21 @@ import java.util.Map;
 @Configuration
 public class ClickHouseConfig {
 
+    private static final String NON_SHARDED_SCHEMA_MODE = "non-sharded";
+    private static final String SHARDED_SCHEMA_MODE = "sharded";
+    private static final String NON_SHARDED_MIGRATION_LOCATION = "classpath:db/migration-clickhouse/non-sharded";
+    private static final String SHARDED_MIGRATION_LOCATION = "classpath:db/migration-clickhouse/sharded";
+    private static final String CLUSTER_PLACEHOLDER = "cluster";
+    private static final String SHARD_PLACEHOLDER = "shard";
+    private static final String REPLICA_PLACEHOLDER = "replica";
+    private static final String CLICKHOUSE_FLYWAY_SHARDED_PROPERTY_PREFIX = "clickhouse.flyway.sharded.";
+    private static final String SHARDED_CLUSTER_PROPERTY =
+            CLICKHOUSE_FLYWAY_SHARDED_PROPERTY_PREFIX + CLUSTER_PLACEHOLDER;
+    private static final String SHARDED_SHARD_PROPERTY =
+            CLICKHOUSE_FLYWAY_SHARDED_PROPERTY_PREFIX + SHARD_PLACEHOLDER;
+    private static final String SHARDED_REPLICA_PROPERTY =
+            CLICKHOUSE_FLYWAY_SHARDED_PROPERTY_PREFIX + REPLICA_PLACEHOLDER;
+
     @Bean(name = "clickHouseDataSourceProperties")
     @ConfigurationProperties(prefix = "clickhouse.db")
     public ClickHouseDbProperties clickHouseDataSourceProperties() {
@@ -50,9 +65,9 @@ public class ClickHouseConfig {
             @Qualifier("clickHouseDataSource") DataSource clickHouseDataSource,
             @Qualifier("dataSourceProperties") DataSourceProperties postgresDataSourceProperties,
             @Value("${clickhouse.flyway.schema-mode:non-sharded}") String schemaMode,
-            @Value("${clickhouse.flyway.sharded.cluster:}") String shardedCluster,
-            @Value("${clickhouse.flyway.sharded.shard:}") String shardedShard,
-            @Value("${clickhouse.flyway.sharded.replica:}") String shardedReplica,
+            @Value("${" + SHARDED_CLUSTER_PROPERTY + ":}") String shardedCluster,
+            @Value("${" + SHARDED_SHARD_PROPERTY + ":}") String shardedShard,
+            @Value("${" + SHARDED_REPLICA_PROPERTY + ":}") String shardedReplica,
             @Value("${postgres.db.schema}") String postgresSchema) {
         String normalizedSchemaMode = schemaMode.toLowerCase(Locale.ROOT);
         Map<String, String> placeholders = new LinkedHashMap<>(resolveFlywayShardedPlaceholders(
@@ -88,12 +103,12 @@ public class ClickHouseConfig {
     }
 
     private String resolveClickHouseMigrationLocation(String schemaMode) {
-        return switch (schemaMode.toLowerCase(Locale.ROOT)) {
-            case "non-sharded" -> "classpath:db/migration-clickhouse/non-sharded";
-            case "sharded" -> "classpath:db/migration-clickhouse/sharded";
+        return switch (schemaMode) {
+            case NON_SHARDED_SCHEMA_MODE -> NON_SHARDED_MIGRATION_LOCATION;
+            case SHARDED_SCHEMA_MODE -> SHARDED_MIGRATION_LOCATION;
             default -> throw new IllegalArgumentException(
-                    String.format("Unsupported clickhouse.flyway.schema-mode: %s. Allowed values: non-sharded, sharded",
-                            schemaMode));
+                    String.format("Unsupported clickhouse.flyway.schema-mode: %s. Allowed values: %s, %s",
+                            schemaMode, NON_SHARDED_SCHEMA_MODE, SHARDED_SCHEMA_MODE));
         };
     }
 
@@ -102,18 +117,18 @@ public class ClickHouseConfig {
             String shardedCluster,
             String shardedShard,
             String shardedReplica) {
-        if ("non-sharded".equals(schemaMode)) {
+        if (NON_SHARDED_SCHEMA_MODE.equals(schemaMode)) {
             return Map.of();
         }
 
-        if ("sharded".equals(schemaMode)) {
-            validateRequiredShardedProperty("clickhouse.flyway.sharded.cluster", shardedCluster);
-            validateRequiredShardedProperty("clickhouse.flyway.sharded.shard", shardedShard);
-            validateRequiredShardedProperty("clickhouse.flyway.sharded.replica", shardedReplica);
+        if (SHARDED_SCHEMA_MODE.equals(schemaMode)) {
+            validateRequiredShardedProperty(SHARDED_CLUSTER_PROPERTY, shardedCluster);
+            validateRequiredShardedProperty(SHARDED_SHARD_PROPERTY, shardedShard);
+            validateRequiredShardedProperty(SHARDED_REPLICA_PROPERTY, shardedReplica);
             return Map.of(
-                    "cluster", shardedCluster,
-                    "shard", shardedShard,
-                    "replica", shardedReplica);
+                    CLUSTER_PLACEHOLDER, shardedCluster,
+                    SHARD_PLACEHOLDER, shardedShard,
+                    REPLICA_PLACEHOLDER, shardedReplica);
         }
 
         return Map.of();
