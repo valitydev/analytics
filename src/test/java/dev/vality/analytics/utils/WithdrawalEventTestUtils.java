@@ -78,7 +78,11 @@ public final class WithdrawalEventTestUtils {
                 .setChange(Change.route(new RouteChange().setRoute(route)));
     }
 
-    public static TimestampedChange transferCreatedChange(long amount, long systemFee, long providerFee, long externalFee) {
+    public static TimestampedChange transferCreatedChange(
+            long amount,
+            long systemFee,
+            long providerFee,
+            long externalFee) {
         FinalCashFlow cashFlow = new FinalCashFlow().setPostings(List.of(
                 merchantToPayout(amount),
                 merchantToSystem(systemFee),

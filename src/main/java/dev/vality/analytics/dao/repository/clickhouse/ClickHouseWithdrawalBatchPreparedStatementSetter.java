@@ -12,10 +12,12 @@ import java.util.List;
 
 public class ClickHouseWithdrawalBatchPreparedStatementSetter implements BatchPreparedStatementSetter {
 
-    public static final String INSERT = "INSERT INTO analytic.events_sink_withdrawal "
-            + "(timestamp, eventTime, eventTimeHour, partyId, withdrawalId, sequenceId, withdrawalTime, walletId, "
-            + "destinationId, providerId, terminal, amount, guaranteeDeposit, systemFee, providerFee, externalFee, "
-            + "currency, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT = "INSERT INTO analytic.events_sink_withdrawal " +
+            "(timestamp, eventTime, eventTimeHour, partyId, withdrawalId, sequenceId, withdrawalTime, " +
+            "walletId, " +
+            "destinationId, providerId, terminal, amount, guaranteeDeposit, systemFee, providerFee, " +
+            "externalFee, " +
+            "currency, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<WithdrawalRow> batch;
 
@@ -29,7 +31,9 @@ public class ClickHouseWithdrawalBatchPreparedStatementSetter implements BatchPr
         int column = 1;
         ps.setObject(column++, row.getEventTime().toLocalDate());
         ps.setLong(column++, row.getEventTime().toEpochSecond(ZoneOffset.UTC));
-        ps.setLong(column++, row.getEventTime().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.HOURS).toEpochMilli());
+        ps.setLong(
+                column++,
+                row.getEventTime().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.HOURS).toEpochMilli());
         ps.setString(column++, defaultString(row.getPartyId()));
         ps.setString(column++, defaultString(row.getWithdrawalId()));
         ps.setLong(column++, row.getSequenceId());

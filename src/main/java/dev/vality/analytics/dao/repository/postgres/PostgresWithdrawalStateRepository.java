@@ -15,29 +15,32 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PostgresWithdrawalStateRepository {
 
-    private static final String UPSERT = "INSERT INTO analytics.withdrawal_state "
-            + "(withdrawal_id, party_id, wallet_id, destination_id, currency, requested_amount, amount, system_fee, "
-            + "provider_fee, external_fee, withdrawal_created_at, provider_id, terminal, last_sequence_id, updated_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-            + "ON CONFLICT (withdrawal_id) DO UPDATE SET "
-            + "party_id = EXCLUDED.party_id, "
-            + "wallet_id = EXCLUDED.wallet_id, "
-            + "destination_id = EXCLUDED.destination_id, "
-            + "currency = EXCLUDED.currency, "
-            + "requested_amount = EXCLUDED.requested_amount, "
-            + "amount = EXCLUDED.amount, "
-            + "system_fee = EXCLUDED.system_fee, "
-            + "provider_fee = EXCLUDED.provider_fee, "
-            + "external_fee = EXCLUDED.external_fee, "
-            + "withdrawal_created_at = EXCLUDED.withdrawal_created_at, "
-            + "provider_id = EXCLUDED.provider_id, "
-            + "terminal = EXCLUDED.terminal, "
-            + "last_sequence_id = EXCLUDED.last_sequence_id, "
-            + "updated_at = EXCLUDED.updated_at";
-    private static final String SELECT = "SELECT withdrawal_id, party_id, wallet_id, destination_id, currency, "
-            + "requested_amount, amount, system_fee, provider_fee, external_fee, withdrawal_created_at, provider_id, "
-            + "terminal, last_sequence_id, updated_at "
-            + "FROM analytics.withdrawal_state WHERE withdrawal_id = ?";
+    private static final String UPSERT = "INSERT INTO analytics.withdrawal_state " +
+            "(withdrawal_id, party_id, wallet_id, destination_id, currency, requested_amount, amount, " +
+            "system_fee, " +
+            "provider_fee, external_fee, withdrawal_created_at, provider_id, terminal, " +
+            "last_sequence_id, " +
+            "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (withdrawal_id) DO UPDATE SET " +
+            "party_id = EXCLUDED.party_id, " +
+            "wallet_id = EXCLUDED.wallet_id, " +
+            "destination_id = EXCLUDED.destination_id, " +
+            "currency = EXCLUDED.currency, " +
+            "requested_amount = EXCLUDED.requested_amount, " +
+            "amount = EXCLUDED.amount, " +
+            "system_fee = EXCLUDED.system_fee, " +
+            "provider_fee = EXCLUDED.provider_fee, " +
+            "external_fee = EXCLUDED.external_fee, " +
+            "withdrawal_created_at = EXCLUDED.withdrawal_created_at, " +
+            "provider_id = EXCLUDED.provider_id, " +
+            "terminal = EXCLUDED.terminal, " +
+            "last_sequence_id = EXCLUDED.last_sequence_id, " +
+            "updated_at = EXCLUDED.updated_at";
+    private static final String SELECT = "SELECT withdrawal_id, party_id, wallet_id, destination_id, currency, " +
+            "requested_amount, amount, system_fee, provider_fee, external_fee, withdrawal_created_at, " +
+            "provider_id, terminal, last_sequence_id, updated_at " +
+            "FROM analytics.withdrawal_state " +
+            "WHERE withdrawal_id = ?";
 
     private final JdbcTemplate postgresJdbcTemplate;
 

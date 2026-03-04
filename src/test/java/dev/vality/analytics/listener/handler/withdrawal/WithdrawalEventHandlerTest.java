@@ -97,7 +97,9 @@ public class WithdrawalEventHandlerTest {
                 .lastSequenceId(1L)
                 .build());
 
-        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(2L, WithdrawalEventTestUtils.routeChange(77, 55));
+        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(
+                2L,
+                WithdrawalEventTestUtils.routeChange(77, 55));
         when(machineEventParser.parse(machineEvent)).thenReturn(WithdrawalEventTestUtils.routeChange(77, 55));
 
         withdrawalEventHandler.handle(List.of(machineEvent));
@@ -148,7 +150,9 @@ public class WithdrawalEventHandlerTest {
                 .lastSequenceId(3L)
                 .build());
 
-        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(4L, WithdrawalEventTestUtils.succeededStatusChange());
+        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(
+                4L,
+                WithdrawalEventTestUtils.succeededStatusChange());
         when(machineEventParser.parse(machineEvent)).thenReturn(WithdrawalEventTestUtils.succeededStatusChange());
 
         withdrawalEventHandler.handle(List.of(machineEvent));
@@ -182,7 +186,9 @@ public class WithdrawalEventHandlerTest {
                 .lastSequenceId(1L)
                 .build());
 
-        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(2L, WithdrawalEventTestUtils.pendingStatusChange());
+        MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(
+                2L,
+                WithdrawalEventTestUtils.pendingStatusChange());
         when(machineEventParser.parse(machineEvent)).thenReturn(WithdrawalEventTestUtils.pendingStatusChange());
 
         withdrawalEventHandler.handle(List.of(machineEvent));
