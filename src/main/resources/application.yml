@@ -53,6 +53,14 @@ clickhouse.db:
     connection-timeout: 10000
     leak-detection-threshold: 5000
 
+clickhouse.flyway:
+  schema-mode: non-sharded
+  sharded:
+    # Required only when clickhouse.flyway.schema-mode=sharded
+    cluster:
+    shard:
+    replica:
+
 postgres.db:
   schema: analytics
   type: com.zaxxer.hikari.HikariDataSource
@@ -84,7 +92,7 @@ kafka:
       initial: mg-events-dominant
       max.poll.records: 50
     rate:
-      initial: mg-events-rates
+      initial: etl-exchange-rate
       groupId: analytics-rate-group
       max.poll.records: 50
   consumer:
