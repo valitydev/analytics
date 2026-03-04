@@ -71,7 +71,7 @@ public class WithdrawalEventHandler {
             return null;
         }
 
-        String withdrawalId = resolveWithdrawalId(machineEvent, timestampedChange);
+        String withdrawalId = resolveWithdrawalId(machineEvent);
         if (withdrawalId == null) {
             log.warn("Skipping withdrawal event without withdrawal id, eventId={}", machineEvent.getEventId());
             return null;
@@ -158,15 +158,10 @@ public class WithdrawalEventHandler {
         }
     }
 
-    private String resolveWithdrawalId(MachineEvent machineEvent, TimestampedChange timestampedChange) {
+    private String resolveWithdrawalId(MachineEvent machineEvent) {
         if (machineEvent.isSetSourceId()) {
             return machineEvent.getSourceId();
         }
-
-        if (timestampedChange.getChange().isSetCreated()) {
-            return timestampedChange.getChange().getCreated().getWithdrawal().getId();
-        }
-
         return null;
     }
 
