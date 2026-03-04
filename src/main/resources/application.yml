@@ -91,6 +91,9 @@ kafka:
     dominant:
       initial: mg-events-dominant
       max.poll.records: 50
+    withdrawal:
+      initial: mg-events-withdrawal
+      max.poll.records: 50
     rate:
       initial: etl-exchange-rate
       groupId: analytics-rate-group
@@ -106,6 +109,8 @@ kafka:
     party:
       enabled: true
     dominant:
+      enabled: true
+    withdrawal:
       enabled: true
     rate:
       enabled: true

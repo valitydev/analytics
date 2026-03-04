@@ -24,7 +24,10 @@ public enum EventType {
                     ".payload.session_transaction_bound", new IsNullCondition().not()),
     INVOICE_PAYMENT_RISK_SCORE_CHANGED("invoice_payment_change.payload.invoice_payment_risk_score_changed",
             new IsNullCondition().not()),
-    RATE_CREATED("created", new IsNullCondition().not());
+    WITHDRAWAL_CREATED("change.created", new IsNullCondition().not()),
+    WITHDRAWAL_ROUTE_CHANGED("change.route", new IsNullCondition().not()),
+    WITHDRAWAL_TRANSFER_CHANGED("change.transfer.payload.created", new IsNullCondition().not()),
+    WITHDRAWAL_STATUS_CHANGED("change.status_changed", new IsNullCondition().not());
 
     Filter filter;
 

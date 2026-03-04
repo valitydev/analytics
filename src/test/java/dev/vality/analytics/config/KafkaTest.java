@@ -17,7 +17,8 @@ import java.lang.annotation.Target;
                 "kafka.topic.event.sink.initial",
                 "kafka.topic.party.initial",
                 "kafka.topic.rate.initial",
-                "kafka.topic.dominant.initial"
+                "kafka.topic.dominant.initial",
+                "kafka.topic.withdrawal.initial"
         })
 @KafkaTestConfig
 public @interface KafkaTest {

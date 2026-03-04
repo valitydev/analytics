@@ -1,5 +1,6 @@
 package dev.vality.analytics.config;
 
+import dev.vality.fistful.withdrawal.TimestampedChange;
 import dev.vality.damsel.domain_config_v2.HistoricalCommit;
 import dev.vality.exrates.events.CurrencyEvent;
 import dev.vality.geck.serializer.Geck;
@@ -31,6 +32,22 @@ public class SerializeConfig {
                 return Geck.msgPackToTBase(bytes, HistoricalCommit.class);
             }
         });
+    }
+
+    @Bean
+    public BinaryDeserializer<TimestampedChange> withdrawalTimestampedChangeBinaryDeserializer() {
+        return new AbstractThriftBinaryDeserializer<>() {
+            @Override
+            public TimestampedChange deserialize(byte[] bytes) {
+                return Geck.msgPackToTBase(bytes, TimestampedChange.class);
+            }
+        };
+    }
+
+    @Bean
+    public MachineEventParser<TimestampedChange> withdrawalTimestampedChangeMachineEventParser(
+            BinaryDeserializer<TimestampedChange> withdrawalTimestampedChangeBinaryDeserializer) {
+        return new MachineEventParser<>(withdrawalTimestampedChangeBinaryDeserializer);
     }
 
 }
