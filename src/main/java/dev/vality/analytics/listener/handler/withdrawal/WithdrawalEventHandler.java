@@ -5,8 +5,8 @@ import dev.vality.analytics.dao.model.WithdrawalStateSnapshot;
 import dev.vality.analytics.dao.repository.clickhouse.ClickHouseWithdrawalRepository;
 import dev.vality.analytics.dao.repository.postgres.PostgresWithdrawalStateRepository;
 import dev.vality.analytics.listener.mapper.withdrawal.WithdrawalMapper;
+import dev.vality.analytics.utils.TimestampUtil;
 import dev.vality.fistful.withdrawal.TimestampedChange;
-import dev.vality.geck.common.util.TypeUtil;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class WithdrawalEventHandler {
                 continue;
             }
 
-            apply(result, stateCache, withdrawalRows);
+            applyMappingResult(result, stateCache, withdrawalRows);
         }
 
         clickHouseWithdrawalRepository.insertBatch(withdrawalRows);
@@ -64,7 +64,7 @@ public class WithdrawalEventHandler {
             return null;
         }
 
-        LocalDateTime eventTime = parseTime(timestampedChange.getOccuredAt());
+        LocalDateTime eventTime = TimestampUtil.parseLocalDateTime(timestampedChange.getOccuredAt());
         if (eventTime == null) {
             log.warn("Skipping withdrawal event with invalid occured_at, sourceId={}, eventId={}",
                     machineEvent.getSourceId(), machineEvent.getEventId());
@@ -98,33 +98,22 @@ public class WithdrawalEventHandler {
             if (mapper.accept(context.getTimestampedChange())) {
                 WithdrawalMappingResult result = mapper.map(context.getTimestampedChange(), context);
                 if (result == null) {
-                    if (context.getCurrentState() == null) {
-                        log.warn("Skipping {} change without reducer state, withdrawalId={}, eventId={}",
-                                mapper.getChangeType(),
-                                context.getWithdrawalId(),
-                                context.getMachineEvent().getEventId());
-                    } else {
-                        log.debug("Skipping {} change because mapper produced no update, withdrawalId={}, eventId={}",
-                                mapper.getChangeType(),
-                                context.getWithdrawalId(),
-                                context.getMachineEvent().getEventId());
-                    }
+                    logEmptyContextResult(context, mapper);
                 }
                 return result;
             }
         }
-
         log.debug("No withdrawal mapper matched, withdrawalId={}, eventId={}",
                 context.getWithdrawalId(), context.getMachineEvent().getEventId());
         return null;
     }
 
-    private void apply(
+    private void applyMappingResult(
             WithdrawalMappingResult result,
             Map<String, WithdrawalStateSnapshot> stateCache,
             List<WithdrawalRow> withdrawalRows) {
         if (result.getStateSnapshot() != null) {
-            upsert(result.getStateSnapshot(), stateCache);
+            cachedUpsert(result.getStateSnapshot(), stateCache);
         }
 
         if (result.getWithdrawalRow() != null) {
@@ -132,7 +121,7 @@ public class WithdrawalEventHandler {
         }
     }
 
-    private void upsert(WithdrawalStateSnapshot snapshot, Map<String, WithdrawalStateSnapshot> stateCache) {
+    private void cachedUpsert(WithdrawalStateSnapshot snapshot, Map<String, WithdrawalStateSnapshot> stateCache) {
         postgresWithdrawalStateRepository.upsert(snapshot);
         stateCache.put(snapshot.getWithdrawalId(), snapshot);
     }
@@ -165,16 +154,17 @@ public class WithdrawalEventHandler {
         return null;
     }
 
-    private LocalDateTime parseTime(String timestamp) {
-        if (timestamp == null) {
-            return null;
-        }
-
-        try {
-            return TypeUtil.stringToLocalDateTime(timestamp);
-        } catch (Exception e) {
-            log.warn("Failed to parse withdrawal timestamp '{}'", timestamp, e);
-            return null;
+    private void logEmptyContextResult(WithdrawalEventContext context, WithdrawalMapper mapper) {
+        if (context.getCurrentState() == null) {
+            log.warn("Skipping {} change without reducer state, withdrawalId={}, eventId={}",
+                    mapper.getChangeType(),
+                    context.getWithdrawalId(),
+                    context.getMachineEvent().getEventId());
+        } else {
+            log.debug("Skipping {} change because mapper produced no update, withdrawalId={}, eventId={}",
+                    mapper.getChangeType(),
+                    context.getWithdrawalId(),
+                    context.getMachineEvent().getEventId());
         }
     }
 }

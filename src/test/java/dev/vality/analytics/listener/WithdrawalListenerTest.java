@@ -53,12 +53,11 @@ public class WithdrawalListenerTest {
         assertEquals(1200L, ((Number) stateRow.get("amount")).longValue());
         assertEquals(100L, ((Number) stateRow.get("system_fee")).longValue());
         assertEquals(20L, ((Number) stateRow.get("provider_fee")).longValue());
-        assertEquals(10L, ((Number) stateRow.get("external_fee")).longValue());
         assertEquals("42", stateRow.get("provider_id"));
         assertEquals("24", stateRow.get("terminal"));
 
         Map<String, Object> withdrawalRow = clickHouseJdbcTemplate.queryForMap(
-                "SELECT partyId, currency, providerId, terminal, amount, systemFee, providerFee, externalFee, status " +
+                "SELECT partyId, currency, providerId, terminal, amount, systemFee, providerFee, status " +
                         "FROM analytic.events_sink_withdrawal WHERE withdrawalId = ? AND status = 'succeeded'",
                 WithdrawalEventTestUtils.WITHDRAWAL_ID);
         assertEquals(WithdrawalEventTestUtils.PARTY_ID, withdrawalRow.get("partyId"));
@@ -68,7 +67,6 @@ public class WithdrawalListenerTest {
         assertEquals(1200L, ((Number) withdrawalRow.get("amount")).longValue());
         assertEquals(100L, ((Number) withdrawalRow.get("systemFee")).longValue());
         assertEquals(20L, ((Number) withdrawalRow.get("providerFee")).longValue());
-        assertEquals(10L, ((Number) withdrawalRow.get("externalFee")).longValue());
 
         clickHouseJdbcTemplate.execute("SYSTEM RELOAD DICTIONARY analytic.shop_dictionary");
         String locationUrl = clickHouseJdbcTemplate.queryForObject(

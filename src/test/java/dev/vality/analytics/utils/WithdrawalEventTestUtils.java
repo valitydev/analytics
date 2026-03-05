@@ -7,9 +7,9 @@ import dev.vality.fistful.cashflow.ExternalCashFlowAccount;
 import dev.vality.fistful.cashflow.FinalCashFlow;
 import dev.vality.fistful.cashflow.FinalCashFlowAccount;
 import dev.vality.fistful.cashflow.FinalCashFlowPosting;
-import dev.vality.fistful.cashflow.MerchantCashFlowAccount;
 import dev.vality.fistful.cashflow.ProviderCashFlowAccount;
 import dev.vality.fistful.cashflow.SystemCashFlowAccount;
+import dev.vality.fistful.cashflow.WalletCashFlowAccount;
 import dev.vality.fistful.transfer.Transfer;
 import dev.vality.fistful.withdrawal.Change;
 import dev.vality.fistful.withdrawal.CreatedChange;
@@ -81,13 +81,11 @@ public final class WithdrawalEventTestUtils {
     public static TimestampedChange transferCreatedChange(
             long amount,
             long systemFee,
-            long providerFee,
-            long externalFee) {
+            long providerFee) {
         FinalCashFlow cashFlow = new FinalCashFlow().setPostings(List.of(
-                merchantToPayout(amount),
-                merchantToSystem(systemFee),
+                walletSenderSettlementToReceiverDestination(amount),
+                walletSenderSettlementToSystem(systemFee),
                 systemToProvider(providerFee),
-                systemToExternal(externalFee),
                 unrelatedPosting(999L)));
 
         Transfer transfer = new Transfer()
@@ -130,20 +128,20 @@ public final class WithdrawalEventTestUtils {
         return List.of(
                 sinkEvent(1L, createdChange(1500L, null, null)),
                 sinkEvent(2L, routeChange(42, 24)),
-                sinkEvent(3L, transferCreatedChange(1200L, 100L, 20L, 10L)),
+                sinkEvent(3L, transferCreatedChange(1200L, 100L, 20L)),
                 sinkEvent(4L, succeededStatusChange()));
     }
 
-    public static FinalCashFlowPosting merchantToPayout(long amount) {
+    public static FinalCashFlowPosting walletSenderSettlementToReceiverDestination(long amount) {
         return posting(
-                CashFlowAccount.merchant(MerchantCashFlowAccount.settlement),
-                CashFlowAccount.merchant(MerchantCashFlowAccount.payout),
+                CashFlowAccount.wallet(WalletCashFlowAccount.sender_settlement),
+                CashFlowAccount.wallet(WalletCashFlowAccount.receiver_destination),
                 amount);
     }
 
-    public static FinalCashFlowPosting merchantToSystem(long amount) {
+    public static FinalCashFlowPosting walletSenderSettlementToSystem(long amount) {
         return posting(
-                CashFlowAccount.merchant(MerchantCashFlowAccount.settlement),
+                CashFlowAccount.wallet(WalletCashFlowAccount.sender_settlement),
                 CashFlowAccount.system(SystemCashFlowAccount.settlement),
                 amount);
     }

@@ -8,7 +8,6 @@ CREATE TABLE analytics.withdrawal_state (
     amount                 BIGINT,
     system_fee             BIGINT,
     provider_fee           BIGINT,
-    external_fee           BIGINT,
     withdrawal_created_at  TIMESTAMP WITHOUT TIME ZONE,
     provider_id            VARCHAR,
     terminal               VARCHAR,

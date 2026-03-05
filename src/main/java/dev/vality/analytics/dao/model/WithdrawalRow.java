@@ -24,10 +24,8 @@ public class WithdrawalRow {
     private String providerId;
     private String terminal;
     private long amount;
-    private long guaranteeDeposit;
     private long systemFee;
     private long providerFee;
-    private long externalFee;
     private String currency;
     private WithdrawalStatus status;
 

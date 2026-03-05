@@ -44,10 +44,8 @@ public class WithdrawalStatusMapper extends AbstractWithdrawalMapper {
                 .terminal(updatedState.getTerminal())
                 .amount(Optional.ofNullable(updatedState.getAmount())
                         .orElse(Optional.ofNullable(updatedState.getRequestedAmount()).orElse(0L)))
-                .guaranteeDeposit(0L)
                 .systemFee(Optional.ofNullable(updatedState.getSystemFee()).orElse(0L))
                 .providerFee(Optional.ofNullable(updatedState.getProviderFee()).orElse(0L))
-                .externalFee(Optional.ofNullable(updatedState.getExternalFee()).orElse(0L))
                 .currency(updatedState.getCurrency())
                 .status(status)
                 .build();

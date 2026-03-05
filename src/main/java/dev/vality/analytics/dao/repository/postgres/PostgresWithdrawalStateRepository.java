@@ -18,9 +18,9 @@ public class PostgresWithdrawalStateRepository {
     private static final String UPSERT = "INSERT INTO analytics.withdrawal_state " +
             "(withdrawal_id, party_id, wallet_id, destination_id, currency, requested_amount, amount, " +
             "system_fee, " +
-            "provider_fee, external_fee, withdrawal_created_at, provider_id, terminal, " +
+            "provider_fee, withdrawal_created_at, provider_id, terminal, " +
             "last_sequence_id, " +
-            "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+            "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
             "ON CONFLICT (withdrawal_id) DO UPDATE SET " +
             "party_id = EXCLUDED.party_id, " +
             "wallet_id = EXCLUDED.wallet_id, " +
@@ -30,14 +30,13 @@ public class PostgresWithdrawalStateRepository {
             "amount = EXCLUDED.amount, " +
             "system_fee = EXCLUDED.system_fee, " +
             "provider_fee = EXCLUDED.provider_fee, " +
-            "external_fee = EXCLUDED.external_fee, " +
             "withdrawal_created_at = EXCLUDED.withdrawal_created_at, " +
             "provider_id = EXCLUDED.provider_id, " +
             "terminal = EXCLUDED.terminal, " +
             "last_sequence_id = EXCLUDED.last_sequence_id, " +
             "updated_at = EXCLUDED.updated_at";
     private static final String SELECT = "SELECT withdrawal_id, party_id, wallet_id, destination_id, currency, " +
-            "requested_amount, amount, system_fee, provider_fee, external_fee, withdrawal_created_at, " +
+            "requested_amount, amount, system_fee, provider_fee, withdrawal_created_at, " +
             "provider_id, terminal, last_sequence_id, updated_at " +
             "FROM analytics.withdrawal_state " +
             "WHERE withdrawal_id = ?";
@@ -65,7 +64,6 @@ public class PostgresWithdrawalStateRepository {
                 snapshot.getAmount(),
                 snapshot.getSystemFee(),
                 snapshot.getProviderFee(),
-                snapshot.getExternalFee(),
                 snapshot.getWithdrawalCreatedAt(),
                 snapshot.getProviderId(),
                 snapshot.getTerminal(),
@@ -86,7 +84,6 @@ public class PostgresWithdrawalStateRepository {
                 .amount((Long) resultSet.getObject("amount"))
                 .systemFee((Long) resultSet.getObject("system_fee"))
                 .providerFee((Long) resultSet.getObject("provider_fee"))
-                .externalFee((Long) resultSet.getObject("external_fee"))
                 .withdrawalCreatedAt(resultSet.getTimestamp("withdrawal_created_at") != null
                         ? resultSet.getTimestamp("withdrawal_created_at").toLocalDateTime()
                         : null)

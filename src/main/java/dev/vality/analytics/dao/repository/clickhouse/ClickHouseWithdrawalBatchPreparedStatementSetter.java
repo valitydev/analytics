@@ -15,9 +15,8 @@ public class ClickHouseWithdrawalBatchPreparedStatementSetter implements BatchPr
     public static final String INSERT = "INSERT INTO analytic.events_sink_withdrawal " +
             "(timestamp, eventTime, eventTimeHour, partyId, withdrawalId, sequenceId, withdrawalTime, " +
             "walletId, " +
-            "destinationId, providerId, terminal, amount, guaranteeDeposit, systemFee, providerFee, " +
-            "externalFee, " +
-            "currency, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "destinationId, providerId, terminal, amount, systemFee, providerFee, " +
+            "currency, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final List<WithdrawalRow> batch;
 
@@ -43,10 +42,8 @@ public class ClickHouseWithdrawalBatchPreparedStatementSetter implements BatchPr
         ps.setString(column++, defaultString(row.getProviderId()));
         ps.setString(column++, defaultString(row.getTerminal()));
         ps.setLong(column++, safeUnsigned(row.getAmount()));
-        ps.setLong(column++, safeUnsigned(row.getGuaranteeDeposit()));
         ps.setLong(column++, safeUnsigned(row.getSystemFee()));
         ps.setLong(column++, safeUnsigned(row.getProviderFee()));
-        ps.setLong(column++, safeUnsigned(row.getExternalFee()));
         ps.setString(column++, defaultString(row.getCurrency()));
         ps.setString(column, row.getStatus().name());
     }

@@ -3,7 +3,7 @@ package dev.vality.analytics.listener.mapper.withdrawal;
 import dev.vality.analytics.computer.WithdrawalCashFlowComputer;
 import dev.vality.analytics.constant.EventType;
 import dev.vality.analytics.dao.model.WithdrawalStateSnapshot;
-import dev.vality.analytics.domain.CashFlowResult;
+import dev.vality.analytics.domain.WithdrawalCashFlowResult;
 import dev.vality.analytics.listener.handler.withdrawal.WithdrawalEventContext;
 import dev.vality.analytics.listener.handler.withdrawal.WithdrawalMappingResult;
 import dev.vality.fistful.cashflow.FinalCashFlow;
@@ -33,7 +33,7 @@ public class WithdrawalTransferMapper extends AbstractWithdrawalMapper {
 
         dev.vality.fistful.transfer.Change transferChange = change.getChange().getTransfer().getPayload();
         FinalCashFlow cashFlow = transferChange.getCreated().getTransfer().getCashflow();
-        CashFlowResult cashFlowResult = withdrawalCashFlowComputer.compute(
+        WithdrawalCashFlowResult cashFlowResult = withdrawalCashFlowComputer.compute(
                 cashFlow != null ? cashFlow.getPostings() : null);
 
         return WithdrawalMappingResult.builder()
@@ -41,7 +41,6 @@ public class WithdrawalTransferMapper extends AbstractWithdrawalMapper {
                         .amount(cashFlowResult.getAmount())
                         .systemFee(cashFlowResult.getSystemFee())
                         .providerFee(cashFlowResult.getProviderFee())
-                        .externalFee(cashFlowResult.getExternalFee())
                         .lastSequenceId(context.getMachineEvent().getEventId())
                         .updatedAt(context.getEventTime())
                         .build())

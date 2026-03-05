@@ -119,9 +119,9 @@ public class WithdrawalEventHandlerTest {
                 .build());
 
         MachineEvent machineEvent = WithdrawalEventTestUtils.machineEvent(3L,
-                WithdrawalEventTestUtils.transferCreatedChange(1200L, 100L, 20L, 10L));
+                WithdrawalEventTestUtils.transferCreatedChange(1200L, 100L, 20L));
         when(machineEventParser.parse(machineEvent))
-                .thenReturn(WithdrawalEventTestUtils.transferCreatedChange(1200L, 100L, 20L, 10L));
+                .thenReturn(WithdrawalEventTestUtils.transferCreatedChange(1200L, 100L, 20L));
 
         withdrawalEventHandler.handle(List.of(machineEvent));
 
@@ -129,7 +129,6 @@ public class WithdrawalEventHandlerTest {
         assertEquals(1200L, snapshot.getAmount());
         assertEquals(100L, snapshot.getSystemFee());
         assertEquals(20L, snapshot.getProviderFee());
-        assertEquals(10L, snapshot.getExternalFee());
     }
 
     @Test
@@ -146,7 +145,6 @@ public class WithdrawalEventHandlerTest {
                 .amount(1200L)
                 .systemFee(100L)
                 .providerFee(20L)
-                .externalFee(10L)
                 .lastSequenceId(3L)
                 .build());
 
@@ -169,7 +167,6 @@ public class WithdrawalEventHandlerTest {
         assertThat(row.getAmount(), is(1200L));
         assertThat(row.getSystemFee(), is(100L));
         assertThat(row.getProviderFee(), is(20L));
-        assertThat(row.getExternalFee(), is(10L));
         assertThat(row.getStatus().name(), is("succeeded"));
     }
 
@@ -199,7 +196,6 @@ public class WithdrawalEventHandlerTest {
         assertThat(row.getAmount(), is(1500L));
         assertThat(row.getSystemFee(), is(0L));
         assertThat(row.getProviderFee(), is(0L));
-        assertThat(row.getExternalFee(), is(0L));
         assertThat(row.getStatus().name(), is("pending"));
     }
 }

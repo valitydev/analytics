@@ -1,86 +1,92 @@
 package dev.vality.analytics.computer;
 
-import dev.vality.analytics.domain.CashFlowResult;
-import dev.vality.fistful.cashflow.ExternalCashFlowAccount;
+import dev.vality.analytics.domain.WithdrawalCashFlowResult;
+import dev.vality.fistful.cashflow.CashFlowAccount;
 import dev.vality.fistful.cashflow.FinalCashFlowPosting;
 import dev.vality.fistful.cashflow.MerchantCashFlowAccount;
 import dev.vality.fistful.cashflow.ProviderCashFlowAccount;
 import dev.vality.fistful.cashflow.SystemCashFlowAccount;
+import dev.vality.fistful.cashflow.WalletCashFlowAccount;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.EnumMap;
 import java.util.List;
 
 @Service
 public class WithdrawalCashFlowComputer {
 
-    public CashFlowResult compute(List<FinalCashFlowPosting> cashFlow) {
-        long amount = 0L;
-        long systemFee = 0L;
-        long providerFee = 0L;
-        long externalFee = 0L;
+    public WithdrawalCashFlowResult compute(List<FinalCashFlowPosting> cashFlow) {
+        EnumMap<WithdrawalCashFlowType, Long> cashFlowMap = new EnumMap<>(WithdrawalCashFlowType.class);
 
         if (CollectionUtils.isEmpty(cashFlow)) {
-            return CashFlowResult.EMPTY;
+            return WithdrawalCashFlowResult.EMPTY;
         }
 
         for (FinalCashFlowPosting posting : cashFlow) {
-            if (posting == null || !posting.isSetSource() || !posting.isSetDestination() || !posting.isSetVolume()) {
+            if (posting == null || !posting.isSetSource() || !posting.isSetDestination() || !posting.isSetVolume()
+                    || !posting.getSource().isSetAccountType() || !posting.getDestination().isSetAccountType()) {
                 continue;
             }
 
-            if (isAmount(posting)) {
-                amount += posting.getVolume().getAmount();
-            }
-
-            if (isSystemFee(posting)) {
-                systemFee += posting.getVolume().getAmount();
-            }
-
-            if (isProviderFee(posting)) {
-                providerFee += posting.getVolume().getAmount();
-            }
-
-            if (isExternalFee(posting)) {
-                externalFee += posting.getVolume().getAmount();
-            }
+            WithdrawalCashFlowType type = getCashFlowType(
+                    posting.getSource().getAccountType(),
+                    posting.getDestination().getAccountType());
+            cashFlowMap.put(type, posting.getVolume().getAmount());
         }
 
-        return CashFlowResult.builder()
-                .amount(amount)
-                .guaranteeDeposit(0L)
-                .systemFee(systemFee)
-                .providerFee(providerFee)
-                .externalFee(externalFee)
+        return WithdrawalCashFlowResult.builder()
+                .amount(cashFlowMap.getOrDefault(WithdrawalCashFlowType.AMOUNT, 0L))
+                .systemFee(cashFlowMap.getOrDefault(WithdrawalCashFlowType.FEE, 0L))
+                .providerFee(cashFlowMap.getOrDefault(WithdrawalCashFlowType.PROVIDER_FEE, 0L))
                 .build();
     }
 
-    private boolean isAmount(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetMerchant()
-                && posting.getSource().getAccountType().getMerchant() == MerchantCashFlowAccount.settlement
-                && posting.getDestination().getAccountType().isSetMerchant()
-                && posting.getDestination().getAccountType().getMerchant() == MerchantCashFlowAccount.payout;
+    private WithdrawalCashFlowType getCashFlowType(CashFlowAccount source, CashFlowAccount destination) {
+        if (isWalletSenderSettlement(source) && isWalletReceiverDestination(destination)) {
+            return WithdrawalCashFlowType.AMOUNT;
+        }
+
+        if (isWalletSenderSettlement(source) && isSystemSettlement(destination)) {
+            return WithdrawalCashFlowType.FEE;
+        }
+
+        if (isSystemSettlement(source) && isProviderSettlement(destination)) {
+            return WithdrawalCashFlowType.PROVIDER_FEE;
+        }
+
+        if (isMerchantSettlement(source) && isProviderSettlement(destination)) {
+            return WithdrawalCashFlowType.REFUND_AMOUNT;
+        }
+
+        return WithdrawalCashFlowType.UNKNOWN;
     }
 
-    private boolean isSystemFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetMerchant()
-                && posting.getSource().getAccountType().getMerchant() == MerchantCashFlowAccount.settlement
-                && posting.getDestination().getAccountType().isSetSystem()
-                && posting.getDestination().getAccountType().getSystem() == SystemCashFlowAccount.settlement;
+    private boolean isWalletSenderSettlement(CashFlowAccount account) {
+        return account.isSetWallet() && account.getWallet() == WalletCashFlowAccount.sender_settlement;
     }
 
-    private boolean isProviderFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetSystem()
-                && posting.getSource().getAccountType().getSystem() == SystemCashFlowAccount.settlement
-                && posting.getDestination().getAccountType().isSetProvider()
-                && posting.getDestination().getAccountType().getProvider() == ProviderCashFlowAccount.settlement;
+    private boolean isWalletReceiverDestination(CashFlowAccount account) {
+        return account.isSetWallet() && account.getWallet() == WalletCashFlowAccount.receiver_destination;
     }
 
-    private boolean isExternalFee(FinalCashFlowPosting posting) {
-        return posting.getSource().getAccountType().isSetSystem()
-                && posting.getSource().getAccountType().getSystem() == SystemCashFlowAccount.settlement
-                && posting.getDestination().getAccountType().isSetExternal()
-                && (posting.getDestination().getAccountType().getExternal() == ExternalCashFlowAccount.income
-                || posting.getDestination().getAccountType().getExternal() == ExternalCashFlowAccount.outcome);
+    private boolean isSystemSettlement(CashFlowAccount account) {
+        return account.isSetSystem() && account.getSystem() == SystemCashFlowAccount.settlement;
+    }
+
+    private boolean isProviderSettlement(CashFlowAccount account) {
+        return account.isSetProvider() && account.getProvider() == ProviderCashFlowAccount.settlement;
+    }
+
+    private boolean isMerchantSettlement(CashFlowAccount account) {
+        return account.isSetMerchant() && account.getMerchant() == MerchantCashFlowAccount.settlement;
+    }
+
+    private enum WithdrawalCashFlowType {
+        AMOUNT,
+        FEE,
+        PROVIDER_FEE,
+        REFUND_AMOUNT,
+        UNKNOWN
     }
 }

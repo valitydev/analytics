@@ -11,12 +11,10 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal (
     providerId String,
     terminal String,
     amount UInt64,
-    guaranteeDeposit UInt64,
     systemFee UInt64,
     providerFee UInt64,
-    externalFee UInt64,
     currency String,
     status Enum8('pending' = 1, 'succeeded' = 2, 'failed' = 3)
 ) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(timestamp)
-ORDER BY (eventTimeHour, partyId, status, currency, providerId, terminal, withdrawalId, sequenceId);
+ORDER BY (eventTimeHour, partyId, walletId, status, currency, providerId, terminal, withdrawalId, sequenceId);

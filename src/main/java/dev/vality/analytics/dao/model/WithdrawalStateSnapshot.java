@@ -22,7 +22,6 @@ public class WithdrawalStateSnapshot {
     private Long amount;
     private Long systemFee;
     private Long providerFee;
-    private Long externalFee;
     private LocalDateTime withdrawalCreatedAt;
     private String providerId;
     private String terminal;

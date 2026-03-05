@@ -4,8 +4,8 @@ import dev.vality.analytics.constant.WithdrawalStatus;
 import dev.vality.analytics.listener.handler.withdrawal.WithdrawalEventContext;
 import dev.vality.analytics.listener.handler.withdrawal.WithdrawalMappingResult;
 import dev.vality.analytics.listener.mapper.AbstractMapper;
+import dev.vality.analytics.utils.TimestampUtil;
 import dev.vality.fistful.withdrawal.TimestampedChange;
-import dev.vality.geck.common.util.TypeUtil;
 
 import java.time.LocalDateTime;
 
@@ -14,15 +14,7 @@ public abstract class AbstractWithdrawalMapper
         implements WithdrawalMapper {
 
     protected LocalDateTime parseTime(String timestamp) {
-        if (timestamp == null) {
-            return null;
-        }
-
-        try {
-            return TypeUtil.stringToLocalDateTime(timestamp);
-        } catch (Exception e) {
-            return null;
-        }
+        return TimestampUtil.parseLocalDateTime(timestamp);
     }
 
     protected String extractProviderId(dev.vality.fistful.withdrawal.Route route) {
