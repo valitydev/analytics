@@ -1,12 +1,12 @@
 package dev.vality.analytics.listener.mapper.rate;
 
 import dev.vality.analytics.domain.db.tables.pojos.Rate;
+import dev.vality.analytics.utils.TimestampUtil;
 import dev.vality.exrates.base.Currency;
 import dev.vality.exrates.base.Rational;
 import dev.vality.exrates.events.CurrencyEvent;
 import dev.vality.exrates.events.CurrencyEventPayload;
 import dev.vality.exrates.events.CurrencyExchangeRate;
-import dev.vality.geck.common.util.TypeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -69,12 +69,11 @@ public class CurrencyEventMapper {
     }
 
     private LocalDateTime parseEventTime(String timestamp, String eventId) {
-        try {
-            return TypeUtil.stringToLocalDateTime(timestamp);
-        } catch (Exception e) {
-            log.warn("Failed to parse timestamp '{}' for CurrencyEvent, eventId={}", timestamp, eventId, e);
-            return null;
+        LocalDateTime eventTime = TimestampUtil.parseLocalDateTime(timestamp);
+        if (eventTime == null) {
+            log.warn("Failed to parse timestamp '{}' for CurrencyEvent, eventId={}", timestamp, eventId);
         }
+        return eventTime;
     }
 
     private Rate buildRate(

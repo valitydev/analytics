@@ -36,6 +36,7 @@ public class KafkaConfig {
     private static final String RESULT_ANALYTICS = "result-analytics";
     private static final String PARTY_RESULT_ANALYTICS = "party-result-analytics";
     private static final String DOMINANT_ANALYTICS = "dominant-analytics";
+    private static final String WITHDRAWAL_ANALYTICS = "withdrawal-analytics";
     private final ConsumerGroupIdService consumerGroupIdService;
     private final KafkaProperties kafkaProperties;
 
@@ -53,6 +54,8 @@ public class KafkaConfig {
     private String maxPollRecordsDominantListener;
     @Value("${kafka.topic.rate.max.poll.records}")
     private String maxPollRecordsRatesListener;
+    @Value("${kafka.topic.withdrawal.max.poll.records}")
+    private String maxPollRecordsWithdrawalListener;
     @Value("${kafka.consumer.concurrency}")
     private int concurrencyListeners;
     @Value("${kafka.topic.rate.groupId}")
@@ -85,6 +88,16 @@ public class KafkaConfig {
         String consumerGroup = consumerGroupIdService.generateGroupId(DOMINANT_ANALYTICS);
         initDefaultListenerProperties(factory, consumerGroup,
                 new HistoricalCommitDeserializer(), maxPollRecordsDominantListener);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MachineEvent> withdrawalListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        String consumerGroup = consumerGroupIdService.generateGroupId(WITHDRAWAL_ANALYTICS);
+        initDefaultListenerProperties(factory, consumerGroup,
+                new MachineEventDeserializer(), maxPollRecordsWithdrawalListener);
         return factory;
     }
 
