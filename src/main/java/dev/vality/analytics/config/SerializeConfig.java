@@ -39,7 +39,7 @@ public class SerializeConfig {
         return new AbstractThriftBinaryDeserializer<>() {
             @Override
             public TimestampedChange deserialize(byte[] bytes) {
-                return Geck.msgPackToTBase(bytes, TimestampedChange.class);
+                return deserialize(bytes, new TimestampedChange());
             }
         };
     }

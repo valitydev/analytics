@@ -23,10 +23,12 @@ import dev.vality.fistful.withdrawal.status.Pending;
 import dev.vality.fistful.withdrawal.status.Status;
 import dev.vality.fistful.withdrawal.status.Succeeded;
 import dev.vality.geck.common.util.TypeUtil;
-import dev.vality.geck.serializer.Geck;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.eventsink.SinkEvent;
 import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 
 import java.time.Instant;
 import java.util.List;
@@ -117,7 +119,7 @@ public final class WithdrawalEventTestUtils {
                 .setSourceId(WITHDRAWAL_ID)
                 .setEventId(eventId)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.parse(OCCURRED_AT)))
-                .setData(dev.vality.machinegun.msgpack.Value.bin(Geck.toMsgPack(timestampedChange)));
+                .setData(dev.vality.machinegun.msgpack.Value.bin(serialize(timestampedChange)));
     }
 
     public static SinkEvent sinkEvent(long eventId, TimestampedChange timestampedChange) {
@@ -172,5 +174,13 @@ public final class WithdrawalEventTestUtils {
                 .setSource(new FinalCashFlowAccount().setAccountType(source))
                 .setDestination(new FinalCashFlowAccount().setAccountType(destination))
                 .setVolume(new Cash().setAmount(amount).setCurrency(new CurrencyRef(CURRENCY)));
+    }
+
+    private static byte[] serialize(TBase<?, ?> thriftValue) {
+        try {
+            return new TSerializer(new TBinaryProtocol.Factory()).serialize(thriftValue);
+        } catch (TException e) {
+            throw new IllegalStateException("Failed to serialize withdrawal test event", e);
+        }
     }
 }
