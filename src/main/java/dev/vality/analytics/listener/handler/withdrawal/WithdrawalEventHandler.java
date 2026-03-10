@@ -138,13 +138,7 @@ public class WithdrawalEventHandler {
     }
 
     private TimestampedChange parse(MachineEvent machineEvent) {
-        try {
-            return withdrawalTimestampedChangeMachineEventParser.parse(machineEvent);
-        } catch (Exception e) {
-            log.warn("Failed to parse withdrawal event, sourceId={}, eventId={}",
-                    machineEvent.getSourceId(), machineEvent.getEventId(), e);
-            return null;
-        }
+        return withdrawalTimestampedChangeMachineEventParser.parse(machineEvent);
     }
 
     private String resolveWithdrawalId(MachineEvent machineEvent) {
