@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -15,9 +15,6 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal_local (
     providerFee UInt64,
     currency String,
     status Enum8('pending' = 1, 'succeeded' = 2, 'failed' = 3)
-) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{shard}/{database}/{table}', '{replica}')
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{database}/{table}', '{replica}')
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, walletId, status, currency, providerId, terminal, withdrawalId, sequenceId);
-
-CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal AS analytic.events_sink_withdrawal_local
-ENGINE = Distributed('{cluster}', analytic, events_sink_withdrawal_local, cityHash64(timestamp, partyId));
