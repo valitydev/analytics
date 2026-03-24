@@ -54,12 +54,8 @@ clickhouse.db:
     leak-detection-threshold: 5000
 
 clickhouse.flyway:
+  # Allowed values: non-sharded, replicated-non-sharded, sharded
   schema-mode: non-sharded
-  sharded:
-    # Required only when clickhouse.flyway.schema-mode=sharded
-    cluster:
-    shard:
-    replica:
 
 postgres.db:
   schema: analytics

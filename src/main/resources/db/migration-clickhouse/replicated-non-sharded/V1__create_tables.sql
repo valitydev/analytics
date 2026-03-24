@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS analytic;
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -41,14 +41,11 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_local (
     riskScore String,
     rrn String,
     paymentTerminal String
-) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{shard}/{database}/{table}', '{replica}')
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{database}/{table}', '{replica}')
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, paymentTool, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink AS analytic.events_sink_local
-ENGINE = Distributed('{cluster}', analytic, events_sink_local, cityHash64(timestamp, partyId));
-
-CREATE TABLE IF NOT EXISTS analytic.events_sink_refund_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_refund (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -83,14 +80,11 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_refund_local (
     paymentTime UInt64,
     providerId String,
     terminal String
-) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{shard}/{database}/{table}', '{replica}')
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{database}/{table}', '{replica}')
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, refundId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_refund AS analytic.events_sink_refund_local
-ENGINE = Distributed('{cluster}', analytic, events_sink_refund_local, cityHash64(timestamp, partyId));
-
-CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -130,14 +124,11 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment_local (
     paymentTime UInt64,
     providerId String,
     terminal String
-) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{shard}/{database}/{table}', '{replica}')
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{database}/{table}', '{replica}')
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, adjustmentId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment AS analytic.events_sink_adjustment_local
-ENGINE = Distributed('{cluster}', analytic, events_sink_adjustment_local, cityHash64(timestamp, partyId));
-
-CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -172,9 +163,6 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback_local (
     paymentTime UInt64,
     providerId String,
     terminal String
-) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{shard}/{database}/{table}', '{replica}')
+) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/{cluster}/tables/{database}/{table}', '{replica}')
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, category, status, stage, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, chargebackId, sequenceId);
-
-CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback AS analytic.events_sink_chargeback_local
-ENGINE = Distributed('{cluster}', analytic, events_sink_chargeback_local, cityHash64(timestamp, partyId));
