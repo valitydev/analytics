@@ -1,11 +1,11 @@
-DROP DICTIONARY IF EXISTS analytic.party_dictionary;
-DROP DICTIONARY IF EXISTS analytic.shop_dictionary;
-DROP DICTIONARY IF EXISTS analytic.category_dictionary;
-DROP DICTIONARY IF EXISTS analytic.country_dictionary;
-DROP DICTIONARY IF EXISTS analytic.trade_bloc_dictionary;
-DROP DICTIONARY IF EXISTS analytic.rate_dictionary;
+DROP DICTIONARY IF EXISTS analytic.party_dictionary ON CLUSTER '{cluster}';
+DROP DICTIONARY IF EXISTS analytic.shop_dictionary ON CLUSTER '{cluster}';
+DROP DICTIONARY IF EXISTS analytic.category_dictionary ON CLUSTER '{cluster}';
+DROP DICTIONARY IF EXISTS analytic.country_dictionary ON CLUSTER '{cluster}';
+DROP DICTIONARY IF EXISTS analytic.trade_bloc_dictionary ON CLUSTER '{cluster}';
+DROP DICTIONARY IF EXISTS analytic.rate_dictionary ON CLUSTER '{cluster}';
 
-CREATE DICTIONARY IF NOT EXISTS analytic.party_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.party_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     event_id UInt64,
     event_time DateTime,
@@ -39,7 +39,7 @@ SOURCE(POSTGRESQL(
 LAYOUT(HASHED())
 LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY IF NOT EXISTS analytic.shop_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.shop_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     event_id UInt64,
     event_time DateTime,
@@ -81,7 +81,7 @@ SOURCE(POSTGRESQL(
 LAYOUT(HASHED())
 LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY IF NOT EXISTS analytic.category_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.category_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     version_id UInt64,
     category_id Int32,
@@ -106,7 +106,7 @@ SOURCE(POSTGRESQL(
 LAYOUT(HASHED())
 LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY IF NOT EXISTS analytic.country_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.country_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     version_id UInt64,
     country_id String,
@@ -130,7 +130,7 @@ SOURCE(POSTGRESQL(
 LAYOUT(HASHED())
 LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY IF NOT EXISTS analytic.trade_bloc_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.trade_bloc_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     version_id UInt64,
     trade_bloc_id String,
@@ -154,7 +154,7 @@ SOURCE(POSTGRESQL(
 LAYOUT(HASHED())
 LIFETIME(MIN 300 MAX 360);
 
-CREATE DICTIONARY IF NOT EXISTS analytic.rate_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.rate_dictionary ON CLUSTER '{cluster}' (
     id UInt64,
     event_id String,
     event_time String,

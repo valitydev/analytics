@@ -1,6 +1,6 @@
-DROP DICTIONARY IF EXISTS analytic.shop_dictionary;
+DROP DICTIONARY IF EXISTS analytic.shop_dictionary ON CLUSTER '{cluster}';
 
-CREATE DICTIONARY IF NOT EXISTS analytic.shop_dictionary (
+CREATE DICTIONARY IF NOT EXISTS analytic.shop_dictionary ON CLUSTER '{cluster}' (
     party_id String,
     shop_id String,
     id UInt64,
