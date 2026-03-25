@@ -25,7 +25,7 @@ public class RateListener {
     public void handle(List<CurrencyEvent> batch,
                        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                        @Header(KafkaHeaders.OFFSET) int offsets,
-                       Acknowledgment ack) throws InterruptedException {
+                       Acknowledgment ack) {
         log.info("Got RateListener listen offsets: {}, partition: {}, batch.size: {}",
                 offsets, partition, batch.size());
         currencyEventHandler.handle(batch, ack);

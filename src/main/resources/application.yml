@@ -56,6 +56,7 @@ clickhouse.db:
 clickhouse.flyway:
   # Allowed values: non-sharded, replicated-non-sharded, sharded
   schema-mode: non-sharded
+  repair-before-migrate: false
 
 postgres.db:
   schema: analytics
@@ -97,7 +98,6 @@ kafka:
   consumer:
     prefix: analytics
     concurrency: 7
-    throttling-timeout-ms: 1000
   event-flow.resolver.enabled: false
   listener:
     event.sink:
