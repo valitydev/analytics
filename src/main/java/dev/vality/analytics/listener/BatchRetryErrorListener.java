@@ -1,5 +1,6 @@
 package dev.vality.analytics.listener;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.Acknowledgment;
@@ -9,14 +10,11 @@ import java.time.Duration;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class BatchRetryErrorListener implements RetryErrorListener {
 
-    private final long retryTimeoutMs;
-
-    public BatchRetryErrorListener(
-            @Value("${kafka.listener.retry.timeout}") long retryTimeoutMs) {
-        this.retryTimeoutMs = retryTimeoutMs;
-    }
+    @Value("${kafka.listener.retry.timeout}")
+    private long retryTimeoutMs;
 
     public void retry(String listenerName, int batchSize, Acknowledgment ack, Exception ex) {
         log.warn("{} batch processing failed, size={}, retry in {} ms", listenerName, batchSize, retryTimeoutMs, ex);
