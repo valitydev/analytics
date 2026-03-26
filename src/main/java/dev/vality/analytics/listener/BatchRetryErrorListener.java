@@ -14,7 +14,7 @@ public class BatchRetryErrorListener implements RetryErrorListener {
     private final long retryTimeoutMs;
 
     public BatchRetryErrorListener(
-            @Value("${kafka.listener.retry.timeout:${kafka.error-handler.retry.min.interval}}") long retryTimeoutMs) {
+            @Value("${kafka.listener.retry.timeout}") long retryTimeoutMs) {
         this.retryTimeoutMs = retryTimeoutMs;
     }
 
