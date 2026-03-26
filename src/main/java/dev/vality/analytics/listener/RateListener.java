@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RateListener {
 
+    private final BatchRetryErrorListener batchRetryErrorListener;
     private final CurrencyEventHandler currencyEventHandler;
 
     @KafkaListener(autoStartup = "${kafka.listener.rate.enabled}",
@@ -28,8 +29,12 @@ public class RateListener {
                        Acknowledgment ack) {
         log.info("Got RateListener listen offsets: {}, partition: {}, batch.size: {}",
                 offsets, partition, batch.size());
-        currencyEventHandler.handle(batch, ack);
-        log.info("Batch RateListener has been committed, size={}", batch.size());
+        try {
+            currencyEventHandler.handle(batch, ack);
+            log.info("Batch RateListener has been committed, size={}", batch.size());
+        } catch (Exception ex) {
+            batchRetryErrorListener.retry("rate-events", batch.size(), ack, ex);
+        }
     }
 
 }

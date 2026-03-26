@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WithdrawalListener {
 
+    private final BatchRetryErrorListener batchRetryErrorListener;
     private final WithdrawalEventHandler withdrawalEventHandler;
 
     @KafkaListener(
@@ -37,7 +38,11 @@ public class WithdrawalListener {
             return;
         }
 
-        withdrawalEventHandler.handle(batch);
-        ack.acknowledge();
+        try {
+            withdrawalEventHandler.handle(batch);
+            ack.acknowledge();
+        } catch (Exception ex) {
+            batchRetryErrorListener.retry("withdrawal-events", batch.size(), ack, ex);
+        }
     }
 }

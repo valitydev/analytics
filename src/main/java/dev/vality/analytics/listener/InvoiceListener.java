@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class InvoiceListener {
 
+    private final BatchRetryErrorListener batchRetryErrorListener;
     private final SourceEventParser eventParser;
     private final List<InvoiceBatchHandler> invoiceBatchHandlers;
 
@@ -38,15 +39,20 @@ public class InvoiceListener {
             @Header(KafkaHeaders.OFFSET) int offsets,
             Acknowledgment ack) {
         log.info("InvoiceListener listen offsets: {}, partition: {}, batch.size: {}", offsets, partition, batch.size());
-        handleMessages(batch);
-        ack.acknowledge();
-    }
-
-    private void handleMessages(List<MachineEvent> batch) {
         if (CollectionUtils.isEmpty(batch)) {
+            ack.acknowledge();
             return;
         }
 
+        try {
+            handleMessages(batch);
+            ack.acknowledge();
+        } catch (Exception ex) {
+            batchRetryErrorListener.retry("invoice-events", batch.size(), ack, ex);
+        }
+    }
+
+    private void handleMessages(List<MachineEvent> batch) {
         batch.stream()
                 .map(machineEvent -> Map.entry(machineEvent, eventParser.parseEvent(machineEvent)))
                 .filter(entry -> entry.getValue().isSetInvoiceChanges())
