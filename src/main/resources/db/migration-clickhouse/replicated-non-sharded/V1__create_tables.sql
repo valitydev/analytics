@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS analytic;
+CREATE DATABASE IF NOT EXISTS analytic ON CLUSTER '{cluster}';
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink (
+CREATE TABLE IF NOT EXISTS analytic.events_sink ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink (
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, paymentTool, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_refund (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_refund ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_refund (
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, refundId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_adjustment (
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, shopId, status, currency, providerName, fingerprint, cardToken, invoiceId, paymentId, adjustmentId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_chargeback ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,

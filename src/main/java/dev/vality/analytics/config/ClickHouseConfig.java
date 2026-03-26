@@ -58,6 +58,7 @@ public class ClickHouseConfig {
             @Qualifier("clickHouseDataSource") DataSource clickHouseDataSource,
             @Qualifier("dataSourceProperties") DataSourceProperties postgresDataSourceProperties,
             @Value("${clickhouse.flyway.schema-mode:non-sharded}") String schemaMode,
+            @Value("${clickhouse.flyway.repair-before-migrate:false}") boolean repairBeforeMigrate,
             @Value("${postgres.db.schema}") String postgresSchema) {
         String normalizedSchemaMode = schemaMode.toLowerCase(Locale.ROOT);
         Map<String, String> placeholders = new LinkedHashMap<>();
@@ -71,6 +72,9 @@ public class ClickHouseConfig {
                 List.of(resolveClickHouseMigrationLocation(normalizedSchemaMode)),
                 placeholders,
                 "clickhouse_flyway_schema_history");
+        if (repairBeforeMigrate) {
+            flyway.repair();
+        }
         flyway.migrate();
         return flyway;
     }

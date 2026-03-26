@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,

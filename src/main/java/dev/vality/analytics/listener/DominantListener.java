@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DominantListener {
 
+    private final BatchRetryErrorListener batchRetryErrorListener;
     private final List<DominantHandler> dominantHandlers;
 
     @KafkaListener(autoStartup = "${kafka.listener.dominant.enabled}",
@@ -27,17 +28,26 @@ public class DominantListener {
                        @Header(KafkaHeaders.OFFSET) int offsets,
                        Acknowledgment ack) {
         log.info("DominantListener listen offsets: {} partition: {} batch.size: {}", offsets, partition, batch.size());
-        batch.forEach(commit -> {
-            commit.getOps().forEach(op ->
-                    dominantHandlers.stream()
-                            .filter(handler -> handler.isHandle(op))
-                            .forEach(handler ->
-                                    handler.handle(op, commit)
-                            )
-            );
-        });
-        log.info("DominantListener batch has been commited, batch.size={}", batch.size());
-        ack.acknowledge();
+        if (batch.isEmpty()) {
+            ack.acknowledge();
+            return;
+        }
+
+        try {
+            batch.forEach(commit -> {
+                commit.getOps().forEach(op ->
+                        dominantHandlers.stream()
+                                .filter(handler -> handler.isHandle(op))
+                                .forEach(handler ->
+                                        handler.handle(op, commit)
+                                )
+                );
+            });
+            log.info("DominantListener batch has been commited, batch.size={}", batch.size());
+            ack.acknowledge();
+        } catch (Exception ex) {
+            batchRetryErrorListener.retry("dominant-events", batch.size(), ack, ex);
+        }
     }
 
 }

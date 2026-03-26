@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal_local (
+CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal_local ON CLUSTER '{cluster}' (
     timestamp Date,
     eventTime UInt64,
     eventTimeHour UInt64,
@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal_local (
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (eventTimeHour, partyId, walletId, status, currency, providerId, terminal, withdrawalId, sequenceId);
 
-CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal AS analytic.events_sink_withdrawal_local
+CREATE TABLE IF NOT EXISTS analytic.events_sink_withdrawal ON CLUSTER '{cluster}' AS analytic.events_sink_withdrawal_local
 ENGINE = Distributed('{cluster}', analytic, events_sink_withdrawal_local, cityHash64(timestamp, partyId));

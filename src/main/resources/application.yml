@@ -56,6 +56,7 @@ clickhouse.db:
 clickhouse.flyway:
   # Allowed values: non-sharded, replicated-non-sharded, sharded
   schema-mode: non-sharded
+  repair-before-migrate: false
 
 postgres.db:
   schema: analytics
@@ -73,11 +74,6 @@ postgres.db:
 
 kafka:
   max.poll.records: 100
-  error-handler:
-    retry:
-      attempts: 3 #remove property or set negative for infinite attempts
-      min.interval: 1000
-      max.interval: 600000
   topic:
     event.sink:
       initial: event_sink
@@ -97,9 +93,10 @@ kafka:
   consumer:
     prefix: analytics
     concurrency: 7
-    throttling-timeout-ms: 1000
   event-flow.resolver.enabled: false
   listener:
+    retry:
+      timeout: 1000
     event.sink:
       enabled: true
     party:
